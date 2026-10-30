@@ -1,3 +1,4 @@
+import { StatusBadge } from '../../design-system/layout';
 import {
   Activity,
   Ban,
@@ -23,7 +24,7 @@ import {
   X,
   Zap,
 } from '../../design-system/icons';
-import { Button, Input, Select } from '../../design-system/primitives';
+import { ActionLink, Button, Input, Panel, Select } from '../../design-system/primitives';
 export function TrackingPage() {
   return (
     <>
@@ -32,27 +33,24 @@ export function TrackingPage() {
           <div>
             <p className={'page-eyebrow'}>
               <span className={'live-pulse-dot'}></span>
-              {' EVIDENCE & TELEMETRY MONITORING\n                '}
+              {'OUTREACH INSIGHTS'}
             </p>
             <h1 className={'page-title'}>
-              <Icon icon={Activity} size={22} />
               {'\n                  Email Tracking\n                '}
             </h1>
             <p className={'page-subtitle'}>
-              {
-                'Real-time webmail confirmation, 1×1 pixel telemetry, bounce DSN diagnostics, and controlled seed placement verification.'
-              }
+              {'Inspect sent messages, open signals, bounce evidence and seed placement.'}
             </p>
           </div>
           <div className={'header-actions'}>
-            <a href={'#trackingSeedStudio'} className={'header-nav-chip'}>
+            <ActionLink href={'#trackingSeedStudio'} className={'header-nav-chip'}>
               <Icon icon={Star} size={13} />
               {'\n                  Seed Studio\n                '}
-            </a>
-            <a href={'#trackingDomainHealth'} className={'header-nav-chip'}>
+            </ActionLink>
+            <ActionLink href={'#trackingDomainHealth'} className={'header-nav-chip'}>
               <Icon icon={Shield} size={13} />
               {'\n                  Domain Health\n                '}
-            </a>
+            </ActionLink>
             <Button
               id={'trackingFirebaseSync'}
               className={'secondary'}
@@ -79,27 +77,25 @@ export function TrackingPage() {
           <div className={'advisory-content'}>
             <strong>{'Evidence & Verification Protocol:'}</strong>
             {
-              ' Webmail confirmation records transmission. Inbox arrival is confirmed through automated IMAP DSN bounce notices or controlled seed inspections. Remote 1×1 image requests capture open signals (which security gateways may also scan). Seed placement reflects the tested mailbox environment.\n              '
+              ' Webmail confirmation records transmission. DSN notices report delivery failures; controlled seed inspections verify placement in the tested mailbox. Remote 1×1 image requests capture open signals (which security gateways may also scan). Seed placement reflects the tested mailbox environment.\n              '
             }
           </div>
         </div>
 
-        <div className={'panel tracking-main-panel'}>
+        <Panel as="div" className={'panel tracking-main-panel'}>
           <div className={'panel-head tracking-panel-head'}>
             <div>
               <h2 className={'panel-title'}>
                 <Icon icon={Mail} size={17} />
-                {'\n                    Delivery Telemetry & Outreach Audit\n                  '}
+                {'\n                    Message activity\n                  '}
               </h2>
               <p className={'panel-subtitle'}>
-                {
-                  'Comprehensive audit trail of dispatched cold outreaches, delivery receipts, and open telemetry.'
-                }
+                {'Filter and inspect the evidence recorded for each message.'}
               </p>
             </div>
             <div className={'tracking-live-tag'}>
               <span className={'status-dot-pulse'}></span>
-              <span id={'trackingRecordCountBadge'}>{'18 tracked events'}</span>
+              <span id={'trackingRecordCountBadge'}>{'Loading messages…'}</span>
             </div>
           </div>
 
@@ -114,11 +110,11 @@ export function TrackingPage() {
               </Button>
               <Button type={'button'} className={'filter-chip'} data-pill-status={'webmail_sent'}>
                 <Icon icon={Check} size={12} />
-                {'Delivered'}
+                {'Webmail confirmed'}
               </Button>
               <Button type={'button'} className={'filter-chip'} data-pill-status={'open_detected'}>
                 <Icon icon={Eye} size={12} />
-                {'Opened'}
+                {'Open signals'}
               </Button>
               <Button type={'button'} className={'filter-chip'} data-pill-status={'hard_bounced'}>
                 <Icon icon={Ban} size={12} />
@@ -268,9 +264,9 @@ export function TrackingPage() {
               </div>
             </div>
           </form>
-        </div>
+        </Panel>
 
-        <div className={'panel seed-studio-panel'} id={'trackingSeedStudio'}>
+        <Panel as="div" className={'panel seed-studio-panel'} id={'trackingSeedStudio'}>
           <div
             className={'panel-head'}
             style={{ alignItems: 'flex-start', flexWrap: 'wrap', gap: '14px' }}
@@ -292,7 +288,7 @@ export function TrackingPage() {
               </p>
             </div>
             <div id={'seedBadgeContainer'}>
-              <span
+              <StatusBadge
                 className={'status-pill good'}
                 id={'seedCountBadge'}
                 style={{
@@ -306,7 +302,7 @@ export function TrackingPage() {
               >
                 <Icon icon={Mailbox} size={12} />
                 {'\n                     Configured Seeds\n                  '}
-              </span>
+              </StatusBadge>
             </div>
           </div>
 
@@ -475,9 +471,9 @@ export function TrackingPage() {
               </div>
             </div>
           </div>
-        </div>
+        </Panel>
 
-        <div className={'panel domain-health-panel'} id={'trackingDomainHealth'}>
+        <Panel as="div" className={'panel domain-health-panel'} id={'trackingDomainHealth'}>
           <div
             className={'panel-head'}
             style={{ alignItems: 'flex-start', flexWrap: 'wrap', gap: '14px' }}
@@ -501,7 +497,7 @@ export function TrackingPage() {
               </p>
             </div>
             <div id={'domainScoreBadge'}>
-              <span
+              <StatusBadge
                 className={'status-pill'}
                 style={{
                   background: 'rgba(167, 139, 250, 0.15)',
@@ -514,7 +510,7 @@ export function TrackingPage() {
               >
                 <Icon icon={ShieldCheck} size={12} />
                 {'\n                     Authentication Auditor\n                  '}
-              </span>
+              </StatusBadge>
             </div>
           </div>
 
@@ -641,9 +637,9 @@ export function TrackingPage() {
               style={{ marginTop: '8px' }}
             ></pre>
           </details>
-        </div>
+        </Panel>
 
-        <div className={'panel daemon-monitor-panel'}>
+        <Panel as="div" className={'panel daemon-monitor-panel'}>
           <div className={'panel-head'}>
             <div>
               <h2 className={'panel-title'}>
@@ -687,7 +683,7 @@ export function TrackingPage() {
               style={{ marginTop: '10px' }}
             ></pre>
           </details>
-        </div>
+        </Panel>
       </section>
     </>
   );

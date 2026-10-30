@@ -43,7 +43,7 @@ export function WorkspaceContext() {
       </a>
       <div className="context-source">
         <span>
-          File: <strong>{workbookLabel(state)}</strong>
+          File: <span id="workbookName">{workbookLabel(state)}</span>
         </span>
         <a href="#leads">{state?.sheets.length ?? 0} worksheets · inspect source</a>
       </div>

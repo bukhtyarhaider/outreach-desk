@@ -47,7 +47,7 @@ after(async () => {
   if (fixtureDirectory) await fs.rm(fixtureDirectory, { recursive: true, force: true });
 });
 
-test('React retains every original main-app control ID and all twelve hash routes', () => {
+test('React retains every original main-app control ID and all existing routes plus Accounts', () => {
   const markup = renderToStaticMarkup(createElement(ui.App));
   const ids = [...markup.matchAll(/\bid="([^"]+)"/g)].map((match) => match[1]);
   assert.equal(new Set(ids).size, ids.length, 'Control IDs must remain unique');
@@ -208,6 +208,8 @@ test(
     const directory = fixture.dataDir;
     const state = upgrade(fixture.state);
     state.templates = structuredClone(templates);
+    state.profiles[0].id = 'qa-primary';
+    state.activeProfile = 'qa-primary';
     state.profiles.push({
       ...structuredClone(state.profiles[0]),
       id: 'qa-secondary',
@@ -301,8 +303,39 @@ test(
     const draft = 'Unsent React migration draft <&> "preserve"';
     await page.locator('#trackingPcId').fill('4');
     await page.locator('[data-view=templates]').click();
+    await page.locator('[data-edit-template]').first().click();
+    await page.locator('#templateEditor').waitFor({ state: 'visible' });
     await page.locator('#subject').fill(draft);
     await page.locator('#body').fill(draft);
+    await page.route('**/api/template', (route) =>
+      route.fulfill({
+        status: 400,
+        contentType: 'application/json',
+        body: JSON.stringify({ error: 'Synthetic template validation error' }),
+      }),
+    );
+    await page.locator('#saveTemplate').click();
+    await page.waitForFunction(() =>
+      document
+        .querySelector('#templateEditor [data-drawer-notice]')
+        .textContent.includes('Synthetic template validation error'),
+    );
+    assert(
+      await page.locator('#templateEditor [data-drawer-notice]').isVisible(),
+      'Save errors must be readable inside the modal',
+    );
+    assert.equal(
+      await page.locator('#body').inputValue(),
+      draft,
+      'Failed saves preserve the draft',
+    );
+    await page.unroute('**/api/template');
+    await page.locator('#saveTemplate').press('Tab');
+    assert(
+      await page.evaluate(() => !!document.activeElement.closest('#templateEditor')),
+      'Keyboard focus stays inside the modal',
+    );
+    await page.getByRole('button', { name: 'Close Email template', exact: true }).click();
     for (const view of ui.viewNames) {
       await page.locator(`[data-view="${view}"]`).click();
       await page.waitForFunction(
@@ -351,102 +384,59 @@ test(
         );
       }
     }
-    await page.locator('[data-view="settings"]').click();
+    await page.locator('[data-view="accounts"]').click();
+    await page.locator('[data-edit-profile]').first().click();
     await page.locator('#connectionMode').selectOption('cdp');
     await page.locator('#cdpSettings').waitFor({ state: 'visible' });
     for (const width of [1440, 1350, 1280, 1200, 1024, 820, 768, 480, 390, 320]) {
       await page.setViewportSize({ width, height: 1000 });
-      const layout = await page.locator('#view-settings').evaluate((view) => {
-        const rect = (element) => {
-          const { x, y, width, right } = element.getBoundingClientRect();
-          return { x, y, width, right };
-        };
-        const grid = view.querySelector('.settings-grid');
-        const panel = view.querySelector('.settings-profiles-panel');
-        const panels = [...grid.children].map(rect);
-        const presets = view.querySelector('#pacingPresetsGrid');
-        const headerOverflow = [...view.querySelectorAll('.panel-head')].some((head) =>
-          [...head.children].some((child) => rect(child).right > rect(head).right + 1),
-        );
-        const controlOverflow = [
-          ...view.querySelectorAll('input, select, textarea, button:not(table button)'),
-        ]
-          .filter(
-            (control) => control.closest('.panel') && control.getBoundingClientRect().width > 0,
-          )
-          .some((control) => rect(control).right > rect(control.closest('.panel')).right - 8);
-        const fieldRows = [...view.querySelectorAll('.form-grid-2')].map((row) =>
-          [...row.querySelectorAll('input, select')].map(rect),
-        );
+      const layout = await page.locator('#profileEditor').evaluate((dialog) => {
+        const bounds = dialog.getBoundingClientRect();
         return {
-          grid: rect(grid),
-          panels,
-          profileWidth: rect(panel).width,
-          presetGridWidth: rect(presets).width,
-          cards: [...presets.children].map((card) => ({
-            width: rect(card).width,
-            overflow: card.scrollWidth - card.clientWidth,
-          })),
-          headerOverflow,
-          controlOverflow,
-          fieldRows,
-          contentWidth: document.querySelector('.app-viewport').clientWidth,
-          contentScroll: document.querySelector('.app-viewport').scrollWidth,
-          syncOverflow: [...view.querySelector('.settings-sync-actions').children].some(
-            (child) => rect(child).right > rect(child.parentElement).right + 1,
-          ),
+          left: bounds.left,
+          right: bounds.right,
+          width: innerWidth,
+          overflow: dialog.scrollWidth - dialog.clientWidth,
+          fieldsFit: [...dialog.querySelectorAll('input,select,textarea,button')]
+            .filter((e) => e.getBoundingClientRect().width)
+            .every((e) => e.getBoundingClientRect().right <= bounds.right + 1),
         };
       });
-      assert.equal(layout.panels.length, 9, 'All settings panels remain available');
       assert(
-        Math.abs(layout.profileWidth - layout.grid.width) <= 1,
-        'Mailbox list spans the workspace',
+        layout.left >= 0 && layout.right <= layout.width + 1,
+        `Profile drawer stays inside ${width}px viewport`,
       );
-      if (width > 1280) {
-        assert(
-          Math.abs(layout.panels[1].y - layout.panels[2].y) <= 1,
-          'Profile and pacing panels align',
-        );
-        assert(
-          Math.abs(layout.panels[1].width - layout.panels[2].width) <= 1,
-          'Settings columns share width',
-        );
-        for (let index = 3; index < layout.panels.length; index += 2)
-          assert(
-            Math.abs(layout.panels[index].y - layout.panels[index + 1].y) <= 1,
-            'Later sections share rows',
-          );
-      } else {
-        for (const panel of layout.panels)
-          assert(
-            Math.abs(panel.width - layout.grid.width) <= 1,
-            'Narrow layouts use full-width panels',
-          );
-      }
-      for (const card of layout.cards) {
-        assert(
-          card.width >= Math.min(190, layout.presetGridWidth) - 1,
-          `Preset must stay readable at ${width}px: ${card.width}px`,
-        );
-        assert(card.overflow <= 1, `Preset contents fit at ${width}px`);
-      }
-      assert(!layout.headerOverflow, `Settings headings fit at ${width}px`);
-      assert(!layout.controlOverflow, `Settings inputs fit at ${width}px`);
-      assert(!layout.syncOverflow, `Sync action fits at ${width}px`);
-      assert(layout.contentScroll <= layout.contentWidth + 1, `Settings pane fits at ${width}px`);
-      if (width > 820) {
-        for (const fields of layout.fieldRows) {
-          // The provider occupies its own row; all other paired controls align below their labels.
-          if (fields.length === 2)
-            assert(
-              Math.abs(fields[0].y - fields[1].y) <= 1,
-              'Paired inputs align even when labels wrap',
-            );
-        }
-      }
+      assert(layout.overflow <= 1 && layout.fieldsFit, `Profile fields fit at ${width}px`);
     }
-    await page.locator('#connectionMode').selectOption('saved');
-    await page.locator('#cdpSettings').waitFor({ state: 'hidden' });
+    await page.locator('#accountName').fill('Uncommitted account draft');
+    await page.keyboard.press('Escape');
+    assert.equal(await page.locator('#profileEditor').isVisible(), false);
+    assert.equal(await page.locator('#accountName').inputValue(), 'Uncommitted account draft');
+    await page.locator('[data-view="settings"]').click();
+    assert.equal(
+      await page.locator('#view-settings #accountEmail').count(),
+      0,
+      'Profile setup belongs to Accounts',
+    );
+    for (const width of [1440, 1280, 1024, 820, 768, 480, 390, 320]) {
+      await page.setViewportSize({ width, height: 1000 });
+      const layout = await page.locator('#view-settings').evaluate((view) => {
+        const panels = [...view.querySelectorAll('.settings-grid>.panel')];
+        const fits = panels.every((panel) => panel.scrollWidth <= panel.clientWidth + 1);
+        const viewport = document.querySelector('.app-viewport');
+        return {
+          panels: panels.length,
+          fits,
+          paneFit: viewport.scrollWidth <= viewport.clientWidth + 1,
+        };
+      });
+      assert.equal(
+        layout.panels,
+        7,
+        'All seven sending, integration and app settings panels remain available',
+      );
+      assert(layout.fits && layout.paneFit, `Settings sections fit at ${width}px`);
+    }
     assert.equal(await page.locator('#trackingPcId').inputValue(), '4');
     await page.setViewportSize({ width: 390, height: 1000 });
     await page.locator('[data-view="leads"]').click();

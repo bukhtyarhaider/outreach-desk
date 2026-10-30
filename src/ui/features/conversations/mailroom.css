@@ -329,7 +329,8 @@
   gap: 12px;
 }
 .mailroom-message-heading .mailroom-avatar {
-  background: #f2efe7;
+  background: #e1e8ff;
+  color: #1649a8;
   box-shadow: none;
   width: 42px;
   height: 42px;
@@ -974,5 +975,26 @@
 @media (max-width: 520px) {
   .mailroom-read-actions {
     margin-left: 0;
+  }
+}
+#mailroomQueueLabel {
+  margin: 0 0 12px;
+  flex-shrink: 0;
+}
+/* Short viewports scroll the shared context away before the independently scrollable inbox. */
+@media (max-width: 1020px) {
+  .mailroom-active .app-viewport {
+    display: block;
+    overflow-y: auto;
+  }
+  #view-conversations.mailroom-page.active {
+    display: block;
+    overflow: visible;
+  }
+  .mailroom-workspace {
+    height: calc(100dvh - 100px);
+    min-height: 440px;
+    flex: none;
+    scroll-margin-top: 12px;
   }
 }

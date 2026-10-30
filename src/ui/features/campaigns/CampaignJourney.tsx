@@ -2,7 +2,7 @@ import { useSyncExternalStore } from 'react';
 export const campaignSteps = [
   { name: 'Audience', detail: 'Import & review leads', href: '#imports' },
   { name: 'Messages', detail: 'Personalize templates', href: '#templates' },
-  { name: 'Mailbox', detail: 'Connection & allowances', href: '#settings' },
+  { name: 'Mailbox', detail: 'Connection & allowances', href: '#accounts' },
   { name: 'Review', detail: 'Confirm campaign scope', href: '#campaignReview' },
 ] as const;
 export function CampaignJourney({ active = 0 }: { active?: number }) {

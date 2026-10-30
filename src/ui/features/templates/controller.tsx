@@ -1,3 +1,5 @@
+import { StatusBadge } from '../../design-system/layout';
+import { openDrawer } from '../../design-system/overlays';
 import { Icon, Trash2 } from '../../design-system/icons';
 import { Button } from '../../design-system/primitives';
 import { uiScope } from '../../shared/lifecycle';
@@ -57,9 +59,9 @@ export function renderTemplatesTable() {
                 </span>
               </td>
               <td style={{ textAlign: 'center' }}>
-                <span className={'status-pill ' + (isEnabled ? 'ready' : 'blocked')}>
+                <StatusBadge className={'status-pill ' + (isEnabled ? 'ready' : 'blocked')}>
                   {isEnabled ? 'Active' : 'Disabled'}
-                </span>
+                </StatusBadge>
               </td>
               <td>
                 {contentOr(
@@ -140,7 +142,9 @@ export function fillTemplate() {
   const isNew = $('template')?.value === '';
   const defaultNewBody = `Hi {{firstName}},\n\nI’m {{senderName}} with {{businessName}}. I wanted to see whether {{company}} could use dispatch support for your equipment.\n\nWe help with {{services}}, based on your equipment, preferred lanes, and availability. You decide which loads you accept.\n\nWould a brief overview of how we work be useful?\n\nIf you’d prefer no further outreach, reply “remove” and I’ll take you off our list.\n\n{{legalName}}\n{{address}}`;
   const defaultNewSubject = 'Dispatch support for {{company}}';
-  const t = session.state.templates[$('template')?.value] || {
+  const selectedTemplate = session.state.templates[$('template')?.value];
+  if ($('deleteTemplate')) $('deleteTemplate').disabled = !selectedTemplate;
+  const t = selectedTemplate || {
     name: 'New template',
     subject: isNew ? defaultNewSubject : '',
     body: isNew ? defaultNewBody : '',
@@ -190,10 +194,10 @@ export function updateTemplateLivePreview() {
   if (compStatus) {
     if (!rawBody.trim()) {
       compStatus.textContent = 'Draft';
-      compStatus.className = 'status-pill';
+      compStatus.className = 'ui-badge ui-badge--neutral';
     } else {
       compStatus.textContent = `${words} words`;
-      compStatus.className = 'status-pill ready';
+      compStatus.className = 'ui-badge ui-badge--positive';
     }
   }
 }
@@ -266,6 +270,7 @@ export function mountTemplates() {
   });
   if ($('newTemplate'))
     uiScope.handler($('newTemplate'), 'onclick', () => {
+      openDrawer('templateEditor');
       const tmplSelect = $('template');
       if (tmplSelect) {
         tmplSelect.add(new Option('New template', ''));
@@ -329,6 +334,7 @@ export function mountTemplates() {
         const key = editBtn.dataset.editTemplate;
         if ($('template')) $('template').value = String(key);
         fillTemplate();
+        openDrawer('templateEditor');
         $('template')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         if (session.previewId) preview(session.previewId).catch((err) => notice(errorMessage(err)));
         return;

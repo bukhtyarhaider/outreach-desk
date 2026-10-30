@@ -1,4 +1,5 @@
-import { Button } from '../../design-system/primitives';
+import { StatusBadge } from '../../design-system/layout';
+import { Button, Panel } from '../../design-system/primitives';
 import { uiScope } from '../../shared/lifecycle';
 import { contentOr } from '../../shared/regions';
 import { renderRegion } from '../../shared/regions';
@@ -76,13 +77,13 @@ export function renderCatalogEntries() {
             }
           >
             <div className={'catalog-entry-meta'}>
-              <span className={'status-pill'}>
+              <StatusBadge className={'status-pill'}>
                 {r.kind === 'release'
                   ? 'Package release'
                   : r.kind === 'milestone'
                     ? 'Historical update'
                     : 'Local note'}
-              </span>
+              </StatusBadge>
               <span>
                 {'v'}
                 {displayText(r.version)}
@@ -91,7 +92,7 @@ export function renderCatalogEntries() {
               </span>
               {r.kind === 'release' && r.version === catalogData!.installedVersion ? (
                 <>
-                  <span className={'status-pill good'}>{'Installed build'}</span>
+                  <StatusBadge className={'status-pill good'}>{'Installed build'}</StatusBadge>
                 </>
               ) : (
                 ''
@@ -123,7 +124,9 @@ export function renderCatalogEntries() {
         </>
       )),
       <>
-        <div className={'panel'}>{'No catalog entries match your search.'}</div>
+        <Panel as="div" className={'panel'}>
+          {'No catalog entries match your search.'}
+        </Panel>
       </>,
     ),
   );

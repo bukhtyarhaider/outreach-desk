@@ -1774,11 +1774,14 @@ const server = http.createServer(async (req, res) => {
       "/style.css": "style.css",
       "/icons/chevron-down.svg": "icons/chevron-down.svg",
       "/fonts/Manrope.ttf": "fonts/Manrope.ttf",
+      "/brand/outreach-desk.png": "brand/outreach-desk.png",
     };
     if (!files[pathname]) return response(res, { error: "Not found" }, 404);
     const file = files[pathname];
     res.writeHead(200, {
-      "Content-Type": file.endsWith(".ttf")
+      "Content-Type": file.endsWith(".png")
+        ? "image/png"
+        : file.endsWith(".ttf")
         ? "font/ttf"
         : file.endsWith(".svg")
           ? "image/svg+xml"

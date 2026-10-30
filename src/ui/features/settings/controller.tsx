@@ -1,3 +1,5 @@
+import { StatusBadge } from '../../design-system/layout';
+import { openDrawer, closeDrawer } from '../../design-system/overlays';
 import { Icon, Trash2 } from '../../design-system/icons';
 import type { BrowserDiscoveryResponse } from '../../shared/types/api';
 import { Button } from '../../design-system/primitives';
@@ -39,9 +41,9 @@ export function renderProfilesTable() {
                 </small>
               </td>
               <td style={{ textAlign: 'center' }}>
-                <span className={'status-pill ' + (isActive ? 'ready' : 'blocked')}>
+                <StatusBadge className={'status-pill ' + (isActive ? 'ready' : 'blocked')}>
                   {isActive ? 'Active' : 'Inactive'}
-                </span>
+                </StatusBadge>
               </td>
               <td style={{ textAlign: 'right' }}>
                 <div className={'row-actions'}>
@@ -472,11 +474,13 @@ export function mountSettings() {
         });
         await refresh();
         fillProfile();
+        closeDrawer('profileEditor');
         notice('Profile saved.');
       }),
     );
   if ($('newProfile'))
     uiScope.handler($('newProfile'), 'onclick', () => {
+      openDrawer('profileEditor');
       session.profileEditId = null;
       if ($('accountName')) {
         $('accountName').value = '';
@@ -527,6 +531,7 @@ export function mountSettings() {
         const p = session.state.profiles.find((x) => x.id === editBtn.dataset.editProfile);
         if (p) {
           fillProfile(p);
+          openDrawer('profileEditor');
           $('profileSetupTitle')?.scrollIntoView({
             behavior: 'smooth',
             block: 'nearest',
@@ -569,7 +574,7 @@ export function mountSettings() {
           promotionalClaims: $('promotionalClaimsCheck').value,
           messageLength: $('messageLengthCheck').value,
         };
-        s.business = readBusiness();
+        // Profile business details are saved only by the Accounts editor.
         for (const key of pacingFields) s.pacing[key] = Number(($(key) as HTMLInputElement).value);
         for (const key of ['requireActive', 'requireNoOutOfService', 'allowHidden'])
           s.eligibility[key as 'requireActive' | 'requireNoOutOfService' | 'allowHidden'] = (

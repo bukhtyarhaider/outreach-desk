@@ -1,7 +1,7 @@
 import { CampaignJourney } from './CampaignJourney';
 import { CampaignAudience } from './CampaignAudience';
 import { CodeXml, Folder, Icon } from '../../design-system/icons';
-import { Button, Input, Textarea } from '../../design-system/primitives';
+import { ActionLink, Button, Input, Panel, Textarea } from '../../design-system/primitives';
 export function CampaignsPage() {
   return (
     <>
@@ -15,9 +15,9 @@ export function CampaignsPage() {
             </p>
           </div>
           <div className={'header-actions'}>
-            <a className="button primary" href="#templates">
+            <ActionLink className="button primary" href="#templates">
               Continue to messages →
-            </a>
+            </ActionLink>
           </div>
         </div>
         <CampaignJourney active={0} />
@@ -31,11 +31,13 @@ export function CampaignsPage() {
             <Button id={'openImportReview'} className={'secondary'}>
               {'Review or repair mapping'}
             </Button>
-            <Button id={'saveCampaign'}>{'Save campaign settings'}</Button>
+            <Button variant="primary" id={'saveCampaign'}>
+              {'Save campaign settings'}
+            </Button>
           </div>
         </section>
         <div className={'dashboard-grid'}>
-          <div className={'panel'}>
+          <Panel as="div" className={'panel'}>
             <div className={'panel-head'}>
               <h2 className={'panel-title'}>
                 <Icon icon={Folder} size={16} />
@@ -47,9 +49,9 @@ export function CampaignsPage() {
               Save the campaign scope here. Import activation and starting outreach remain separate,
               explicit actions.
             </p>
-            <a className="button secondary" href="#dashboard">
+            <ActionLink className="button secondary" href="#dashboard">
               Review queue & launch controls
-            </a>
+            </ActionLink>
             <div className={'form-group'}>
               <label htmlFor={'campaignName'}>{'Campaign Display Name'}</label>
               <Input id={'campaignName'} placeholder={'e.g. Jessica Miller - Motus leads'} />
@@ -71,9 +73,9 @@ export function CampaignsPage() {
                 {'Continuous queue only processes worksheets matching these names.'}
               </p>
             </div>
-          </div>
+          </Panel>
 
-          <div className={'panel'}>
+          <Panel as="div" className={'panel'}>
             <div className={'panel-head'}>
               <h2 className={'panel-title'}>
                 <Icon icon={CodeXml} size={16} />
@@ -111,7 +113,7 @@ export function CampaignsPage() {
                 }}
               ></pre>
             </div>
-          </div>
+          </Panel>
         </div>
       </section>
     </>

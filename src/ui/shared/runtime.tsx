@@ -41,7 +41,14 @@ export function notice(text: string | null | undefined, _tone?: string) {
   const el = $('notice');
   if (!el) return;
   el.hidden = !text;
-  el.textContent = String(text);
+  el.textContent = text ?? '';
+  // An open native modal makes the global toast inert; keep action feedback inside its focus context.
+  document
+    .querySelectorAll<HTMLElement>('.ui-drawer[open] [data-drawer-notice]')
+    .forEach((feedback) => {
+      feedback.hidden = !text;
+      feedback.textContent = text ?? '';
+    });
   if (text) {
     uiScope.clearTimeout(noticeTimer);
     noticeTimer = uiScope.timeout(() => {
@@ -54,7 +61,7 @@ export async function action(button: EventTarget | null, fn: () => unknown | Pro
   if (!(button instanceof HTMLButtonElement)) return;
   if (session.pending) return;
   session.pending = true;
-  const original = button.textContent;
+  const original = [...button.childNodes];
   button.disabled = true;
   button.textContent = 'Working…';
   notice('');
@@ -67,7 +74,7 @@ export async function action(button: EventTarget | null, fn: () => unknown | Pro
     notice(errorMessage(e));
   } finally {
     session.pending = false;
-    button.textContent = original;
+    button.replaceChildren(...original);
     button.disabled = false;
     updateControls();
   }

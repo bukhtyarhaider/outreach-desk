@@ -1,3 +1,4 @@
+import { StatusBadge } from '../../design-system/layout';
 import type { HistoryReviewResponse } from '../../shared/types/api';
 import { Button } from '../../design-system/primitives';
 import { uiScope } from '../../shared/lifecycle';
@@ -186,9 +187,9 @@ export async function loadHistory() {
                 <small>{displayText(r.templateName)}</small>
               </td>
               <td>
-                <span className={'status-pill ' + (r.confirmedSent ? 'good' : 'blocked')}>
+                <StatusBadge className={'status-pill ' + (r.confirmedSent ? 'good' : 'blocked')}>
                   {displayText(r.status)}
-                </span>
+                </StatusBadge>
                 <small>
                   {r.replyStatus === 'unreviewed'
                     ? 'Reply not reviewed'
@@ -207,7 +208,9 @@ export async function loadHistory() {
               <td>
                 {r.firstOpenAt ? (
                   <>
-                    <span className={'status-pill good'}>{'Seen · image signal'}</span>
+                    <StatusBadge className={'status-pill good'}>
+                      {'Seen · image signal'}
+                    </StatusBadge>
                     <small>
                       {'First: '}
                       {displayText(historyDate(r.firstOpenAt))}
@@ -223,9 +226,9 @@ export async function loadHistory() {
                   </>
                 ) : (
                   <>
-                    <span className={'status-pill'}>
+                    <StatusBadge className={'status-pill'}>
                       {r.trackingEnabled ? 'No signal recorded' : 'Tracking not enabled'}
-                    </span>
+                    </StatusBadge>
                   </>
                 )}
               </td>

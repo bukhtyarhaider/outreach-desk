@@ -119,14 +119,6 @@ dialog {
 .pacing-presets-title {
   color: var(--text-primary);
 }
-.preset-apply-btn {
-  color: var(--text-primary) !important;
-  background: #f2efe7 !important;
-}
-.pacing-preset-card.active .preset-apply-btn {
-  background: var(--accent-blue) !important;
-  color: #fffdf8 !important;
-}
 .live-terminal-wrap,
 .live-terminal-header,
 .live-terminal-output {

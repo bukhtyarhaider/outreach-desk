@@ -1,3 +1,5 @@
+import { StatusBadge } from '../../design-system/layout';
+import { Drawer } from '../../design-system/overlays';
 import { CampaignJourney } from '../campaigns/CampaignJourney';
 import {
   Check,
@@ -10,7 +12,14 @@ import {
   Shield,
   Upload,
 } from '../../design-system/icons';
-import { Button, Input, Textarea, Select } from '../../design-system/primitives';
+import {
+  Button,
+  ButtonLabel,
+  Input,
+  Panel,
+  Select,
+  Textarea,
+} from '../../design-system/primitives';
 export function TemplatesPage() {
   return (
     <>
@@ -26,7 +35,7 @@ export function TemplatesPage() {
             </p>
           </div>
           <div className={'header-actions'}>
-            <Button id={'newTemplate'} className={'secondary'}>
+            <Button variant="primary" id={'newTemplate'} className={'secondary'}>
               <Icon icon={Plus} size={14} />
               {'\n                  New variant\n                '}
             </Button>
@@ -38,7 +47,7 @@ export function TemplatesPage() {
               <Icon icon={Download} size={14} />
               {'\n                  Export templates\n                '}
             </Button>
-            <label
+            <ButtonLabel
               className={'button secondary'}
               htmlFor={'importTemplatesFile'}
               style={{ cursor: 'pointer' }}
@@ -46,17 +55,73 @@ export function TemplatesPage() {
             >
               <Icon icon={Upload} size={14} />
               {'\n                  Import templates\n                '}
-            </label>
+            </ButtonLabel>
             <Input id={'importTemplatesFile'} type={'file'} accept={'.json'} hidden={true} />
-            <Button id={'deleteTemplate'} className={'danger'}>
-              {'Delete template'}
-            </Button>
-            <Button id={'saveTemplate'}>{'Save template'}</Button>
           </div>
         </div>
         <CampaignJourney active={1} />
+        <p className="hint">
+          Create a variant or choose Edit in the library to open its message editor.
+        </p>
+
+        <Panel as="div" className={'panel'} style={{ marginTop: '20px' }}>
+          <div className={'panel-head'}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <h2 className={'panel-title'}>
+                <Icon icon={PanelsTopLeft} size={16} />
+                {'\n                    Template Variants Library\n                  '}
+              </h2>
+              <StatusBadge className={'status-pill ready'} id={'templateCountBadge'}>
+                {'0 Variants'}
+              </StatusBadge>
+            </div>
+            <div className={'toolbar-search'} style={{ minWidth: '220px', maxWidth: '320px' }}>
+              <Icon icon={Search} />
+              <Input
+                id={'templateSearch'}
+                type={'search'}
+                placeholder={'Search template variants…'}
+              />
+            </div>
+          </div>
+          <div className={'table-container'} style={{ border: 'none', boxShadow: 'none' }}>
+            <div className={'table-wrap'} style={{ maxHeight: '400px', minHeight: '200px' }}>
+              <table>
+                <thead>
+                  <tr>
+                    <th>{'Variant Name'}</th>
+                    <th>{'Subject Line'}</th>
+                    <th style={{ width: '80px', textAlign: 'center' }}>{'Weight'}</th>
+                    <th style={{ width: '100px', textAlign: 'center' }}>{'Status'}</th>
+                    <th>{'Required Fields'}</th>
+                    <th style={{ width: '170px', textAlign: 'right' }}>{'Actions'}</th>
+                  </tr>
+                </thead>
+                <tbody id={'templatesTableBody'}></tbody>
+              </table>
+            </div>
+          </div>
+        </Panel>
+      </section>
+      <Drawer
+        id="templateEditor"
+        title="Email template"
+        wide
+        description="Write and preview a reusable message. Changes apply only when you save."
+        footer={
+          <div className="ui-editor-actions">
+            {' '}
+            <Button id={'deleteTemplate'} className={'danger'}>
+              {'Delete template'}
+            </Button>
+            <Button variant="primary" id={'saveTemplate'}>
+              {'Save template'}
+            </Button>
+          </div>
+        }
+      >
         <div className={'dashboard-grid'}>
-          <div className={'panel'}>
+          <Panel as="div" className={'panel'}>
             <div className={'form-group'}>
               <label htmlFor={'template'}>{'Select Template Variant'}</label>
               <Select id={'template'}></Select>
@@ -167,20 +232,20 @@ export function TemplatesPage() {
                 {'The existing webmail signature is preserved automatically by Private Email.'}
               </p>
             </div>
-          </div>
+          </Panel>
 
-          <div className={'panel'}>
+          <Panel as="div" className={'panel'}>
             <div className={'panel-head'}>
               <h2 className={'panel-title'}>
                 <Icon icon={Eye} size={16} />
                 {'\n                    Live Template Preview\n                  '}
               </h2>
               <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                <span id={'templateComplianceStatus'} className={'status-pill ready'}>
+                <StatusBadge id={'templateComplianceStatus'} className={'status-pill ready'}>
                   <Icon icon={Check} size={12} />
                   {'Compliant'}
-                </span>
-                <span className={'status-pill ready'}>{'Simulated Lead'}</span>
+                </StatusBadge>
+                <StatusBadge className={'status-pill ready'}>{'Simulated Lead'}</StatusBadge>
               </div>
             </div>
             <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
@@ -197,48 +262,9 @@ export function TemplatesPage() {
               <br />
               <span>{'Mark Anthony | Fleet Core Logistics LLC | Dispatch & Carrier Services'}</span>
             </div>
-          </div>
+          </Panel>
         </div>
-
-        <div className={'panel'} style={{ marginTop: '20px' }}>
-          <div className={'panel-head'}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <h2 className={'panel-title'}>
-                <Icon icon={PanelsTopLeft} size={16} />
-                {'\n                    Template Variants Library\n                  '}
-              </h2>
-              <span className={'status-pill ready'} id={'templateCountBadge'}>
-                {'0 Variants'}
-              </span>
-            </div>
-            <div className={'toolbar-search'} style={{ minWidth: '220px', maxWidth: '320px' }}>
-              <Icon icon={Search} />
-              <Input
-                id={'templateSearch'}
-                type={'search'}
-                placeholder={'Search template variants…'}
-              />
-            </div>
-          </div>
-          <div className={'table-container'} style={{ border: 'none', boxShadow: 'none' }}>
-            <div className={'table-wrap'} style={{ maxHeight: '400px', minHeight: '200px' }}>
-              <table>
-                <thead>
-                  <tr>
-                    <th>{'Variant Name'}</th>
-                    <th>{'Subject Line'}</th>
-                    <th style={{ width: '80px', textAlign: 'center' }}>{'Weight'}</th>
-                    <th style={{ width: '100px', textAlign: 'center' }}>{'Status'}</th>
-                    <th>{'Required Fields'}</th>
-                    <th style={{ width: '170px', textAlign: 'right' }}>{'Actions'}</th>
-                  </tr>
-                </thead>
-                <tbody id={'templatesTableBody'}></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </section>
+      </Drawer>
     </>
   );
 }

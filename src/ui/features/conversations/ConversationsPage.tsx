@@ -1,4 +1,12 @@
-import { Button, Input, Textarea, Select, Dialog } from '../../design-system/primitives';
+import { StatusBadge } from '../../design-system/layout';
+import {
+  ActionLink,
+  Button,
+  Dialog,
+  Input,
+  Select,
+  Textarea,
+} from '../../design-system/primitives';
 export function ConversationsPage() {
   return (
     <>
@@ -61,6 +69,7 @@ export function ConversationsPage() {
             </Button>
           </div>
         </div>
+        <StatusBadge id="mailroomQueueLabel" tone="info" hidden />
         <p
           id={'replyScanProgress'}
           className={'mailroom-scan-note'}
@@ -183,6 +192,7 @@ export function ConversationsPage() {
                       </div>
                     </details>
                     <Button
+                      variant="primary"
                       id={'assistantReviewOpen'}
                       className={'primary mailroom-review-primary'}
                     >
@@ -225,7 +235,7 @@ export function ConversationsPage() {
                     <Button id={'assistantCopy'} className={'secondary'}>
                       {'Copy approved reply'}
                     </Button>
-                    <a
+                    <ActionLink
                       id={'assistantMailbox'}
                       className={'button secondary'}
                       target={'_blank'}
@@ -233,7 +243,7 @@ export function ConversationsPage() {
                       hidden={true}
                     >
                       {'Open my mailbox'}
-                    </a>
+                    </ActionLink>
                   </div>
                   <p className={'hint'}>
                     {
@@ -786,7 +796,9 @@ export function ConversationsPage() {
               <Input id={'assistantApproveConfirm'} type={'checkbox'} />
               {'I reviewed this exact text, recipient, sending account and message evidence.'}
             </label>
-            <Button id={'assistantApprove'}>{'Approve this exact draft'}</Button>
+            <Button variant="primary" id={'assistantApprove'}>
+              {'Approve this exact draft'}
+            </Button>
           </details>
         </Dialog>
       </section>

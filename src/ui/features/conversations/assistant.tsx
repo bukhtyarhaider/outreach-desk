@@ -965,6 +965,23 @@ export function mountConversationAssistant() {
           'Captured local carrier activity · ' +
           new Date().toLocaleTimeString() +
           '. No automatic conversation sending.';
+        const priority = $('carrierPriorityAlert');
+        if (priority) {
+          const unread = r.summary.unread || 0;
+          priority.hidden = unread === 0;
+          renderRegion(
+            priority,
+            <>
+              <div>
+                <strong>
+                  {unread} new carrier {unread === 1 ? 'message' : 'messages'}
+                </strong>
+                <p>Review unread conversations before your next outreach.</p>
+              </div>
+              <Button data-carrier-work="unread">Review messages →</Button>
+            </>,
+          );
+        }
         const metrics = [
           ['New / unread', 'unread', 'unread'],
           ['Needs my reply', 'needsReply', 'needs_reply'],
@@ -1114,13 +1131,16 @@ export function mountConversationAssistant() {
     uiScope.listen(window, 'fc-carrier-read-changed', () => {
       void loadDashboard(true);
     });
-    uiScope.handler($('carrierAttentionMetrics'), 'onclick', (event) => {
+    const openCarrierWork = (event: MouseEvent) => {
       const b = eventElement(event).closest<HTMLElement>('[data-carrier-work]');
       if (!b) return;
       $('replyWork').value = String(b.dataset.carrierWork);
       location.hash = 'conversations';
       $('replyWork').dispatchEvent(new Event('change'));
-    });
+    };
+    uiScope.handler($('carrierAttentionMetrics'), 'onclick', openCarrierWork);
+    if ($('carrierPriorityAlert'))
+      uiScope.handler($('carrierPriorityAlert'), 'onclick', openCarrierWork);
     loadLibrary().catch((e) => {
       $('replyLibraryStatus').textContent = errorMessage(e);
     });

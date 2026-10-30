@@ -1,3 +1,4 @@
+import { StatusBadge } from '../../design-system/layout';
 import { Icon, Trash2 } from '../../design-system/icons';
 import { Button, Input } from '../../design-system/primitives';
 import { uiScope } from '../../shared/lifecycle';
@@ -50,9 +51,9 @@ export async function loadLeads() {
                 {displayText([l.fields.city, l.fields.state].filter(Boolean).join(', ')) || '—'}
               </td>
               <td>
-                <span className={'status-pill ' + (l.blocked ? 'blocked' : 'ready')}>
+                <StatusBadge className={'status-pill ' + (l.blocked ? 'blocked' : 'ready')}>
                   {displayText(l.blocked || 'Ready')}
-                </span>
+                </StatusBadge>
               </td>
               <td style={{ textAlign: 'right' }}>
                 <div className={'row-actions'}>

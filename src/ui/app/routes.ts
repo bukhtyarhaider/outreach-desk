@@ -10,6 +10,7 @@ export const viewNames = [
   'catalog',
   'tracking',
   'suppression',
+  'accounts',
   'settings',
 ] as const;
 export type ViewName = (typeof viewNames)[number];

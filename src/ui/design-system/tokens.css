@@ -1,9 +1,9 @@
 :root {
   color-scheme: light;
 
-  /* Background layers - deep, rich Obsidian & Carbon */
+  /* Warm paper surfaces and vivid Bauhaus accents. */
   --bg-app: #faf8f3;
-  --bg-sidebar: #f6f3ec;
+  --bg-sidebar: #f8f6f0;
   --bg-titlebar: #faf8f3;
   --bg-surface: #fffdf8;
   --bg-surface-elevated: #f2efe7;
@@ -20,13 +20,15 @@
   --border-glass: rgba(24, 24, 22, 0.08);
 
   /* Typography color hierarchy */
-  --text-primary: #181816;
+  --text-primary: #131311;
   --text-secondary: #4f514d;
   --text-muted: #66665e;
   --text-dim: #66665e;
 
   /* Brand Signature Accent: Precision Laser Red */
-  --accent-red: #db3020;
+  --brand-red: #ff3428;
+  --brand-yellow: #ffcd32;
+  --accent-red: #df2d20;
   --accent-red-hover: #b82417;
   --accent-red-dark: #b91c1c;
   --accent-red-bg: #fbe7df;
@@ -46,7 +48,7 @@
   --accent-amber-border: rgba(245, 158, 11, 0.3);
   --accent-amber-glow: rgba(245, 158, 11, 0.25);
 
-  --accent-blue: #174cce;
+  --accent-blue: #164bea;
   --accent-blue-hover: #1649a8;
   --accent-blue-bg: rgba(59, 130, 246, 0.12);
   --accent-blue-border: rgba(59, 130, 246, 0.3);
@@ -66,8 +68,8 @@
   /* Ambient shadows with depth & color glow */
   --shadow-sm: none;
   --shadow-md: none;
-  --shadow-lg: 0 12px 40px #18181622;
-  --shadow-drawer: -8px 0 32px #18181618;
+  --shadow-lg: 0 12px 40px #13131122;
+  --shadow-drawer: -8px 0 32px #13131118;
   --shadow-glow-red: none;
   --shadow-glow-blue: none;
   --shadow-glow-emerald: none;

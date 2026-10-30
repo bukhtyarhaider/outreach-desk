@@ -1,4 +1,4 @@
-import { Button } from '../../design-system/primitives';
+import { ActionLink, Button } from '../../design-system/primitives';
 import { useWorkspace } from '../../shared/workspace-store';
 import { action } from '../../shared/runtime';
 import { selectCampaign } from './controller';
@@ -12,9 +12,9 @@ export function CampaignOverview() {
           <h2 className="panel-title">Your campaigns</h2>
           <p className="hint">Choose a workspace to review its audience and prepare outreach.</p>
         </div>
-        <a className="button secondary" href="#campaigns">
+        <ActionLink className="button secondary" href="#campaigns">
           Create or configure a campaign
-        </a>
+        </ActionLink>
       </div>
       <div className="table-wrap">
         <table>

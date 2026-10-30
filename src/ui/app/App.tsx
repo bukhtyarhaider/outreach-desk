@@ -1,3 +1,4 @@
+import { AccountsPage } from '../features/accounts/AccountsPage';
 import { WorkspaceContext } from './layout/WorkspaceContext';
 import { DashboardPage } from '../features/dashboard/DashboardPage';
 import { LeadsPage } from '../features/leads/LeadsPage';
@@ -20,10 +21,10 @@ export function App() {
   return (
     <>
       <div className="app-shell">
-        <Titlebar />
         <div className="app-container">
           <Sidebar />
           <main className="app-viewport">
+            <Titlebar />
             <WorkspaceContext />
             <p id="releasePreviewBanner" className="carrier-preview-banner" hidden>
               Sample preview · Sending and live mailbox capture are disabled. Use your normal app
@@ -37,6 +38,7 @@ export function App() {
             <ImportsPage />
             <ConversationsPage />
             <TemplatesPage />
+            <AccountsPage />
             <SettingsPage />
             <LiveActivityPage />
             <HistoryPage />

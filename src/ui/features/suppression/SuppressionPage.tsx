@@ -1,5 +1,6 @@
+import { StatusBadge } from '../../design-system/layout';
 import { Ban, Icon, Plus, Search, Shield } from '../../design-system/icons';
-import { Button, Input } from '../../design-system/primitives';
+import { Button, Input, Panel } from '../../design-system/primitives';
 export function SuppressionPage() {
   return (
     <>
@@ -17,7 +18,7 @@ export function SuppressionPage() {
           </div>
         </div>
         <div className={'dashboard-grid'}>
-          <div className={'panel'}>
+          <Panel as="div" className={'panel'}>
             <div className={'panel-head'}>
               <h2 className={'panel-title'}>
                 <Icon icon={Ban} size={16} />
@@ -46,18 +47,18 @@ export function SuppressionPage() {
                 'Suppression is durable across all imported workbooks and shared via the team coordinator.'
               }
             </p>
-          </div>
+          </Panel>
 
-          <div className={'panel'}>
+          <Panel as="div" className={'panel'}>
             <div className={'panel-head'}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <h2 className={'panel-title'}>
                   <Icon icon={Shield} size={16} />
                   {'\n                      Suppressed Records\n                    '}
                 </h2>
-                <span className={'status-pill blocked'} id={'suppressionCountBadge'}>
+                <StatusBadge className={'status-pill blocked'} id={'suppressionCountBadge'}>
                   {'0 suppressed'}
-                </span>
+                </StatusBadge>
               </div>
               <div className={'toolbar-search'} style={{ minWidth: '180px', maxWidth: '260px' }}>
                 <Icon icon={Search} />
@@ -69,7 +70,7 @@ export function SuppressionPage() {
               </div>
             </div>
             <ul id={'suppressionList'}></ul>
-          </div>
+          </Panel>
         </div>
       </section>
     </>

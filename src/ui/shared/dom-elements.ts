@@ -1,6 +1,9 @@
 /** IDs retained as the UI compatibility contract; types reflect the rendered native elements. */
 export interface UIElements {
   settingsDetails: HTMLDetailsElement;
+  profileEditor: HTMLDialogElement;
+  templateEditor: HTMLDialogElement;
+  'view-accounts': HTMLElementTagNameMap['section'];
   mailroomOlder: HTMLDetailsElement;
   workspaceExport: HTMLAnchorElement;
 
@@ -11,6 +14,8 @@ export interface UIElements {
   ready: HTMLElementTagNameMap['div'];
   excluded: HTMLElementTagNameMap['div'];
   sent: HTMLElementTagNameMap['div'];
+  mailroomQueueLabel: HTMLSpanElement;
+  carrierPriorityAlert: HTMLDivElement;
   carrierAttentionStatus: HTMLElementTagNameMap['p'];
   carrierAttentionMetrics: HTMLElementTagNameMap['div'];
   carrierAttentionRows: HTMLElementTagNameMap['div'];

@@ -1,4 +1,4 @@
-import { Button, Input, Textarea, Select } from '../../design-system/primitives';
+import { ActionLink, Button, Input, Panel, Select, Textarea } from '../../design-system/primitives';
 export function CatalogPage() {
   return (
     <>
@@ -16,13 +16,13 @@ export function CatalogPage() {
             <Button id={'catalogRefresh'} className={'secondary'}>
               {'Refresh catalog'}
             </Button>
-            <a className={'button secondary'} href={'/api/export-catalog'}>
+            <ActionLink className={'button secondary'} href={'/api/export-catalog'}>
               {'Export catalog JSON'}
-            </a>
+            </ActionLink>
           </div>
         </div>
         <div id={'catalogMetrics'} className={'history-metrics'}></div>
-        <div className={'panel'}>
+        <Panel as="div" className={'panel'}>
           <h2 className={'panel-title'}>{'How to update this PC'}</h2>
           <ol id={'catalogUpgradeSteps'} className={'catalog-upgrade'}></ol>
           <p className={'hint'}>
@@ -30,7 +30,7 @@ export function CatalogPage() {
               "Earlier fixes often shipped under package 2.0.0. Dated milestones keep that history visible without inventing patch version numbers. Local notes stay in this PC's data folder and do not install a new build."
             }
           </p>
-        </div>
+        </Panel>
         <div className={'catalog-layout'}>
           <div>
             <div className={'catalog-filters'}>
@@ -55,7 +55,7 @@ export function CatalogPage() {
             <p id={'catalogStatus'} className={'hint'} role={'status'}></p>
             <div id={'catalogEntries'}></div>
           </div>
-          <div className={'panel catalog-editor'}>
+          <Panel as="div" className={'panel catalog-editor'}>
             <h2 className={'panel-title'} id={'catalogNoteHeading'}>
               {'Add a local release note'}
             </h2>
@@ -95,7 +95,7 @@ export function CatalogPage() {
                 {'New note'}
               </Button>
             </div>
-          </div>
+          </Panel>
         </div>
       </section>
     </>

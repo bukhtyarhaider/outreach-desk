@@ -120,6 +120,7 @@ export function mountConversations() {
           report!.rows.map((r) => (
             <>
               <Button
+                size="item"
                 type={'button'}
                 title={displayText(r.recipient)}
                 className={'mailroom-card ' + (r.id === selection?.id ? 'selected' : '')}
@@ -216,6 +217,18 @@ export function mountConversations() {
         .forEach((b) =>
           b.setAttribute('aria-pressed', String(b.dataset.mailroomWork === $('replyWork').value)),
         );
+      if ($('mailroomQueueLabel')) {
+        const work = $('replyWork');
+        $('mailroomQueueLabel').hidden = [
+          'active',
+          'needs_reply',
+          'all',
+          'no_reply',
+          'in_review',
+        ].includes(work.value);
+        $('mailroomQueueLabel').textContent =
+          `Queue: ${work.selectedOptions[0]?.textContent || work.value}`;
+      }
       $('replyPage').textContent = report!.total
         ? `${offset + 1}–${Math.min(offset + report!.rows.length, report!.total)} of ${report!.total}`
         : '0 conversations';
@@ -974,7 +987,11 @@ export function mountConversations() {
         'Message needs a conversation match';
       if (mailroom) {
         renderMailroomThread(detail!);
-        if (!sameThread) $('replyInspector').scrollTop = 0;
+        if (!sameThread) {
+          $('replyInspector').scrollTop = 0;
+          if (window.matchMedia('(max-width: 1020px)').matches)
+            $('mailroomWorkspace').scrollIntoView({ block: 'start' });
+        }
       } else {
         const initial = detail.root ? (
           <>

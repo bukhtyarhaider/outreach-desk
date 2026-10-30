@@ -1,49 +1,35 @@
-/* ==========================================================================
-   TEMPLATES STUDIO & TOKEN INSERTER
-   ========================================================================== */
-
-/* Token Inserter Bar */
+/* Token actions share Button sizing and states; this feature owns only their arrangement. */
 .token-bar {
   display: flex;
   flex-wrap: wrap;
-  gap: 7px;
+  gap: 6px;
+  padding: 12px;
   margin: 10px 0 16px;
-  padding: 12px 14px;
-  background: rgba(242, 239, 231, 0.45);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
+  border-radius: 4px;
+  background: var(--bg-surface-elevated);
 }
-
-.token-chip {
-  background: rgba(59, 130, 246, 0.1) !important;
-  border: 1px solid rgba(59, 130, 246, 0.3) !important;
-  border-radius: var(--radius-full) !important;
-  padding: 4px 11px !important;
-  font-size: 11.5px !important;
-  font-family: var(--font-mono) !important;
-  font-weight: 500 !important;
-  color: #1649a8 !important;
-  cursor: pointer !important;
-  box-shadow: none !important;
-  transition: all 0.15s ease !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  line-height: 1.4 !important;
-  user-select: none !important;
-  white-space: nowrap !important;
-  transform: none !important;
+.message-preview-box {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  line-height: 1.8;
+  padding: 20px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
 }
-
-.token-chip:hover {
-  background: rgba(59, 130, 246, 0.25) !important;
-  border-color: #3b82f6 !important;
-  color: #181816 !important;
-  box-shadow: none !important;
-  transform: translateY(-1px) !important;
+.signature-box {
+  padding: 14px 0;
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--text-muted);
 }
-
-.token-chip:active {
-  transform: translateY(0) scale(0.96) !important;
-  background: rgba(59, 130, 246, 0.35) !important;
+#view-templates .panel-head > div {
+  flex-wrap: wrap;
+  min-width: 0;
+}
+#view-templates .toolbar-search {
+  min-width: 0 !important;
+  width: min(100%, 320px);
 }

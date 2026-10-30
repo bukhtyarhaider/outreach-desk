@@ -9,7 +9,7 @@ import {
   Terminal,
   Trash2,
 } from '../../design-system/icons';
-import { Button, Input } from '../../design-system/primitives';
+import { ActionLink, Button, Input, Panel } from '../../design-system/primitives';
 export function LiveActivityPage() {
   return (
     <>
@@ -37,7 +37,7 @@ export function LiveActivityPage() {
               <Icon icon={Pause} size={14} />
               <span id={'livePauseBtnText'}>{'Pause Feed'}</span>
             </Button>
-            <a
+            <ActionLink
               className={'button secondary'}
               href={'/api/export-events?format=json'}
               id={'liveExportJsonBtn'}
@@ -46,8 +46,8 @@ export function LiveActivityPage() {
             >
               <Icon icon={Download} size={14} />
               {'\n                  Export Log (JSON)\n                '}
-            </a>
-            <a
+            </ActionLink>
+            <ActionLink
               className={'button secondary'}
               href={'/api/export-events?format=txt'}
               id={'liveExportTxtBtn'}
@@ -55,7 +55,7 @@ export function LiveActivityPage() {
               title={'Download text log'}
             >
               {'\n                  .TXT\n                '}
-            </a>
+            </ActionLink>
             <Button
               id={'liveClearEventsBtn'}
               className={'secondary'}
@@ -189,7 +189,7 @@ export function LiveActivityPage() {
           </div>
         </div>
 
-        <div className={'panel live-activity-panel'}>
+        <Panel as="div" className={'panel live-activity-panel'}>
           <div className={'panel-head'} style={{ marginBottom: '12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
               <h2 className={'panel-title'}>
@@ -343,7 +343,7 @@ export function LiveActivityPage() {
               <span id={'liveFilteredCountText'}>{'Showing all events'}</span>
             </div>
           </div>
-        </div>
+        </Panel>
       </section>
     </>
   );

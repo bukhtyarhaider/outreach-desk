@@ -274,3 +274,13 @@ Replaced 131 hand-authored inline SVGs and decorative emoji status/timeline icon
 - Full regression: 215 Node tests and 12 Python tests passed, no failures/skips. Subsequent focused UI acceptance passed after final navigation refinements. Strict TypeScript, formatting, production build and diff checks passed.
 - Desktop/mobile visual evidence and the source comparison are in `outputs/bauhaus-review/`; see `design-qa.md`.
 - Portable package includes the local font and OFL license, sources, generated assets and DX guides, excluding runtime customer data and secrets. Normal running servers require a restart for the new font route.
+
+
+## Bauhaus workspace refinement — 2026-10-30
+
+- Completed the product-brand shell, pinned management navigation, unread-message dashboard priority, first-row connection/runner controls, separate Accounts route, grouped Settings, and shared profile/template drawers. Existing native IDs, routes and API behavior remain compatible.
+- Shared action primitives now cover buttons, navigation actions, upload labels and data-selection rows. Shared metrics, status badges, surfaces, focus states and drawer footers apply across the UI. Async actions preserve their icons; errors remain readable inside open drawers.
+- Fixed narrow Unibox reading space and Tracking diagnostic overflow. Added behavioral coverage for the unread shortcut/filter label, modal failures/drafts/focus, account drawer bounds, and retained async icons. The UI fixture now supplies valid profile identifiers for account-edit checks.
+- Final `FC_BROWSER_TESTS=1 npm test`: **215 JavaScript tests and 12 Python tests passed**, no failures/skips. `npm run check:ui`, changed-script syntax and diff checks passed. All thirteen desktop routes and the core mobile/editor states were visually reviewed using synthetic data; final browser warning/error logs were empty.
+- The only server change is an explicit local PNG brand asset route and MIME type. Already-running app processes need a restart for that asset. No sending logic, storage migration, customer data, live mailbox operation or deployment was changed. Real provider/Windows acceptance remains unverified.
+- Evidence: `outputs/bauhaus-refinement/`; current design QA and developer ownership are documented in `design-qa.md` and `docs/UI-DX.md`.

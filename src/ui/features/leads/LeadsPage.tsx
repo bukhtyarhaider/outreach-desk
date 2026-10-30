@@ -1,5 +1,5 @@
 import { Download, Icon, RefreshCw, Search, Trash2, Upload } from '../../design-system/icons';
-import { Button, Input, Select } from '../../design-system/primitives';
+import { ActionLink, Button, ButtonLabel, Input, Select } from '../../design-system/primitives';
 export function LeadsPage() {
   return (
     <>
@@ -19,15 +19,19 @@ export function LeadsPage() {
               <Icon icon={RefreshCw} size={14} />
               {'\n                  Reload workbook\n                '}
             </Button>
-            <label className={'button secondary'} htmlFor={'upload'} style={{ cursor: 'pointer' }}>
+            <ButtonLabel
+              className={'button secondary'}
+              htmlFor={'upload'}
+              style={{ cursor: 'pointer' }}
+            >
               <Icon icon={Upload} size={14} />
               {'\n                  Add .xlsx campaign\n                '}
-            </label>
+            </ButtonLabel>
             <Input id={'upload'} type={'file'} accept={'.xlsx'} hidden={true} />
-            <a className={'button secondary'} href={'/api/download'} id={'download'}>
+            <ActionLink className={'button secondary'} href={'/api/download'} id={'download'}>
               <Icon icon={Download} size={14} />
               {'\n                  Download updated workbook\n                '}
-            </a>
+            </ActionLink>
             <Button
               id={'deleteWorkspace'}
               className={'danger'}

@@ -1,4 +1,35 @@
-# Bauhaus branch design QA — 2026-10-30
+# Bauhaus refinement design QA — 2026-10-30
+
+final result: passed for the exercised states
+
+This refinement supersedes the first-pass shell, inline profile/template editors and combined Mailbox & Settings layout recorded below. The first selected concept remains the visual direction; the user explicitly requires the complete operational information and existing capabilities in the finished application.
+
+## Delivered surfaces
+
+The Outreach Desk wordmark and primary-color geometric mark now anchor a full-height sidebar. Product branding is independent of mailbox business identity. The brand, Create campaign and management links remain pinned while secondary navigation can scroll. Campaign/mailbox switching, source file, selected batch, connection, queue and allowances remain in the shared context.
+
+The dashboard places unread carrier alerts above its heading, then mailbox connection and outreach-runner cards, then carrier work, campaign metrics/inventory and supporting tools. The unread shortcut uses the existing queue and exposes its active filter. Accounts is a separate thirteenth route; Settings groups sending rules, sync/coordination and app information. Mailbox profiles and email templates use shared drawers with persistent footer actions, focus cycling, Escape and readable local feedback. Tracking now composes the same metrics, surfaces, buttons and filters as the application.
+
+## Findings fixed during verification
+
+- P1: narrow Unibox retained almost no message area after the shared context and toolbar. The outer pane now scrolls at narrow widths, the inbox keeps a usable minimum area, and opening a different thread reveals its reader. Browser acceptance checks actual reading height in addition to width.
+- P1: save failures appeared behind a native modal. Drawer-local status feedback now remains inside the modal, with the current draft preserved.
+- P2: Tracking worker JSON widened the content pane. Diagnostics now wrap safely; data-table scrolling stays local.
+- P2: campaign actions bypassed shared button appearance. Navigation actions and upload labels now share the same variants, sizing and focus contract as buttons. Async actions retain icons after loading/error states.
+- P2: template/profile editors consumed permanent page space. Library/inventory pages now open consistent drawers. Sending-settings saves do not consume unsaved profile business fields.
+- P2: primary actions, queue selections, form alignment and mobile drawer footer geometry differed across features. Central primitives now own their appearance and responsive behavior.
+
+## Evidence and acceptance
+
+Native Chrome review used an isolated, synthetic preview at `http://127.0.0.1:4327`. All thirteen desktop destinations were inspected. Core mobile pages, Accounts/Settings/Tracking, Unibox list/reader and both new drawers were reviewed at 390×844. Evidence lives under `outputs/bauhaus-refinement/`; `dashboard-final.jpg` is 1728×863 and the final mobile drawer captures are 390×844, DPR 1. The first concept is retained at `outputs/bauhaus-review/selected-reference.png`. Differences in information density, operational context and real fixture counts are intentional product adaptations, not omitted mock elements.
+
+The complete regression suite passed **215 JavaScript tests and 12 Python tests**, with no failures or skips. Strict TypeScript, formatting, production build, changed-script syntax and diff checks passed. Browser tests cover all thirteen routes at desktop/tablet/mobile widths; Accounts drawer bounds include widths down to 320px. They also cover failed template saves, focus containment, retained drafts, read/unread alerts, stale evidence, recovery, profile/CDP settings, Firebase configuration and existing sending protections. The final native preview had no warning/error console entries. Packaging validation includes the brand asset, new UI sources and DX guide while excluding runtime data and private files.
+
+No blocking visual finding remains in these inspected states. This is not a claim of exhaustive corner-case coverage or accessibility certification. Real provider sending, native Windows/Edge installation and multi-PC deployment remain outside this UI verification. Existing app processes need a restart to serve the new explicit PNG brand route. No customer data or real email send was used for this review.
+
+---
+
+# Previous first-pass Bauhaus design QA — 2026-10-30
 
 final result: passed
 

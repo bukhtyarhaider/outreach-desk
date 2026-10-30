@@ -1,3 +1,4 @@
+import { StatusBadge } from '../../design-system/layout';
 import {
   Check,
   Copy,
@@ -115,14 +116,14 @@ export function renderLeadDetails(lead: Lead, message: Message | null, warnings:
   const sortedKeys = Object.keys(f).sort();
   const statusPill = lead.blocked ? (
     <>
-      <span className={'status-pill blocked'}>
+      <StatusBadge className={'status-pill blocked'}>
         {'Excluded: '}
         {displayText(lead.blocked)}
-      </span>
+      </StatusBadge>
     </>
   ) : (
     <>
-      <span className={'status-pill ready'}>{'Ready for outreach'}</span>
+      <StatusBadge className={'status-pill ready'}>{'Ready for outreach'}</StatusBadge>
     </>
   );
   const sheetStatusTag = lead.status ? (

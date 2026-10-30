@@ -1,3 +1,4 @@
+import { ActionLink, ButtonLabel } from '../../design-system/primitives';
 import { useWorkspace, workbookLabel } from '../../shared/workspace-store';
 import { Icon, FileText, Upload } from '../../design-system/icons';
 export function CampaignAudience() {
@@ -9,9 +10,9 @@ export function CampaignAudience() {
           <h2>Audience</h2>
           <p>Import a workbook, review its mapping, and confirm who you want to reach.</p>
         </div>
-        <label className="button primary" htmlFor="upload">
+        <ButtonLabel className="button primary" htmlFor="upload">
           <Icon icon={Upload} /> Import .xlsx campaign
-        </label>
+        </ButtonLabel>
       </div>
       <div className="source-strip">
         <Icon icon={FileText} size={28} />
@@ -19,9 +20,9 @@ export function CampaignAudience() {
           <strong>{workbookLabel(state)}</strong>
           <p>Uploads stay paused until a reviewed revision is activated.</p>
         </div>
-        <a href="#imports" className="button secondary">
+        <ActionLink href="#imports" className="button secondary">
           Review mapping
-        </a>
+        </ActionLink>
       </div>
       <dl className="audience-counts">
         {[
@@ -72,9 +73,9 @@ export function CampaignAudience() {
       </div>
       <div className="audience-footer">
         <a href="#leads">Inspect all leads & batch selection</a>
-        <a className="button primary" href="#templates">
+        <ActionLink className="button primary" href="#templates">
           Continue to messages →
-        </a>
+        </ActionLink>
       </div>
     </section>
   );

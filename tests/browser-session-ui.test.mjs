@@ -30,8 +30,9 @@ test('browser method controls, discovery, saved preferences and status render on
   browser = await loadPlaywright().chromium.launch({ channel: process.env.FC_TEST_BROWSER_CHANNEL || 'chrome', headless: true });
   const page = await browser.newPage({ viewport: { width: 1440, height: 1100 } });
   const errors = []; page.on('pageerror', (e) => errors.push(e.message));
-  await page.goto('http://127.0.0.1:14632/#settings');
+  await page.goto('http://127.0.0.1:14632/#accounts');
   await page.waitForFunction(() => document.querySelector('#accountUrl').value.includes('privateemail.com'));
+  await page.locator('[data-edit-profile]').first().click();
   assert.equal(await page.locator('#connectionMode').inputValue(), 'saved');
   assert.equal(await page.locator('#cdpSettings').isVisible(), false);
   await page.locator('#connectionMode').selectOption('cdp');
@@ -50,6 +51,7 @@ test('browser method controls, discovery, saved preferences and status render on
   await page.waitForFunction(() => document.querySelector('#notice').textContent === 'Profile saved.');
   await page.reload();
   await page.waitForFunction(() => document.querySelector('#connectionMode').value === 'cdp');
+  await page.locator('[data-edit-profile]').first().click();
   assert.equal(await page.locator('#cdpEndpoint').inputValue(), endpoint);
   assert.equal(await page.locator('#autoReconnect').isChecked(), false);
   for (const width of [1440, 390]) {
@@ -58,6 +60,7 @@ test('browser method controls, discovery, saved preferences and status render on
     const sizes = await page.evaluate(() => [innerWidth, document.documentElement.scrollWidth]);
     assert(sizes[1] <= sizes[0] + 1, sizes.join('/'));
   }
+  await page.keyboard.press('Escape');
   await page.goto('http://127.0.0.1:14632/#dashboard');
   await page.locator('#connect').click();
   await page.waitForFunction(() => document.querySelector('#browserSessionStatus').textContent.includes('sender@example.com'));

@@ -45,9 +45,14 @@ test('tracking dashboard filters, displays evidence and fits desktop/mobile with
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto(`http://127.0.0.1:${port}/#tracking`);
   await page.locator('#trackingRows tr').nth(1).waitFor();
+  await page.locator('#trackingRefresh').click();
+  await page.waitForFunction(()=>!document.querySelector('#trackingRefresh').disabled);
+  assert.equal(await page.locator('#trackingRefresh svg').count(),1,'Async actions retain their Lucide icons');
   assert.equal(await page.locator('#trackingRows tr').count(), 2);
   assert.match(await page.locator('#trackingConfig').innerText(), /disabled/);
-  assert.match(await page.locator('#trackingRows').innerText(), /hard_bounced/);
+  assert.match(await page.locator('#trackingRows').innerText(), /Hard Bounce/);
+  assert.match(await page.locator('#trackingRows').innerText(), /Webmail confirmed/);
+  assert.doesNotMatch(await page.locator('#trackingRows').innerText(), /Clean Delivery|Unopened/);
   await page.locator('#trackingStatus').selectOption('hard_bounced');
   await page.waitForFunction(() => document.querySelector('#trackingRows').querySelectorAll('tr').length === 1);
   assert.match(await page.locator('#trackingRows').innerText(), /bounce@example.com/);

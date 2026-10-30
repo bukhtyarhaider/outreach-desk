@@ -1,7 +1,6 @@
 @import '../design-system/tokens.css';
 @import '../design-system/global.css';
 @import './layout/shell.css';
-@import '../design-system/primitives.css';
 @import '../shared/styles/stats.css';
 @import '../shared/styles/table.css';
 @import '../shared/styles/drawers.css';
@@ -19,3 +18,5 @@
 @import '../design-system/bauhaus/foundations.css';
 @import '../design-system/bauhaus/shell.css';
 @import '../design-system/bauhaus/surfaces.css';
+
+@import '../design-system/primitives.css';
