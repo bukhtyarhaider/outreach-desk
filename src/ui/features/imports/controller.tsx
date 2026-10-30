@@ -1,3 +1,4 @@
+import { StatValue } from '../../design-system/StatValue';
 import { Button, Select } from '../../design-system/primitives';
 import { uiScope } from '../../shared/lifecycle';
 import { contentOr } from '../../shared/regions';
@@ -126,7 +127,9 @@ export function mountExperiment() {
           <>
             <div className={'experiment-metric'}>
               <span>{displayText(label)}</span>
-              <strong>{report.summary[key].toLocaleString()}</strong>
+              <StatValue kind={key === 'rows' ? 'total' : 'warning'} value={report.summary[key]}>
+                {report.summary[key].toLocaleString()}
+              </StatValue>
             </div>
           </>
         )),

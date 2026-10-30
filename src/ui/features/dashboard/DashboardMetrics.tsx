@@ -1,6 +1,6 @@
 import { Metric, MetricGroup } from '../../design-system/layout';
 import { useWorkspace } from '../../shared/workspace-store';
-import { audienceShare, StatMark } from './StatMark';
+import { audienceShare, StatMark } from '../../design-system/StatMark';
 /** Keep audience and PC-wide send totals explicitly scoped; they are not a shared conversion funnel. */
 export function DashboardMetrics() {
   const { state } = useWorkspace();

@@ -81,7 +81,7 @@ export function Metric({
       <dd>
         {visual ? (
           <div className="ui-metric-value">
-            {value}
+            <div className="ui-metric-number">{value}</div>
             {visual}
           </div>
         ) : (

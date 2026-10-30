@@ -1,3 +1,4 @@
+import { StatMark } from '../../design-system/StatMark';
 import { ActionLink, Panel } from '../../design-system/primitives';
 import { Notice, SectionHeader, Metric, MetricGroup } from '../../design-system/layout';
 import { useWorkspace, workbookLabel } from '../../shared/workspace-store';
@@ -13,14 +14,39 @@ export function CampaignAudience() {
         </Notice>
       )}
       <MetricGroup>
-        <Metric label="Total leads" value={state?.counts.total ?? '—'} detail="Active campaign" />
+        <Metric
+          label="Total leads"
+          visual={
+            <StatMark
+              kind="total"
+              value={state?.counts.total ?? 0}
+              total={state?.counts.total ?? 0}
+            />
+          }
+          value={state?.counts.total ?? '—'}
+          detail="Active campaign"
+        />
         <Metric
           label="Ready for outreach"
+          visual={
+            <StatMark
+              kind="ready"
+              value={state?.counts.ready ?? 0}
+              total={state?.counts.total ?? 0}
+            />
+          }
           value={state?.counts.ready ?? '—'}
           detail="Eligible leads"
         />
         <Metric
           label="Excluded"
+          visual={
+            <StatMark
+              kind="excluded"
+              value={state?.counts.excluded ?? 0}
+              total={state?.counts.total ?? 0}
+            />
+          }
           value={state?.counts.excluded ?? '—'}
           detail="Protected or ineligible"
         />

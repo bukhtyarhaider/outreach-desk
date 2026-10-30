@@ -74,23 +74,6 @@
   line-height: 1.15;
   margin: 8px 0 6px;
 }
-.dashboard-metrics .ui-metric-value {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  min-width: 0;
-}
-.dashboard-metrics .ui-metric-value > [id] {
-  min-width: 0;
-  overflow-wrap: anywhere;
-  font-variant-numeric: tabular-nums;
-}
-.dashboard-stat-mark {
-  flex: 0 0 36px;
-  width: 36px;
-  height: 36px;
-}
 .dashboard-metrics .ui-metric dt {
   font-size: 11px;
 }

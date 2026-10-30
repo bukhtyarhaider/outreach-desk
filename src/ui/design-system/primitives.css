@@ -859,3 +859,51 @@ html body .ui-button--item {
   opacity: 0.45;
   cursor: not-allowed;
 }
+
+.ui-metric-value {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+.ui-metric-number {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+.ui-stat-mark {
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+}
+
+.stat-value-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+  margin: 8px 0;
+}
+.stat-value-row > strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 26px;
+  line-height: 1.25;
+  font-variant-numeric: tabular-nums;
+}
+.stat-value-row .ui-stat-mark {
+  flex-basis: 30px;
+  width: 30px;
+  height: 30px;
+}
+
+.history-metric > span,
+.experiment-metric > span {
+  font-size: 11px;
+  font-weight: 750;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--text-secondary);
+}

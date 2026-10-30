@@ -1,3 +1,4 @@
+import { StatValue } from '../../design-system/StatValue';
 import { StatusBadge } from '../../design-system/layout';
 import { Button, Panel } from '../../design-system/primitives';
 import { uiScope } from '../../shared/lifecycle';
@@ -32,7 +33,9 @@ export async function loadCatalog() {
         <>
           <div className={'history-metric'}>
             <span>{displayText(label)}</span>
-            <strong>{displayText(value)}</strong>
+            <StatValue value={typeof value === 'number' ? value : 1}>
+              {displayText(value)}
+            </StatValue>
           </div>
         </>
       )),

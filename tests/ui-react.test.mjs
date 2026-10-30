@@ -29,7 +29,7 @@ before(async () => {
     export {App} from './src/ui/app/App';
     export {UIScope} from './src/ui/shared/lifecycle';
     export {workbookLabel} from './src/ui/shared/workspace-store';
-    export {audienceShare, StatMark} from './src/ui/features/dashboard/StatMark';
+    export {audienceShare, StatMark} from './src/ui/design-system/StatMark';
     export {parseUIPreferences, uiPreferencesKey} from './src/ui/shared/ui-preferences';
     export {viewNames, resolveView, navigationParent} from './src/ui/app/routes';
     export {classifyEvent, eventIdentity} from './src/ui/features/live-activity/controller';
@@ -82,7 +82,7 @@ test('stat accents handle empty and partial audiences without inventing a send c
   assert.equal(ui.audienceShare(-1, 2), 0);
   assert.equal(ui.audienceShare(5, 2), 1);
   assert.equal(ui.audienceShare(NaN, 2), 0);
-  for (const kind of ['total', 'ready', 'excluded', 'sent']) {
+  for (const kind of ['total', 'ready', 'excluded', 'sent', 'signal', 'warning', 'timing']) {
     for (const value of [0, 1, 2, 1000000]) {
       const markup = renderToStaticMarkup(createElement(ui.StatMark, { kind, value, total: 2 }));
       assert(!/NaN|Infinity/.test(markup));

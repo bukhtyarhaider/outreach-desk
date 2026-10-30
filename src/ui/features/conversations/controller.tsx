@@ -1,3 +1,4 @@
+import { StatValue } from '../../design-system/StatValue';
 import type { SourceHistoryResponse } from '../../shared/types/api';
 import { Button } from '../../design-system/primitives';
 import { uiScope } from '../../shared/lifecycle';
@@ -636,7 +637,16 @@ export function mountConversations() {
           <>
             <div className={'experiment-metric'}>
               <span>{label}</span>
-              <strong>{report!.summary[key]}</strong>
+              <StatValue
+                kind={
+                  key === 'needsReply' || key === 'needsMatch' || key === 'bounceNotices'
+                    ? 'warning'
+                    : 'signal'
+                }
+                value={report!.summary[key]}
+              >
+                {report!.summary[key]}
+              </StatValue>
             </div>
           </>
         )),

@@ -315,3 +315,10 @@ Replaced 131 hand-authored inline SVGs and decorative emoji status/timeline icon
 - Kept native count IDs, typography, card surfaces and dashboard hierarchy. Shape descriptions expose audience percentages to assistive technology without extra visible labels. Geometry handles empty, partial, full, out-of-range and non-finite inputs.
 - Desktop and 390px mobile visual evidence: `outputs/stat-accents/`. Changes use synthetic local preview data and do not alter sending, API or stored customer data.
 - `FC_BROWSER_TESTS=1 npm test`: **217 JavaScript tests and 12 Python tests passed**, no failures/skips. Strict types, formatting, production build and diff checks passed.
+
+## Shared stat accents — 2026-10-31
+
+- Promoted StatMark into the design system and added StatValue for adapter-rendered metric cards. Reports & History, Email Tracking, campaign audiences, import review, mailbox summaries and the version catalog now share brand geometry, typography and value alignment with dashboard metrics.
+- Valid proportions retain their original denominator and scope. Counts, versions and timing samples use presence accents; missing/zero data stays muted. Existing values, timing and tracking evidence labels, filters, exports and native controller IDs are preserved. Compact inline counters and operational status controls stay compact.
+- Desktop/mobile visual evidence: `outputs/shared-stat-accents/`. Synthetic local preview data only; no live mailbox actions or customer-data migrations.
+- Full regression: **217 JavaScript tests and 12 Python tests passed**, no failures/skips. Strict TypeScript, formatting, production builds and diff checks passed.

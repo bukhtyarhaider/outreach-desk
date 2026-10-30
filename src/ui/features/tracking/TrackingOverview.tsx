@@ -1,3 +1,4 @@
+import { StatMark } from '../../design-system/StatMark';
 import { Metric, MetricGroup } from '../../design-system/layout';
 export function TrackingOverview({
   summary,
@@ -16,21 +17,25 @@ export function TrackingOverview({
       <MetricGroup>
         <Metric
           label="Webmail confirmed"
+          visual={<StatMark kind="sent" value={sent} total={0} />}
           value={sent}
           detail={`${attempts} attempts · ${attempts ? Math.round((sent / attempts) * 100) : 0}% confirmed`}
         />
         <Metric
           label="Open signals"
+          visual={<StatMark kind="signal" value={summary.open_detected || 0} total={0} />}
           value={summary.open_detected || 0}
           detail="Image requests, not verified reads"
         />
         <Metric
           label="DSN bounces"
+          visual={<StatMark kind="warning" value={bounces} total={0} />}
           value={bounces}
           detail={`${summary.hard_bounced || 0} permanent · ${summary.soft_bounced || 0} temporary`}
         />
         <Metric
           label="Seed inbox"
+          visual={<StatMark kind="ready" value={summary.inbox || 0} total={seedTotal} />}
           value={seedTotal ? `${Math.round(((summary.inbox || 0) / seedTotal) * 100)}%` : '—'}
           detail={`${summary.awaiting || 0} awaiting inspection`}
         />

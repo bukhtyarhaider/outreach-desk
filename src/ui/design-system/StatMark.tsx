@@ -1,6 +1,6 @@
-import { Check, Icon } from '../../design-system/icons';
+import { Check, Icon } from './icons';
 
-export type StatKind = 'total' | 'ready' | 'excluded' | 'sent';
+export type StatKind = 'total' | 'ready' | 'excluded' | 'sent' | 'signal' | 'warning' | 'timing';
 
 /** Audience shares use a campaign denominator; PC-wide sends deliberately have no progress scale. */
 export function audienceShare(value: number, total: number): number {
@@ -17,14 +17,22 @@ function sectorPath(cx: number, cy: number, radius: number, start: number, sweep
 }
 
 export function StatMark({ kind, value, total }: { kind: StatKind; value: number; total: number }) {
-  const share = audienceShare(value, total);
+  const share = ['signal', 'warning', 'timing'].includes(kind)
+    ? Number.isFinite(value) && value > 0
+      ? 1
+      : 0
+    : audienceShare(value, total);
   const hasValue = Number.isFinite(value) && value > 0;
-  const color = `var(${kind === 'ready' ? '--accent-blue' : '--brand-red'})`;
+  const color = `var(${kind === 'timing' ? '--brand-yellow' : kind === 'ready' || kind === 'signal' ? '--accent-blue' : '--brand-red'})`;
   const shape =
-    kind === 'ready' ? <circle cx="22" cy="22" r="20" /> : <path d="M2 2H42V42C20 42 2 24 2 2Z" />;
+    kind === 'ready' || kind === 'signal' ? (
+      <circle cx="22" cy="22" r="20" />
+    ) : (
+      <path d="M2 2H42V42C20 42 2 24 2 2Z" />
+    );
   return (
     <svg
-      className={`dashboard-stat-mark dashboard-stat-mark--${kind}`}
+      className={`ui-stat-mark ui-stat-mark--${kind}`}
       viewBox="0 0 44 44"
       width="44"
       height="44"
