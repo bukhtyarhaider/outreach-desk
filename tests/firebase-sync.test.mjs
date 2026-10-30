@@ -376,3 +376,25 @@ test('invalid identities cannot query cloud; hung requests release the sync guar
   assert(Date.now() - start < 500);
   assert.equal(sync.running, false);
 });
+
+test('read-only audit distinguishes recoverable signals from messages, identity mismatch and unavailable databases', async () => {
+  const { auditFirebaseSync } = await import('../src/firebase-audit.mjs');
+  const { sync, state, message } = fixture({ backend: 'both' });
+  state.settings.tracking.syncMode = 'manual';
+  const { row, record } = message();
+  sync.rtdb = rtdb({ a: { ...row, pcId: '3' }, b: { ...row, openedAt: '2026-10-21T22:35:00.000Z' }, c: { ...row, token: 'x'.repeat(43), tokenHash: hash('x'.repeat(43)) } });
+  sync.firestore = firestore({}, { read: async () => { throw new Error('NOT_FOUND'); } });
+  const before = structuredClone(state);
+  const report = await auditFirebaseSync(sync);
+  assert.equal(report.recovery.recoverableSignals, 2);
+  assert.equal(report.recovery.newlyOpenedMessages, 1);
+  assert.equal(report.recovery.automaticPollingPaused, true);
+  assert.equal(report.recovery.selectedDatabaseUnavailable, true);
+  assert.equal(report.recovery.matchingEventsWithDifferentPcId, 1);
+  assert.equal(report.localRecoveryPreview.unmatched, 1);
+  assert.equal(report.localRecoveryPreview.acknowledged, 0);
+  assert.deepEqual(state, before);
+  assert.equal(record.opens.length, 0);
+  assert.deepEqual(sync.rtdb.writes, []);
+  assert.deepEqual(sync.firestore.writes, []);
+});

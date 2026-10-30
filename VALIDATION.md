@@ -351,3 +351,9 @@ Replaced 131 hand-authored inline SVGs and decorative emoji status/timeline icon
 - Tracking exposes current sync status and Settings access. Both sync controls explicitly report failed API results; Settings shows retry counts and budget. Final focused Firebase browser acceptance passed with synthetic disabled-cloud data, preserving unsaved settings and verifying the return-to-Settings flow.
 - Full regression: **225 JavaScript and 12 Python tests passed**, no failures/skips. Final focused recovery suite: **23 passed**; Firebase Settings browser acceptance: **1 passed**. Strict TypeScript, formatting, production UI build and diff checks passed.
 - Desktop/mobile visual evidence: `outputs/tracking-sticky-sync/`. No live cloud acknowledgements, provider connections, sending or customer-data changes. Other PCs require updating/restarting and verifying their own diagnostics.
+
+## Missing-open diagnosis follow-up — 2026-10-31
+
+- Extracted a reusable read-only Firebase audit. The report separates signal buckets from newly opened messages and exposes manual polling, identity mismatches, database availability and exact recovery coverage. It never persists local state or acknowledges cloud events.
+- Focused Firebase suite: **24 tests passed**, including an audit with recoverable/mismatched/unmatched evidence, multiple buckets for one message, paused polling and a failed database. Assertions verify original state and both cloud write logs remain unchanged. CLI/module syntax and diff checks passed.
+- A live read-only audit and local server diagnostics were inspected. No customer configuration, local messages or cloud acknowledgements were changed; the operator requested leaving the uncertain PC identity unchanged. Live repair and installed-worker restart were not performed.
