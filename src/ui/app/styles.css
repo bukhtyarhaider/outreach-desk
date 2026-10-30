@@ -26,3 +26,5 @@
 @import './layout/sticky-headers.css';
 
 @import '../features/conversations/refinement.css';
+
+@import '../features/tracking/workspace.css';

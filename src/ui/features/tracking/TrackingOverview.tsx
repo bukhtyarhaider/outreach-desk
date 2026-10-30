@@ -19,7 +19,7 @@ export function TrackingOverview({
           label="Webmail confirmed"
           visual={<StatMark kind="sent" value={sent} total={0} />}
           value={sent}
-          detail={`${attempts} attempts · ${attempts ? Math.round((sent / attempts) * 100) : 0}% confirmed`}
+          detail={`${attempts} ${attempts === 1 ? 'attempt' : 'attempts'} · ${attempts ? Math.round((sent / attempts) * 100) : 0}% confirmed`}
         />
         <Metric
           label="Open signals"

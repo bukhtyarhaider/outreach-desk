@@ -43,14 +43,6 @@ export function TrackingPage() {
             </p>
           </div>
           <div className={'header-actions'}>
-            <ActionLink href={'#trackingSeedStudio'} className={'header-nav-chip'}>
-              <Icon icon={Star} size={13} />
-              {'\n                  Seed Studio\n                '}
-            </ActionLink>
-            <ActionLink href={'#trackingDomainHealth'} className={'header-nav-chip'}>
-              <Icon icon={Shield} size={13} />
-              {'\n                  Domain Health\n                '}
-            </ActionLink>
             <Button
               id={'trackingFirebaseSync'}
               className={'secondary'}
@@ -61,8 +53,9 @@ export function TrackingPage() {
             </Button>
             <Button
               id={'trackingRefresh'}
-              className={'secondary refresh-btn'}
-              title={'Refresh tracking telemetries'}
+              variant="primary"
+              className={'refresh-btn'}
+              title={'Refresh recorded messages and tracking evidence'}
             >
               <Icon icon={RefreshCw} size={14} />
               {'\n                  Refresh Data\n                '}
@@ -70,19 +63,57 @@ export function TrackingPage() {
           </div>
         </div>
 
-        <div className={'tracking-advisory-banner'}>
-          <div className={'advisory-icon'}>
-            <Icon icon={ShieldAlert} size={20} />
-          </div>
-          <div className={'advisory-content'}>
-            <strong>{'Evidence & Verification Protocol:'}</strong>
-            {
-              ' Webmail confirmation records transmission. DSN notices report delivery failures; controlled seed inspections verify placement in the tested mailbox. Remote 1×1 image requests capture open signals (which security gateways may also scan). Seed placement reflects the tested mailbox environment.\n              '
+        <nav className="tracking-section-nav" aria-label="Tracking sections">
+          <Button
+            size="sm"
+            variant="ghost"
+            type="button"
+            onClick={() =>
+              document.getElementById('trackingMessages')?.scrollIntoView({ block: 'start' })
             }
+          >
+            Messages
+          </Button>
+          <ActionLink href={'#trackingSeedStudio'} variant="ghost" size="sm">
+            <Icon icon={Star} size={13} />
+            {'\n                  Seed Studio\n                '}
+          </ActionLink>
+          <ActionLink href={'#trackingDomainHealth'} variant="ghost" size="sm">
+            <Icon icon={Shield} size={13} />
+            {'\n                  Domain Health\n                '}
+          </ActionLink>
+          <Button
+            size="sm"
+            variant="ghost"
+            type="button"
+            onClick={() =>
+              document.getElementById('trackingDiagnostics')?.scrollIntoView({ block: 'start' })
+            }
+          >
+            Mailbox monitoring
+          </Button>
+        </nav>
+        <div id={'trackingMetrics'} className={'tracking-metrics'} aria-live={'polite'}></div>
+        <details className="tracking-evidence-guide">
+          <summary>
+            <Icon icon={Info} size={14} /> How to read these signals
+          </summary>
+          <div className={'tracking-advisory-banner'}>
+            <div className={'advisory-icon'}>
+              <Icon icon={ShieldAlert} size={20} />
+            </div>
+            <div className={'advisory-content'}>
+              <strong>{'Evidence & Verification Protocol:'}</strong>
+              {
+                ' Webmail confirmation records transmission. DSN notices report delivery failures; controlled seed inspections verify placement in the tested mailbox. Remote 1×1 image requests capture open signals (which security gateways may also scan). Seed placement reflects the tested mailbox environment.\n              '
+              }
+            </div>
           </div>
-        </div>
 
-        <Panel as="div" className={'panel tracking-main-panel'}>
+          <div id={'trackingRate'} className={'tracking-rate-callout'}></div>
+        </details>
+
+        <Panel as="div" className={'panel tracking-main-panel'} id="trackingMessages">
           <div className={'panel-head tracking-panel-head'}>
             <div>
               <h2 className={'panel-title'}>
@@ -94,33 +125,54 @@ export function TrackingPage() {
               </p>
             </div>
             <div className={'tracking-live-tag'}>
-              <span className={'status-dot-pulse'}></span>
               <span id={'trackingRecordCountBadge'}>{'Loading messages…'}</span>
+              <span id="trackingLoadStatus" role="status" className="tracking-load-status" />
             </div>
           </div>
 
-          <div id={'trackingMetrics'} className={'tracking-metrics'} aria-live={'polite'}></div>
-
-          <div id={'trackingRate'} className={'tracking-rate-callout'}></div>
-
           <div className={'tracking-toolbar-container'}>
             <div className={'tracking-quick-pills'} id={'trackingQuickPills'}>
-              <Button type={'button'} className={'filter-chip active'} data-pill-status={''}>
+              <Button
+                size="sm"
+                type={'button'}
+                className={'filter-chip active'}
+                data-pill-status={''}
+              >
                 {'All Records'}
               </Button>
-              <Button type={'button'} className={'filter-chip'} data-pill-status={'webmail_sent'}>
+              <Button
+                size="sm"
+                type={'button'}
+                className={'filter-chip'}
+                data-pill-status={'webmail_sent'}
+              >
                 <Icon icon={Check} size={12} />
                 {'Webmail confirmed'}
               </Button>
-              <Button type={'button'} className={'filter-chip'} data-pill-status={'open_detected'}>
+              <Button
+                size="sm"
+                type={'button'}
+                className={'filter-chip'}
+                data-pill-status={'open_detected'}
+              >
                 <Icon icon={Eye} size={12} />
                 {'Open signals'}
               </Button>
-              <Button type={'button'} className={'filter-chip'} data-pill-status={'hard_bounced'}>
+              <Button
+                size="sm"
+                type={'button'}
+                className={'filter-chip'}
+                data-pill-status={'hard_bounced'}
+              >
                 <Icon icon={Ban} size={12} />
-                {'Bounced'}
+                {'Permanent bounces'}
               </Button>
-              <Button type={'button'} className={'filter-chip'} data-pill-status={'seeds'}>
+              <Button
+                size="sm"
+                type={'button'}
+                className={'filter-chip'}
+                data-pill-status={'seeds'}
+              >
                 <Icon icon={Sprout} size={12} />
                 {'Seed Tests'}
               </Button>
@@ -131,6 +183,7 @@ export function TrackingPage() {
                 <Icon icon={Search} size={14} />
                 <Input
                   id={'trackingSearch'}
+                  aria-label="Search tracked messages"
                   type={'search'}
                   placeholder={'Search recipient, sender, subject…'}
                   spellCheck={'false'}
@@ -150,14 +203,14 @@ export function TrackingPage() {
                 </label>
                 <Select id={'trackingStatus'}>
                   <option value={''}>{'All statuses'}</option>
-                  <option value={'pending'}>{'pending'}</option>
-                  <option value={'send_attempted'}>{'send_attempted'}</option>
-                  <option value={'webmail_sent'}>{'webmail_sent'}</option>
-                  <option value={'send_failed'}>{'send_failed'}</option>
-                  <option value={'hard_bounced'}>{'hard_bounced'}</option>
-                  <option value={'soft_bounced'}>{'soft_bounced'}</option>
-                  <option value={'open_detected'}>{'open_detected'}</option>
-                  <option value={'delivery_unknown'}>{'delivery_unknown'}</option>
+                  <option value={'pending'}>{'Pending'}</option>
+                  <option value={'send_attempted'}>{'Send attempted'}</option>
+                  <option value={'webmail_sent'}>{'Webmail confirmed'}</option>
+                  <option value={'send_failed'}>{'Submission failed'}</option>
+                  <option value={'hard_bounced'}>{'Permanent bounce'}</option>
+                  <option value={'soft_bounced'}>{'Temporary bounce'}</option>
+                  <option value={'open_detected'}>{'Open signal recorded'}</option>
+                  <option value={'delivery_unknown'}>{'Delivery unknown'}</option>
                 </Select>
               </div>
               <div className={'filter-date-group'}>
@@ -171,6 +224,7 @@ export function TrackingPage() {
                 </label>
               </div>
               <Button
+                size="sm"
                 type={'button'}
                 id={'trackingResetFilters'}
                 className={'secondary tracking-clear-btn'}
@@ -182,6 +236,7 @@ export function TrackingPage() {
             </div>
           </div>
 
+          <p id="trackingFilterSummary" className="tracking-filter-summary" role="status" />
           <div className={'table-wrap tracking-table-wrap'}>
             <table className={'tracking-table'}>
               <thead>
@@ -416,9 +471,9 @@ export function TrackingPage() {
                   >
                     {'2'}
                   </span>
-                  <h3 className={'seed-card-heading'}>{'Live Dynamic Message Preview'}</h3>
+                  <h3 className={'seed-card-heading'}>{'Message preview'}</h3>
                 </div>
-                <span className={'preview-badge-live'}>{'LIVE RENDER'}</span>
+                <span className={'preview-badge-live'}>{'Personalized'}</span>
               </div>
               <div className={'seed-preview-window'}>
                 <div className={'preview-window-bar'}>
@@ -484,15 +539,13 @@ export function TrackingPage() {
               </span>
               <h2 className={'panel-title'} style={{ marginTop: '3px' }}>
                 <Icon icon={Shield} size={18} />
-                {
-                  '\n                    Domain Health & DNS Authentication Inspector\n                  '
-                }
+                {'\n                    Domain authentication\n                  '}
               </h2>
               <p
                 style={{ fontSize: '12.5px', color: 'var(--text-secondary)', margin: '4px 0 0 0' }}
               >
                 {
-                  '\n                    Verify SPF, DKIM, and DMARC alignment required by Gmail, Yahoo, and Outlook to ensure cold outreach bypasses spam filters.\n                  '
+                  '\n                    Inspect published SPF, DKIM and DMARC records for your sending domain. These checks do not guarantee inbox placement.\n                  '
                 }
               </p>
             </div>
@@ -639,12 +692,12 @@ export function TrackingPage() {
           </details>
         </Panel>
 
-        <Panel as="div" className={'panel daemon-monitor-panel'}>
+        <Panel as="div" className={'panel daemon-monitor-panel'} id="trackingDiagnostics">
           <div className={'panel-head'}>
             <div>
               <h2 className={'panel-title'}>
                 <Icon icon={Monitor} size={18} />
-                {'\n                    IMAP Monitor Daemon & Bounce Review\n                  '}
+                {'\n                    Mailbox monitoring & bounce review\n                  '}
               </h2>
               <p className={'panel-subtitle'}>
                 {
@@ -653,25 +706,27 @@ export function TrackingPage() {
               </p>
             </div>
             <div className={'daemon-status-chip'}>
-              <span className={'status-dot-pulse'}></span>
-              <span>{'IMAP Telemetry'}</span>
+              <span>{'This PC'}</span>
             </div>
           </div>
           <div className={'daemon-config-box'}>
             <Icon icon={Info} size={16} color={'#1649a8'} />
             <p id={'trackingConfig'} className={'tracking-note'} style={{ margin: '0' }}></p>
           </div>
-          <div className={'daemon-terminal-window'}>
-            <div className={'daemon-terminal-bar'}>
-              <div className={'window-dots'}>
-                <span></span>
-                <span></span>
-                <span></span>
+          <details className="tracking-worker-details">
+            <summary>Worker diagnostics</summary>
+            <div className={'daemon-terminal-window'}>
+              <div className={'daemon-terminal-bar'}>
+                <div className={'window-dots'}>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+                <span className={'terminal-title'}>{'imap_daemon_worker.json'}</span>
               </div>
-              <span className={'terminal-title'}>{'imap_daemon_worker.json'}</span>
+              <pre id={'trackingWorker'} className={'tracking-output'}></pre>
             </div>
-            <pre id={'trackingWorker'} className={'tracking-output'}></pre>
-          </div>
+          </details>
           <details className={'review-queue-details'}>
             <summary>
               <Icon icon={FileText} size={14} />

@@ -78,9 +78,19 @@ export const trackingLabels = {
   awaiting: 'Seeds awaiting',
 };
 
+let trackingReloadRequested = false;
 export async function loadTracking() {
-  if (trackingBusy || !$('trackingRows') || !session.state) return;
+  if (trackingBusy) {
+    trackingReloadRequested = true;
+    return;
+  }
+  if (!$('trackingRows') || !session.state) return;
   trackingBusy = true;
+  const loadGeneration = uiScope.generation;
+  const loadStatus = document.getElementById('trackingLoadStatus');
+  const messagePanel = document.getElementById('trackingMessages');
+  messagePanel?.setAttribute('aria-busy', 'true');
+  if (loadStatus) loadStatus.textContent = 'Updating records…';
   try {
     const campaign = $('trackingCampaign');
     if (campaign) {
@@ -103,6 +113,23 @@ export async function loadTracking() {
     const statusVal = $('trackingStatus')?.value || '';
     const fromVal = $('trackingFrom')?.value || '';
     const untilVal = $('trackingUntil')?.value || '';
+    const activeFilters = [qVal, campVal, statusVal, fromVal, untilVal].filter(Boolean).length;
+    const filterSummary = document.getElementById('trackingFilterSummary');
+    if (filterSummary)
+      filterSummary.textContent = activeFilters
+        ? `${activeFilters} active ${activeFilters === 1 ? 'filter' : 'filters'} · Statistics and records reflect this selection`
+        : 'All recorded messages · use filters to narrow the evidence';
+    document
+      .querySelectorAll<HTMLElement>('#trackingQuickPills [data-pill-status]')
+      .forEach((pill) => {
+        const active =
+          pill.dataset.pillStatus === 'seeds'
+            ? !statusVal && qVal === 'seed'
+            : pill.dataset.pillStatus === statusVal && !(qVal === 'seed' && !statusVal);
+        pill.classList.toggle('active', active);
+        pill.setAttribute('aria-pressed', String(active));
+      });
+
     const params = new URLSearchParams({
       q: qVal,
       campaign: campVal,
@@ -143,7 +170,7 @@ export async function loadTracking() {
                 </span>
                 <span className={'rate-status-tag ' + (bounced === 0 ? 'good' : 'warn')}>
                   <Icon icon={bounced === 0 ? Check : TriangleAlert} size={12} />
-                  {bounced === 0 ? 'Healthy Sender Score' : 'Failure Monitored'}
+                  {bounced === 0 ? 'No bounces recorded' : 'Failure signals recorded'}
                 </span>
               </div>
               <div className={'rate-callout-desc'}>
@@ -529,8 +556,20 @@ export async function loadTracking() {
     }
     if ($('healthSelectors') && !$('healthSelectors').value)
       $('healthSelectors').value = 'privateemail';
+    if (loadStatus)
+      loadStatus.textContent = `Updated ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+  } catch (error) {
+    if (loadStatus) loadStatus.textContent = 'Could not complete refresh. Try Refresh Data again.';
+    throw error;
   } finally {
     trackingBusy = false;
+    if (trackingReloadRequested) {
+      trackingReloadRequested = false;
+      if (uiScope.isCurrent(loadGeneration))
+        uiScope.timeout(() => {
+          void loadTracking().catch((error) => notice(errorMessage(error)));
+        }, 0);
+    } else messagePanel?.setAttribute('aria-busy', 'false');
   }
 }
 
@@ -1936,6 +1975,8 @@ export function mountTracking() {
             .forEach((p) => p.classList.remove('active'));
           pill.classList.add('active');
           const targetStatus = pill.dataset.pillStatus;
+          if (targetStatus !== 'seeds' && $('trackingSearch')?.value === 'seed')
+            $('trackingSearch').value = '';
           if (targetStatus === 'seeds') {
             if ($('trackingStatus')) $('trackingStatus').value = '';
             if ($('trackingSearch')) $('trackingSearch').value = 'seed';

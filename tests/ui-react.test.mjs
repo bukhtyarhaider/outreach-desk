@@ -566,6 +566,69 @@ test(
     await page.waitForFunction(
       () => document.querySelector('.view-page.active').id === 'view-tracking',
     );
+
+    await page.locator('[data-pill-status="seeds"]').click();
+    assert.equal(await page.locator('#trackingSearch').inputValue(), 'seed');
+    await page.locator('[data-pill-status=""]').click();
+    assert.equal(
+      await page.locator('#trackingSearch').inputValue(),
+      '',
+      'All records clears the seed quick filter',
+    );
+    await page.locator('#trackingStatus').selectOption('soft_bounced');
+    await page.waitForFunction(() =>
+      document.querySelector('#trackingFilterSummary').textContent.includes('1 active filter'),
+    );
+    assert.equal(
+      await page.locator('#trackingQuickPills [aria-pressed="true"]').count(),
+      0,
+      'Status selection never leaves an unrelated quick filter selected',
+    );
+    await page.locator('#trackingResetFilters').click();
+    await page.waitForFunction(() =>
+      document
+        .querySelector('#trackingFilterSummary')
+        .textContent.startsWith('All recorded messages'),
+    );
+    assert.equal(await page.locator('[data-pill-status=""]').getAttribute('aria-pressed'), 'true');
+
+    await page.waitForFunction(
+      () => document.querySelector('#trackingMessages').getAttribute('aria-busy') === 'false',
+    );
+    let releaseTracking;
+    let blockTracking = true;
+    const trackingGate = new Promise((resolve) => {
+      releaseTracking = resolve;
+    });
+    await page.route(/\/api\/tracking\?/, async (route) => {
+      if (blockTracking) {
+        blockTracking = false;
+        await trackingGate;
+      }
+      await route.continue();
+    });
+    await page.locator('[data-pill-status="open_detected"]').click();
+    await page.waitForFunction(
+      () => document.querySelector('#trackingMessages').getAttribute('aria-busy') === 'true',
+    );
+    await page.locator('#trackingStatus').selectOption('soft_bounced');
+    const latestTracking = page.waitForResponse(
+      (response) =>
+        response.url().includes('/api/tracking?') &&
+        new URL(response.url()).searchParams.get('status') === 'soft_bounced',
+    );
+    releaseTracking();
+    await latestTracking;
+    await page.waitForFunction(
+      () => document.querySelector('#trackingMessages').getAttribute('aria-busy') === 'false',
+    );
+    assert.equal(
+      await page.locator('#trackingStatus').inputValue(),
+      'soft_bounced',
+      'The latest filter is replayed after an in-flight refresh',
+    );
+    await page.unroute(/\/api\/tracking\?/);
+    await page.locator('#trackingResetFilters').click();
     for (const section of ['trackingSeedStudio', 'trackingDomainHealth']) {
       await page.locator(`a[href="#${section}"]`).click();
       await page.waitForFunction(

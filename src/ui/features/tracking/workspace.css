@@ -1,0 +1,307 @@
+/* Tracking workspace density and progressive evidence details. */
+#view-tracking .page-header {
+  margin-bottom: 16px;
+  padding-bottom: 18px;
+}
+#view-tracking .page-title {
+  font-size: 34px;
+  letter-spacing: -1.2px;
+}
+#view-tracking .page-subtitle {
+  font-size: 12px;
+  margin-top: 6px;
+}
+.tracking-section-nav {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding-bottom: 12px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+#view-tracking .tracking-metrics {
+  margin: 0 0 12px;
+}
+#view-tracking .tracking-metrics .ui-metric-group {
+  margin-bottom: 0;
+}
+#view-tracking .tracking-metrics .ui-metric {
+  padding: 16px 18px;
+}
+#view-tracking .tracking-metrics .ui-metric dd {
+  font-size: 32px;
+  margin: 8px 0 6px;
+}
+#view-tracking .tracking-metrics .ui-metric p {
+  font-size: 10px;
+}
+#view-tracking .tracking-metrics .ui-summary-strip {
+  margin: 0;
+  padding: 12px 2px;
+  border: 0;
+  background: transparent;
+  font-size: 10px;
+}
+.tracking-evidence-guide {
+  margin: 0 0 20px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  padding: 10px 14px;
+  background: var(--bg-app);
+}
+.tracking-evidence-guide > summary {
+  font-size: 11px;
+  font-weight: 650;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.tracking-evidence-guide > summary svg {
+  vertical-align: middle;
+  margin-right: 5px;
+}
+.tracking-evidence-guide .tracking-advisory-banner {
+  background: transparent;
+  border: 0;
+  margin: 12px 0;
+  padding: 0;
+  font-size: 11px;
+}
+.tracking-evidence-guide .rate-callout-card {
+  padding: 12px;
+  margin: 0;
+  font-size: 11px;
+}
+.tracking-main-panel {
+  padding: 20px;
+}
+.tracking-panel-head {
+  margin-bottom: 14px;
+  padding-bottom: 14px;
+  border-color: var(--border-subtle);
+  align-items: center;
+}
+#view-tracking .panel-title {
+  font-size: 17px;
+  letter-spacing: -0.3px;
+}
+#view-tracking .panel-subtitle {
+  font-size: 11px;
+  margin-top: 4px;
+}
+.tracking-live-tag {
+  padding: 5px 8px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  font-size: 10px;
+  background: var(--bg-app);
+  white-space: nowrap;
+}
+.tracking-quick-pills {
+  gap: 5px;
+  margin-bottom: 12px;
+}
+.tracking-filters-row {
+  gap: 10px;
+  border-top: 0;
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 0 0 14px;
+  margin-bottom: 0;
+}
+.filter-search-box {
+  flex: 2 1 210px;
+  position: relative;
+  align-self: flex-end;
+}
+.filter-search-box > svg {
+  position: absolute;
+  left: 10px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+#trackingSearch {
+  padding-left: 32px;
+}
+.filter-select-group {
+  flex: 1 1 145px;
+}
+.filter-inline-label,
+.filter-date-item > span {
+  display: block;
+  font-size: 10px;
+  color: var(--text-muted);
+  font-weight: 650;
+  margin-bottom: 5px;
+}
+.filter-date-group {
+  flex: 1.6 1 250px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.tracking-filters-row .ui-input,
+.tracking-filters-row .ui-select {
+  width: 100%;
+  font-size: 12px;
+  min-width: 0;
+}
+.tracking-filter-summary {
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  margin: 10px 0 12px;
+}
+.tracking-table-wrap {
+  max-height: min(560px, 65dvh);
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+}
+.tracking-table th {
+  font-size: 10px;
+  padding: 12px;
+}
+.tracking-table td {
+  padding: 14px 12px;
+  vertical-align: top;
+  font-size: 12px;
+}
+.tracking-table .tracking-subject {
+  font-size: 11px;
+  line-height: 1.6;
+}
+.tracking-main-panel .table-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 14px;
+}
+.tracking-page-info {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+#trackingMessages,
+#trackingDiagnostics {
+  scroll-margin-top: 0;
+}
+.tracking-worker-details {
+  margin-top: 18px;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 12px;
+}
+.tracking-worker-details > summary,
+.review-queue-details > summary {
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+#view-tracking .daemon-monitor-panel {
+  padding: 20px;
+}
+@media (max-width: 900px) {
+  .tracking-filters-row .filter-search-box {
+    flex-basis: 100%;
+  }
+}
+@media (max-width: 680px) {
+  #view-tracking .tracking-header {
+    gap: 14px;
+  }
+  #view-tracking .tracking-header .header-actions {
+    gap: 8px;
+  }
+  #view-tracking .tracking-metrics .ui-metric-group {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  #view-tracking .tracking-metrics .ui-metric {
+    padding: 14px 12px;
+    border-right: 1px solid var(--border-subtle);
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  #view-tracking .tracking-metrics .ui-metric:nth-child(2n) {
+    border-right: 0;
+  }
+  #view-tracking .tracking-metrics .ui-metric:nth-last-child(-n + 2) {
+    border-bottom: 0;
+  }
+  #view-tracking .tracking-metrics .ui-metric dd {
+    font-size: 28px;
+  }
+  .tracking-main-panel {
+    padding: 14px;
+  }
+  .tracking-filters-row .filter-select-group {
+    flex-basis: calc(50% - 5px);
+  }
+  .tracking-filters-row .filter-date-group {
+    flex-basis: 100%;
+  }
+  .tracking-filters-row .tracking-clear-btn {
+    flex-basis: auto;
+  }
+  .tracking-section-nav {
+    gap: 3px;
+  }
+}
+.tracking-live-tag {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  align-items: flex-end;
+}
+.tracking-load-status {
+  font-size: 9px;
+  color: var(--text-muted);
+}
+
+#view-tracking .seed-studio-panel,
+#view-tracking .domain-health-panel {
+  padding: 20px;
+}
+#view-tracking .seed-studio-grid {
+  grid-template-columns: minmax(260px, 0.85fr) minmax(0, 1.15fr);
+  gap: 20px;
+}
+#view-tracking .seed-config-card,
+#view-tracking .seed-preview-card {
+  padding: 18px;
+  border-radius: 4px;
+}
+#view-tracking .seed-card-header {
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+#view-tracking .seed-card-header h3 {
+  font-size: 14px;
+  font-weight: 750;
+}
+#view-tracking .seed-step-num {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  font-size: 10px;
+  background: var(--bg-surface-elevated);
+  border-radius: 4px;
+}
+#view-tracking .seed-config-card .form-group {
+  margin-bottom: 14px;
+}
+#view-tracking .seed-config-card label {
+  font-size: 11px;
+}
+#view-tracking .preview-body-container {
+  font-size: 13px;
+  line-height: 1.75;
+}
+#view-tracking .seed-preview-instructions {
+  font-size: 11px;
+  padding: 12px;
+  margin-bottom: 0;
+}
+@media (max-width: 900px) {
+  #view-tracking .seed-studio-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
