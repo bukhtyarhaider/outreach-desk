@@ -68,15 +68,26 @@ export function Metric({
   label,
   value,
   detail,
+  visual,
 }: {
   label: string;
   value: ReactNode;
   detail?: ReactNode;
+  visual?: ReactNode;
 }) {
   return (
     <div className="ui-metric">
       <dt>{label}</dt>
-      <dd>{value}</dd>
+      <dd>
+        {visual ? (
+          <div className="ui-metric-value">
+            {value}
+            {visual}
+          </div>
+        ) : (
+          value
+        )}
+      </dd>
       {detail && <p>{detail}</p>}
     </div>
   );

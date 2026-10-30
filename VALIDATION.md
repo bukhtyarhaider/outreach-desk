@@ -308,3 +308,10 @@ Replaced 131 hand-authored inline SVGs and decorative emoji status/timeline icon
 - A scoped ResizeObserver updates offsets after route, preference, size, font and header-content changes and disconnects on unmount. Native controls stay in their original mounted page headers. Section links, runner shortcuts and Settings navigation clear the measured sticky stack.
 - `FC_BROWSER_TESTS=1 npm test`: **216 JavaScript tests and 12 Python tests passed**, no failures/skips. Strict types, formatting, production builds and diff checks passed. Browser checks cover all fifteen routes at desktop/mobile widths in expanded, collapsed and hidden modes, responsive actions, pinned header placement, visible section targets and an unobstructed Settings Save action.
 - Visual evidence: `outputs/sticky-headers/`, including scrolled Settings with context hidden, mobile Settings section navigation, and Tracking with expanded/collapsed context. Only synthetic preview data was used; no sending logic or customer data changed.
+
+## Dashboard stat character — 2026-10-31
+
+- Added compact brand-colored geometry through the shared Metric visual slot. Ready and excluded sectors reflect their active-campaign shares; the total mark and confirmed-send mark distinguish empty/populated states. PC-wide sends retain their separate scope without an invented campaign conversion rate.
+- Kept native count IDs, typography, card surfaces and dashboard hierarchy. Shape descriptions expose audience percentages to assistive technology without extra visible labels. Geometry handles empty, partial, full, out-of-range and non-finite inputs.
+- Desktop and 390px mobile visual evidence: `outputs/stat-accents/`. Changes use synthetic local preview data and do not alter sending, API or stored customer data.
+- `FC_BROWSER_TESTS=1 npm test`: **217 JavaScript tests and 12 Python tests passed**, no failures/skips. Strict types, formatting, production build and diff checks passed.
