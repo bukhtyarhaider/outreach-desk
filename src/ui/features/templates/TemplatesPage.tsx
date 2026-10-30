@@ -1,6 +1,5 @@
 import { StatusBadge } from '../../design-system/layout';
 import { Drawer } from '../../design-system/overlays';
-import { CampaignJourney } from '../campaigns/CampaignJourney';
 import {
   Check,
   Download,
@@ -27,11 +26,9 @@ export function TemplatesPage() {
         <div className={'page-header'}>
           <div>
             <p className={'page-eyebrow'}>{'MESSAGE PERSONALIZATION'}</p>
-            <h1 className={'page-title'}>{'Templates Studio'}</h1>
+            <h1 className={'page-title'}>{'Template library'}</h1>
             <p className={'page-subtitle'}>
-              {
-                'Craft deterministic, personalized outreach introductions with lead token interpolation.'
-              }
+              {'Create and maintain reusable message templates for outreach across campaigns.'}
             </p>
           </div>
           <div className={'header-actions'}>
@@ -59,7 +56,6 @@ export function TemplatesPage() {
             <Input id={'importTemplatesFile'} type={'file'} accept={'.json'} hidden={true} />
           </div>
         </div>
-        <CampaignJourney active={1} />
         <p className="hint">
           Create a variant or choose Edit in the library to open its message editor.
         </p>

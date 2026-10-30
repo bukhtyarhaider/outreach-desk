@@ -1,6 +1,6 @@
 import { ActionLink } from '../../design-system/primitives';
 import type { ReactNode } from 'react';
-/** Re-enter setup at its beginning without discarding the active campaign or unsaved fields. */
+/** A distinct entry for a new import; never edits the active campaign implicitly. */
 export function CreateCampaignLink({
   className = 'button primary',
   children = 'Create campaign',
@@ -11,9 +11,10 @@ export function CreateCampaignLink({
   return (
     <ActionLink
       variant="primary"
-      href="#campaigns"
+      href="#campaign-new"
       className={className}
       aria-label="Create campaign"
+      data-view={className.includes('sidebar-create') ? 'campaign-new' : undefined}
       onClick={() => document.querySelector<HTMLElement>('.app-viewport')?.scrollTo(0, 0)}
     >
       <span>{children}</span>

@@ -1,4 +1,3 @@
-import { CampaignJourney } from '../campaigns/CampaignJourney';
 import { ActionLink, Button, Input, Select, Textarea } from '../../design-system/primitives';
 export function ImportsPage() {
   return (
@@ -14,8 +13,10 @@ export function ImportsPage() {
               }
             </p>
           </div>
-        </div>{' '}
-        <CampaignJourney active={0} />
+          <div className="header-actions">
+            <ActionLink href="#campaigns">Back to campaigns</ActionLink>
+          </div>
+        </div>
         <section className={'panel'}>
           <div className={'experiment-form'}>
             <label htmlFor={'reviewCampaign'}>

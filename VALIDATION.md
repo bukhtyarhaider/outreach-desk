@@ -284,3 +284,12 @@ Replaced 131 hand-authored inline SVGs and decorative emoji status/timeline icon
 - Final `FC_BROWSER_TESTS=1 npm test`: **215 JavaScript tests and 12 Python tests passed**, no failures/skips. `npm run check:ui`, changed-script syntax and diff checks passed. All thirteen desktop routes and the core mobile/editor states were visually reviewed using synthetic data; final browser warning/error logs were empty.
 - The only server change is an explicit local PNG brand asset route and MIME type. Already-running app processes need a restart for that asset. No sending logic, storage migration, customer data, live mailbox operation or deployment was changed. Real provider/Windows acceptance remains unverified.
 - Evidence: `outputs/bauhaus-refinement/`; current design QA and developer ownership are documented in `design-qa.md` and `docs/UI-DX.md`.
+
+
+## Dashboard and campaign navigation — 2026-10-30
+
+- Rebuilt the dashboard around scoped statistics, unread messages and a compact runner/mailbox command row. Preserved native action IDs, queue guards, selected-batch controls and event/read workflows. Both primary controls and statistics are visible at the verified 858×876 and 1440×1000 desktop sizes.
+- Separated the campaign library (`#campaigns`), workbook creation (`#campaign-new`) and selected workspace (`#campaign-edit`). Local tab aliases (`#campaignReview`, `#campaignSource`) retain browser history and drafts. Shared Templates/Accounts/Settings/Import Review keep distinct purposes; the cross-page campaign stepper was removed.
+- Canonical typed route labels drive sidebar/breadcrumbs. The runner context shortcut opens actual runner controls. Opening the current campaign preserves batch/drafts; choosing another keeps existing cleanup. Campaign import navigation/activation refresh now belongs to the campaign controller.
+- Full regression: **215 JavaScript tests and 12 Python tests passed**, no failures/skips. Strict TypeScript, formatting, production build and diff checks passed. Browser acceptance covers fifteen views, responsive bounds, long campaign names, local tab keyboard/history, retained edits, dashboard visibility and a real fixture upload that creates a separate paused, review-required campaign.
+- Native visual review used isolated synthetic data; before/after evidence and audit notes are under `outputs/dashboard-navigation/`. No live message, provider connection, saved customer data or server/storage migration was used or changed.

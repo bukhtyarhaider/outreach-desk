@@ -1,3 +1,4 @@
+import { routeLabels } from '../routes';
 import { useWorkspace } from '../../shared/workspace-store';
 import { Brand } from './Brand';
 import { CreateCampaignLink } from '../../features/campaigns/CreateCampaignLink';
@@ -6,17 +7,18 @@ import { navigationGroups } from './navigation-items';
 import type { NavigationItem } from './navigation-items';
 function NavigationLink({ item }: { item: NavigationItem }) {
   const live = item.view === 'live-activity';
+  const label = routeLabels[item.view];
   return (
     <a
       className={`nav-link${item.view === 'dashboard' ? ' active' : ''}`}
       href={`#${item.view}`}
       data-view={item.view}
-      aria-label={item.label}
-      title={item.label}
+      aria-label={label}
+      title={label}
       id={live ? 'navLiveActivity' : undefined}
     >
       <Icon icon={item.icon} />
-      <span>{item.label}</span>
+      <span>{label}</span>
       {live && <span className="live-status-dot" id="liveNavDot" title="Live telemetry active" />}
     </a>
   );

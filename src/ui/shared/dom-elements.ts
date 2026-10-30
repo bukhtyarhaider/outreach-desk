@@ -7,6 +7,8 @@ export interface UIElements {
   mailroomOlder: HTMLDetailsElement;
   workspaceExport: HTMLAnchorElement;
 
+  'view-campaign-new': HTMLElementTagNameMap['section'];
+  'view-campaign-edit': HTMLElementTagNameMap['section'];
   'view-dashboard': HTMLElementTagNameMap['section'];
   start: HTMLElementTagNameMap['button'];
   stop: HTMLElementTagNameMap['button'];

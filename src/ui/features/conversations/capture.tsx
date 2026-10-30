@@ -7,11 +7,7 @@ import type { CaptureMailbox, SetupCandidate } from '../../shared/types/conversa
 import { eventElement } from '../../shared/dom';
 import { errorMessage } from '../../shared/utils';
 import { element as $ } from '../../shared/dom';
-import { session } from '../../shared/session';
 import { notice, api } from '../../shared/runtime';
-import { refresh } from '../../app/runtime/refresh';
-import { fillCampaign } from '../campaigns/controller';
-import { loadLeads } from '../leads/controller';
 import { closePreviewDrawer } from '../drawer/controller';
 
 export function mountCarrierWorkspace() {
@@ -248,20 +244,6 @@ export function mountCarrierWorkspace() {
         b.textContent = 'Save capture settings';
         b.disabled = false;
       }
-    });
-    uiScope.handler($('openImportReview'), 'onclick', () => {
-      location.hash = 'imports';
-      window.dispatchEvent(
-        new CustomEvent('fc-import-view', { detail: session.state.activeCampaign }),
-      );
-    });
-    uiScope.listen(window, 'fc-import-activated', async () => {
-      session.selected.clear();
-      session.previewId = null;
-      session.offset = 0;
-      await refresh();
-      fillCampaign();
-      await loadLeads();
     });
     uiScope.listen(document, 'click', (event) => {
       const button = eventElement(event).closest<HTMLElement>('[data-conversation-email]');

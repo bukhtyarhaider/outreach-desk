@@ -55,6 +55,10 @@ export const ButtonLabel = forwardRef<
     className={controlClass(className, variant, size)}
     onKeyDown={(event) => {
       onKeyDown?.(event);
+      if (props['aria-disabled'] === true || props['aria-disabled'] === 'true') {
+        event.preventDefault();
+        return;
+      }
       if (!event.defaultPrevented && (event.key === 'Enter' || event.key === ' ')) {
         event.preventDefault();
         if (props.htmlFor) document.getElementById(props.htmlFor)?.click();

@@ -29,7 +29,7 @@ before(async () => {
     export {App} from './src/ui/app/App';
     export {UIScope} from './src/ui/shared/lifecycle';
     export {workbookLabel} from './src/ui/shared/workspace-store';
-    export {viewNames, resolveView} from './src/ui/app/routes';
+    export {viewNames, resolveView, navigationParent} from './src/ui/app/routes';
     export {classifyEvent, eventIdentity} from './src/ui/features/live-activity/controller';
     export {Button, Input, Textarea, Select, Dialog} from './src/ui/design-system/primitives';
   `,
@@ -47,7 +47,7 @@ after(async () => {
   if (fixtureDirectory) await fs.rm(fixtureDirectory, { recursive: true, force: true });
 });
 
-test('React retains every original main-app control ID and all existing routes plus Accounts', () => {
+test('React retains every original control and separates campaign library, creation and editing', () => {
   const markup = renderToStaticMarkup(createElement(ui.App));
   const ids = [...markup.matchAll(/\bid="([^"]+)"/g)].map((match) => match[1]);
   assert.equal(new Set(ids).size, ids.length, 'Control IDs must remain unique');
@@ -63,7 +63,11 @@ test('React retains every original main-app control ID and all existing routes p
   assert.deepEqual([...ui.viewNames].sort(), [...contract.views].sort());
   for (const view of ui.viewNames) assert.equal(ui.resolveView(view), view);
   assert.equal(ui.resolveView('missing-route'), 'dashboard');
-  assert.equal(ui.resolveView('campaignReview'), 'campaigns');
+  assert.equal(ui.resolveView('campaignReview'), 'campaign-edit');
+  assert.equal(ui.resolveView('campaignSource'), 'campaign-edit');
+  assert.equal(ui.resolveView('outreachRunner'), 'dashboard');
+  assert.equal(ui.navigationParent('campaign-new'), 'campaigns');
+  assert.equal(ui.navigationParent('campaign-edit'), 'campaigns');
   assert.equal(ui.workbookLabel({ workbook: { file: 'copies/legacy.xlsx' } }), 'legacy.xlsx');
   assert.equal(ui.workbookLabel(null), 'No workbook imported.');
   assert.equal(ui.resolveView('trackingSeedStudio'), 'tracking');
@@ -210,6 +214,7 @@ test(
     state.templates = structuredClone(templates);
     state.profiles[0].id = 'qa-primary';
     state.activeProfile = 'qa-primary';
+    state.campaigns[0].name = 'Campaign-' + 'long-source-name-'.repeat(14);
     state.profiles.push({
       ...structuredClone(state.profiles[0]),
       id: 'qa-secondary',
@@ -295,10 +300,25 @@ test(
     const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } }),
       scriptErrors = [];
     page.on('pageerror', (error) => scriptErrors.push(error.message));
+    const openView = async (view) => {
+      if (view === 'campaign-new') await page.locator('.sidebar-create').click();
+      else if (view === 'campaign-edit') {
+        await page.locator('[data-view="campaigns"]').click();
+        await page.locator('#view-campaigns.active').waitFor();
+        await page.locator('[data-open-campaign="c1"]').click();
+      } else await page.locator(`[data-view="${view}"]`).click();
+      await page.locator(`#view-${view}.active`).waitFor();
+    };
+
     await page.goto(`${url}/#settings`);
     await page.waitForFunction(
       (version) => document.getElementById('appVersion').textContent.includes(`v${version}`),
       version,
+    );
+    assert.equal(
+      await page.locator('#start').isDisabled(),
+      true,
+      'A queue with no included campaign stays disabled after initial rendering',
     );
     const draft = 'Unsent React migration draft <&> "preserve"';
     await page.locator('#trackingPcId').fill('4');
@@ -337,7 +357,7 @@ test(
     );
     await page.getByRole('button', { name: 'Close Email template', exact: true }).click();
     for (const view of ui.viewNames) {
-      await page.locator(`[data-view="${view}"]`).click();
+      await openView(view);
       await page.waitForFunction(
         (view) => document.querySelector('.view-page.active')?.id === `view-${view}`,
         view,
@@ -351,7 +371,7 @@ test(
     for (const width of [1440, 1024, 768, 390]) {
       await page.setViewportSize({ width, height: 1000 });
       for (const view of ui.viewNames) {
-        await page.locator(`[data-view="${view}"]`).click();
+        await openView(view);
         await page.waitForFunction(
           (view) => document.querySelector('.view-page.active')?.id === `view-${view}`,
           view,
@@ -465,18 +485,43 @@ test(
     assert.match(await page.locator('.context-selection').innerText(), /1 selected/);
     assert.match(await page.locator('.context-connection').innerText(), /Mailbox (dis)?connected/);
     assert.match(await page.locator('.context-source').innerText(), /File:/);
-    await page.locator('#view-campaigns .campaign-journey a[href="#campaignReview"]').click();
-    await page.locator('.sidebar-create').click();
-    await page.waitForFunction(
-      () =>
-        location.hash === '#campaigns' && document.querySelector('.app-viewport').scrollTop === 0,
+    await page.locator('[data-open-campaign="c1"]').click();
+    await page.locator('#view-campaign-edit.active').waitFor();
+    await page.getByRole('tab', { name: 'Queue settings', exact: true }).click();
+    await page.locator('#campaignName').fill('Unsaved campaign scope draft');
+    await page.getByRole('tab', { name: 'Source & mapping', exact: true }).click();
+    assert.equal(await page.locator('#campaignName').inputValue(), 'Unsaved campaign scope draft');
+    assert.equal(await page.locator('.nav-link.active').getAttribute('data-view'), 'campaigns');
+    await page.goBack();
+    await page.locator('#campaign-panel-settings').waitFor({ state: 'visible' });
+    assert.equal(
+      await page.getByRole('tab', { name: 'Queue settings' }).getAttribute('aria-selected'),
+      'true',
     );
-
-    await page.locator('.audience-footer a[href="#templates"]').click();
+    await page.getByRole('tab', { name: 'Queue settings' }).press('ArrowLeft');
+    await page.locator('#campaign-panel-audience').waitFor({ state: 'visible' });
+    await page.locator('.sidebar-create').click();
+    await page.locator('#view-campaign-new.active').waitFor();
+    assert.equal(
+      await page.locator('#campaignName').inputValue(),
+      'Unsaved campaign scope draft',
+      'Entering creation does not reset the current campaign',
+    );
+    assert.equal(
+      (await previewApi('state')).activeCampaign,
+      'c1',
+      'Navigation never creates or switches a campaign',
+    );
+    await page.locator('[data-view="campaigns"]').click();
+    await page.locator('[data-open-campaign="c1"]').click();
+    await page.getByRole('tab', { name: 'Audience', exact: true }).click();
+    await page.getByRole('link', { name: 'Open template library', exact: true }).click();
+    await page.locator('#view-templates.active').waitFor();
     assert.equal(await page.locator('#subject').inputValue(), draft);
     assert.equal(
-      await page.locator('#view-templates .campaign-journey [aria-current="step"]').count(),
-      1,
+      await page.locator('#view-templates [role="tablist"]').count(),
+      0,
+      'Global template library does not impersonate campaign steps',
     );
     await page.locator('[data-view="tracking"]').click();
     await page.waitForFunction(
@@ -502,6 +547,68 @@ test(
     await page.goto(`${url}/#trackingSeedStudio`);
     await page.locator('#trackingRows tr').first().waitFor();
     assert.equal(await page.locator('.view-page.active').getAttribute('id'), 'view-tracking');
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await openView('dashboard');
+    const overview = await page.locator('#view-dashboard').evaluate((view) => ({
+      stats: view.querySelector('.dashboard-metrics').getBoundingClientRect().bottom,
+      start: view.querySelector('#start').getBoundingClientRect().bottom,
+      connect: view.querySelector('#connect').getBoundingClientRect().bottom,
+      height: innerHeight,
+    }));
+    assert(
+      overview.stats < overview.height &&
+        overview.start < overview.height &&
+        overview.connect < overview.height,
+      'Stats, runner and connection actions share the first desktop viewport',
+    );
+    assert.match(
+      await page.locator('.dashboard-metrics').innerText(),
+      /All campaigns · this PC/,
+      'Send totals keep their true PC-wide scope',
+    );
+    const beforeCreate = await previewApi('state');
+    await page.locator('.sidebar-create').click();
+    await page.locator('#view-campaign-new.active').waitFor();
+    assert.equal(
+      await page.locator('#campaignName').isVisible(),
+      false,
+      'Creation does not expose the selected campaign editor',
+    );
+    assert.equal(
+      (await previewApi('state')).campaigns.length,
+      beforeCreate.campaigns.length,
+      'Navigation alone does not create records',
+    );
+    const chooserPromise = page.waitForEvent('filechooser');
+    await page.getByRole('button', { name: 'Choose .xlsx workbook', exact: true }).click();
+    const chooser = await chooserPromise;
+    await chooser.setFiles({
+      name: 'New-campaign-UX-check.xlsx',
+      mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      buffer: fixture.original,
+    });
+    await page.locator('#view-imports.active').waitFor();
+    const afterCreate = await previewApi('state');
+    const created = afterCreate.campaigns.find((c) => c.id === afterCreate.activeCampaign);
+    assert.equal(afterCreate.campaigns.length, beforeCreate.campaigns.length + 1);
+    assert.notEqual(created.id, beforeCreate.activeCampaign);
+    assert.equal(created.enabled, false, 'A new campaign remains paused');
+    assert.equal(created.reviewRequired, true, 'Creation cannot bypass source review');
+    assert.equal(
+      afterCreate.campaigns.find((c) => c.id === 'c1').name,
+      beforeCreate.campaigns.find((c) => c.id === 'c1').name,
+      'Existing campaign data remains intact',
+    );
+    await page.locator('[data-view="campaigns"]').click();
+    await page.locator(`[data-open-campaign="${created.id}"]`).click();
+    await page.locator('#view-campaign-edit.active').waitFor();
+    await page.getByRole('tab', { name: 'Source & mapping', exact: true }).click();
+    await page.locator('#openImportReview').click();
+    await page.locator('#view-imports.active').waitFor();
+    await page.waitForFunction(
+      (id) => document.querySelector('#reviewCampaign').value === id,
+      created.id,
+    );
     assert.deepEqual(scriptErrors, []);
   },
 );

@@ -1,4 +1,4 @@
-import { resolveView, isTrackingSection } from './routes';
+import { resolveView, isTrackingSection, navigationParent } from './routes';
 import { uiScope } from '../shared/lifecycle';
 import { errorMessage } from '../shared/utils';
 import { session } from '../shared/session';
@@ -26,7 +26,7 @@ export function navigate(viewName: string) {
     el.classList.toggle('active', el.id === `view-${target}`);
   });
   document.querySelectorAll<HTMLElement>('.nav-link').forEach((link) => {
-    const active = link.dataset.view === target;
+    const active = link.dataset.view === navigationParent(target);
     link.classList.toggle('active', active);
     if (active) link.setAttribute('aria-current', 'page');
     else link.removeAttribute('aria-current');
@@ -45,8 +45,8 @@ export function navigate(viewName: string) {
     void loadTracking()
       .then(() => revealTrackingSection(viewName))
       .catch((e) => notice(errorMessage(e)));
-  if (viewName === 'campaignReview')
-    document.getElementById('campaignReview')?.scrollIntoView({ block: 'start' });
+  if (viewName === 'outreachRunner')
+    document.getElementById('outreachRunner')?.scrollIntoView({ block: 'start' });
   revealTrackingSection(viewName);
   if (target === 'live-activity') {
     renderLiveActivityView();

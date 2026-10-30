@@ -48,8 +48,8 @@
   gap: 3px;
 }
 .nav-group:last-child {
-  margin-top: auto;
-  padding-top: 14px;
+  margin-top: 0;
+  padding-top: 0;
 }
 .nav-category {
   font-size: 10px;
@@ -356,4 +356,16 @@
 }
 .sidebar-bottom {
   margin-top: 12px;
+}
+.page-header > div:first-child {
+  min-width: 0;
+}
+.page-title,
+.page-subtitle {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 680px) {
+  .workspace-breadcrumb > a:first-of-type {
+    display: none;
+  }
 }

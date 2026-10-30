@@ -1,3 +1,27 @@
+# Dashboard and campaign navigation QA — 2026-10-30
+
+final result: passed for the exercised states
+
+This record supersedes the earlier dashboard order and cross-page campaign stepper below. The selected Bauhaus palette, brand, shared action components and native-control contract remain the foundation.
+
+## Current audit and changes
+
+1. **Dashboard — improved.** The captured 858×876 starting view placed the statistics and runner outside the working area. The revised view keeps compact scoped statistics and runner/mailbox controls visible together, with an unread-message shortcut above them. The matching-window comparison uses the same synthetic data and no image resizing. Stats end around y641; Start Outreach and Connect Mailbox end around y797/y825. The same primary information/actions also fit at 1440×1000. Carrier tasks, selected-batch tools and recent events follow below.
+2. **Campaign entry — improved.** Campaigns now opens a searchable/filterable inventory with a compact summary. A campaign name opens its workspace; Create Campaign opens a separate workbook-import entry. Entering creation does not mutate the current record. A browser test imports an actual fixture workbook and verifies a new paused, review-required campaign with the original record intact.
+3. **Campaign tabs and tool destinations — improved.** Audience, Queue Settings and Source & Mapping stay inside the selected campaign workspace. The sidebar keeps Campaigns active and breadcrumbs follow canonical route labels. Shared Templates, Accounts and Settings remain independent tools. Import Review is the mapping/revision tool, rather than a disguised campaign tab. Hash history, keyboard tab navigation, retained drafts and same-campaign opening are exercised.
+
+## Evidence and verification
+
+Evidence is in `outputs/dashboard-navigation/`: numbered before/after captures, `dashboard-comparison.png`, `report.md`, desktop library/create/editor/source screens, and 390×844 reflow. The final visual comparison preserves existing campaign/mailbox/file/batch/queue visibility while changing hierarchy. Native review covered the modified dashboard/campaign flow and links into Imports/Templates, including local tabs and mobile layouts. Console warnings/errors were empty. No customer record or live provider send was used.
+
+The complete regression passed **215 JavaScript tests and 12 Python tests**, with no failures/skips. Strict TypeScript, formatting and production build checks passed. The all-route acceptance covers fifteen views at 1440, 1024, 768 and 390px, long unbroken campaign names, source anchors, local tab history, form retention, new workbook creation and first-desktop-viewport controls/statistics. Existing mailbox, Unibox, tracking, source recovery, stale-evidence, suppression, queue and pacing checks remain green. Loading defaults preserve the native adapter's ownership of action guards.
+
+Source and sending scope are explicit: audience statistics follow the active campaign; confirmed sends follow this PC's campaign history. No fabricated trend chart, campaign-specific mailbox/template assignment, storage migration or sending behavior was introduced. Profile/template drawers and global tools retain their existing behavior.
+
+No blocking finding remains in the exercised states. Screenshot review and browser tests do not establish exhaustive corner-case coverage or accessibility certification. Live provider sending, native Windows/Edge installation and multi-PC rollout were not part of this UI refinement.
+
+---
+
 # Bauhaus refinement design QA — 2026-10-30
 
 final result: passed for the exercised states

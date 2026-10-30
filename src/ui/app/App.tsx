@@ -1,3 +1,5 @@
+import { CreateCampaignPage } from '../features/campaigns/CreateCampaignPage';
+import { CampaignEditorPage } from '../features/campaigns/CampaignEditorPage';
 import { AccountsPage } from '../features/accounts/AccountsPage';
 import { WorkspaceContext } from './layout/WorkspaceContext';
 import { DashboardPage } from '../features/dashboard/DashboardPage';
@@ -35,6 +37,8 @@ export function App() {
             <DashboardPage />
             <LeadsPage />
             <CampaignsPage />
+            <CreateCampaignPage />
+            <CampaignEditorPage />
             <ImportsPage />
             <ConversationsPage />
             <TemplatesPage />

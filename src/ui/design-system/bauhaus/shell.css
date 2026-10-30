@@ -131,3 +131,13 @@
     font-size: 11px;
   }
 }
+/* Tablet and narrow desktop panes still have room for one operational row after the rail. */
+@media (min-width: 681px) and (max-width: 1120px) {
+  .workspace-context {
+    grid-template-columns: minmax(90px, 1fr) minmax(110px, 1.2fr) minmax(60px, 0.65fr) minmax(
+        110px,
+        1.1fr
+      );
+    gap: 10px;
+  }
+}

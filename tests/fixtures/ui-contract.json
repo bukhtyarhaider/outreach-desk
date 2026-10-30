@@ -12,7 +12,9 @@
     "leads",
     "live-activity",
     "suppression",
-    "accounts"
+    "accounts",
+    "campaign-new",
+    "campaign-edit"
   ],
   "ids": [
     "accountEmail",

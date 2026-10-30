@@ -110,3 +110,23 @@ export function Notice({
 }) {
   return <aside className={`ui-notice ui-notice--${tone}`}>{children}</aside>;
 }
+
+/** Compact counts for working lists where the inventory, rather than analytics, is the primary task. */
+export function SummaryStrip({
+  label,
+  items,
+}: {
+  label?: string;
+  items: readonly { label: string; value: ReactNode }[];
+}) {
+  return (
+    <dl className="ui-summary-strip" aria-label={label}>
+      {items.map((item) => (
+        <div key={item.label}>
+          <dt>{item.label}</dt>
+          <dd>{item.value}</dd>
+        </div>
+      ))}
+    </dl>
+  );
+}

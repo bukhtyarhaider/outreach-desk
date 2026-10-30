@@ -4,13 +4,14 @@ import { Icon, Mail, Folder, Users, Activity } from '../../design-system/icons';
 export function WorkspaceContext() {
   const { state, selected } = useWorkspace();
   const profile = state?.profiles.find((item) => item.id === state.activeProfile);
+  const campaign = state?.campaigns.find((item) => item.id === state.activeCampaign);
   return (
     <section className="workspace-context" aria-label="Current workspace">
       <label className="context-field">
         <span>
           <Icon icon={Folder} size={13} /> Campaign
         </span>
-        <Select id="campaignSelect" aria-label="Active campaign" />
+        <Select id="campaignSelect" aria-label="Active campaign" title={campaign?.name} />
       </label>
       <label className="context-field">
         <span>
@@ -27,7 +28,7 @@ export function WorkspaceContext() {
         <strong>{selected} selected</strong>
         <small>View batch</small>
       </a>
-      <a href="#live-activity" className="context-runner">
+      <a href="#outreachRunner" className="context-runner" title="Open outreach controls">
         <span>
           <Icon icon={Activity} size={14} />
           {state?.job.status || 'Loading queue…'}

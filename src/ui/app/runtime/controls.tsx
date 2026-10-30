@@ -109,6 +109,13 @@ export function updateControls() {
       session.state.job.enabled ||
       !session.state.activeCampaign;
   }
+  const saveCampaign = $('saveCampaign');
+  if (saveCampaign)
+    saveCampaign.disabled =
+      session.pending ||
+      session.state.busy ||
+      session.state.job.enabled ||
+      !session.state.activeCampaign;
   const delCamp = $('deleteCampaignBtn');
   if (delCamp) {
     delCamp.disabled =

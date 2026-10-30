@@ -1,70 +1,117 @@
-import { ActionLink, Button } from '../../design-system/primitives';
+import { ArrowRight, Icon } from '../../design-system/icons';
+import { useState } from 'react';
+import { Button, Input, Panel, Select } from '../../design-system/primitives';
+import { StatusBadge } from '../../design-system/layout';
 import { useWorkspace } from '../../shared/workspace-store';
 import { action } from '../../shared/runtime';
 import { selectCampaign } from './controller';
-/** Real campaign inventory; opening a workspace never starts its queue. */
+/** Campaign inventory owns finding/opening existing campaigns; creation has its own route. */
 export function CampaignOverview() {
   const { state } = useWorkspace();
+  const [query, setQuery] = useState('');
+  const [status, setStatus] = useState('all');
+  const filtered = (state?.campaigns ?? []).filter((c) => {
+    const matches = `${c.name} ${c.workbook?.name || c.workbook?.file || ''}`
+      .toLowerCase()
+      .includes(query.trim().toLowerCase());
+    return (
+      matches &&
+      (status === 'all' ||
+        (status === 'review'
+          ? c.reviewRequired
+          : status === 'included'
+            ? c.enabled && !c.reviewRequired
+            : !c.enabled && !c.reviewRequired))
+    );
+  });
   return (
-    <section className="panel campaign-overview" aria-label="Campaign inventory">
-      <div className="panel-head">
-        <div>
-          <h2 className="panel-title">Your campaigns</h2>
-          <p className="hint">Choose a workspace to review its audience and prepare outreach.</p>
-        </div>
-        <ActionLink className="button secondary" href="#campaigns">
-          Create or configure a campaign
-        </ActionLink>
+    <Panel className="campaign-overview" aria-label="Campaign inventory">
+      <div className="campaign-library-toolbar">
+        <label>
+          Find a campaign
+          <Input
+            type="search"
+            placeholder="Search campaigns or source files…"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+          />
+        </label>
+        <label>
+          Queue status
+          <Select value={status} onChange={(event) => setStatus(event.target.value)}>
+            <option value="all">All campaigns</option>
+            <option value="included">Included in queue</option>
+            <option value="paused">Paused</option>
+            <option value="review">Needs import review</option>
+          </Select>
+        </label>
+        <p className="hint">
+          {filtered.length} {filtered.length === 1 ? 'campaign' : 'campaigns'}
+        </p>
       </div>
       <div className="table-wrap">
         <table>
           <thead>
             <tr>
-              <th>Campaign</th>
+              <th>Campaign / source</th>
               <th>Worksheet scope</th>
-              <th>Queue inclusion</th>
-              <th>Action</th>
+              <th>Status</th>
             </tr>
           </thead>
           <tbody>
-            {state?.campaigns.map((campaign) => (
-              <tr key={campaign.id}>
-                <td>
-                  <strong>{campaign.name}</strong>
-                  {campaign.id === state.activeCampaign && <small>Current workspace</small>}
-                </td>
-                <td>{campaign.sheets?.length ? campaign.sheets.join(', ') : 'All worksheets'}</td>
-                <td>
-                  {campaign.reviewRequired
-                    ? 'Import review required'
-                    : campaign.enabled
-                      ? 'Included in queue'
-                      : 'Paused'}
-                </td>
+            {filtered.map((c) => (
+              <tr key={c.id}>
                 <td>
                   <Button
-                    className="secondary"
-                    disabled={state.job.enabled || state.busy}
+                    variant="ghost"
+                    className="campaign-name-action"
+                    data-open-campaign={c.id}
+                    aria-label={`Open campaign ${c.name}`}
+                    disabled={
+                      !!state?.busy || !!(state?.job.enabled && c.id !== state.activeCampaign)
+                    }
                     onClick={(event) =>
                       void action(event.currentTarget, async () => {
-                        await selectCampaign(campaign.id);
-                        location.hash = 'campaigns';
+                        await selectCampaign(c.id);
+                        location.hash = 'campaign-edit';
                       })
                     }
                   >
-                    Open campaign
+                    {c.name} <Icon icon={ArrowRight} size={13} />
                   </Button>
+                  <small>
+                    {c.workbook?.name || c.workbook?.file?.split(/[\\/]/).pop() || 'No workbook'}
+                  </small>
+                  {c.id === state?.activeCampaign && (
+                    <StatusBadge tone="info">Current workspace</StatusBadge>
+                  )}
+                </td>
+                <td>{c.sheets?.length ? c.sheets.join(', ') : 'All worksheets'}</td>
+                <td>
+                  <StatusBadge
+                    tone={c.reviewRequired ? 'warning' : c.enabled ? 'positive' : 'neutral'}
+                  >
+                    {c.reviewRequired
+                      ? 'Needs import review'
+                      : c.enabled
+                        ? 'Included in queue'
+                        : 'Paused'}
+                  </StatusBadge>
                 </td>
               </tr>
             ))}
-            {!state?.campaigns.length && (
+            {!filtered.length && (
               <tr>
-                <td colSpan={4}>Create your first campaign by importing a lead workbook.</td>
+                <td colSpan={3}>
+                  {query || status !== 'all'
+                    ? 'No campaigns match these filters.'
+                    : 'Create your first campaign by importing a lead workbook.'}
+                </td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
-    </section>
+    </Panel>
   );
 }

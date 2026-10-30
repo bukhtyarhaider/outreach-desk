@@ -20,3 +20,6 @@
 @import '../design-system/bauhaus/surfaces.css';
 
 @import '../design-system/primitives.css';
+
+@import '../features/dashboard/styles.css';
+@import '../features/campaigns/styles.css';

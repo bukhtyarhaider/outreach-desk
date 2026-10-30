@@ -44,6 +44,7 @@ export function fillCampaign() {
 
 /** Shared campaign switching owns selection cleanup and audience refresh. */
 export async function selectCampaign(id: string) {
+  if (id === session.state.activeCampaign) return;
   await api('/api/select-campaign', { id });
   session.selected.clear();
   session.previewId = null;
@@ -54,6 +55,21 @@ export async function selectCampaign(id: string) {
 }
 
 export function mountCampaigns() {
+  uiScope.handler($('openImportReview'), 'onclick', () => {
+    location.hash = 'imports';
+    window.dispatchEvent(
+      new CustomEvent('fc-import-view', { detail: session.state.activeCampaign }),
+    );
+  });
+  uiScope.listen(window, 'fc-import-activated', async () => {
+    session.selected.clear();
+    session.previewId = null;
+    session.offset = 0;
+    await refresh();
+    fillCampaign();
+    await loadLeads();
+  });
+
   if ($('upload'))
     uiScope.handler($('upload'), 'onchange', () =>
       action($('reload'), async () => {
