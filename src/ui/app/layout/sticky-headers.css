@@ -2,8 +2,10 @@
 .app-viewport {
   --workspace-sticky-height: 0px;
   --active-page-header-height: 0px;
+  --sticky-section-nav-height: 0px;
   scroll-padding-top: calc(
-    var(--workspace-sticky-height) + var(--active-page-header-height) + 16px
+    var(--workspace-sticky-height) + var(--active-page-header-height) +
+      var(--sticky-section-nav-height) + 16px
   );
 }
 .view-page > .page-header {

@@ -333,6 +333,10 @@ export function renderFirebaseDiagnostics() {
       'Scan limit per database / run',
       `${d!.pageSize * d!.maxPages} records; continues on next sync`,
     ],
+    [
+      'Temporary-failure retries / run budget',
+      `${d.retryAttempts ?? 2} retries per request / ${(d.maxRunMs ?? 60000) / 1000}s`,
+    ],
     ['Last error', d.lastError || 'None reported this session'],
   ];
   renderRegion(
@@ -368,7 +372,9 @@ export function renderFirebaseDiagnostics() {
               {b!.alreadyApplied}
               {' already applied · '}
               {b!.acknowledged}
-              {' acknowledged'}
+              {' acknowledged · '}
+              {b.retries ?? 0}
+              {' retries'}
             </p>
             <p>
               {totals.otherPc}
@@ -637,7 +643,9 @@ export function mountSettings() {
       action($('settingsFirebaseSyncBtn'), async () => {
         try {
           const res = await api('/api/tracking/sync-firebase', {});
-          notice(`Firebase: ${res.message || res.error || 'Sync finished.'}`);
+          if (res.ok === false)
+            throw new Error(String(res.message || res.error || 'Sync could not complete.'));
+          notice(`Firebase: ${res.message || 'Sync finished.'}`);
         } catch (err) {
           notice(`Firebase sync failed: ${errorMessage(err)}`, 'error');
         }

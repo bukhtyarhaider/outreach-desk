@@ -1,3 +1,4 @@
+import { FirebaseSyncStatus } from './FirebaseSyncStatus';
 import { StatusBadge } from '../../design-system/layout';
 import {
   Activity,
@@ -46,7 +47,7 @@ export function TrackingPage() {
             <Button
               id={'trackingFirebaseSync'}
               className={'secondary'}
-              title={'Sync opens from Firebase Cloud Firestore'}
+              title={'Sync recorded opens from the configured Firebase databases'}
             >
               <Icon icon={RefreshCw} size={14} />
               {'\n                  Sync Firebase\n                '}
@@ -93,6 +94,7 @@ export function TrackingPage() {
             Mailbox monitoring
           </Button>
         </nav>
+        <FirebaseSyncStatus />
         <div id={'trackingMetrics'} className={'tracking-metrics'} aria-live={'polite'}></div>
         <details className="tracking-evidence-guide">
           <summary>

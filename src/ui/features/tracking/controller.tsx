@@ -1933,7 +1933,9 @@ export function mountTracking() {
       action(e.currentTarget, async () => {
         try {
           const res = await api('/api/tracking/sync-firebase', {});
-          notice(`Firebase: ${res.message || res.error || 'Sync finished.'}`);
+          if (res.ok === false)
+            throw new Error(String(res.message || res.error || 'Sync could not complete.'));
+          notice(`Firebase: ${res.message || 'Sync finished.'}`);
         } catch (err) {
           notice(`Firebase sync failed: ${errorMessage(err)}`, 'error');
         }

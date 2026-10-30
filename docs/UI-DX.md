@@ -68,3 +68,9 @@ Unibox composition, setup/filter modules, native controller ownership, keyboard 
 Dashboard operational panels reuse `features/dashboard/DashboardPanelHeader.tsx` for icon, title, scope and current state. Runner/mailbox and carrier/batch rows share panel geometry and footer alignment. Remaining allowances come from the read-only workspace snapshot; native runner/progress/connection/batch controls retain controller ownership. Carrier highlights are composed in the conversation assistant adapter so read/review actions keep their existing request/version guards.
 
 Email Tracking uses `features/tracking/workspace.css` for overview/record density and responsive filters. Metrics stay mounted above the message table; evidence interpretation and raw worker diagnostics use native disclosures. Existing seed/domain aliases retain their routes; Messages/monitoring shortcuts scroll within the current page. `loadTracking` coalesces refresh requests so the latest filter selection is replayed after an in-flight load, with scoped lifecycle cleanup, local status and aria-busy feedback. Quick-filter pressed states derive from actual filter values.
+
+### Tracking sticky navigation and sync feedback
+
+`useStickyHeaders` measures the active page header, workspace context and Tracking section navigation. The section links pin beneath the page header; the scroll container's anchor inset includes the entire measured stack, including wrapped mobile links. Other routes receive zero Tracking navigation height. Keep these elements observed when changing their responsive layout.
+
+`FirebaseSyncStatus` is a read-only workspace-store subscriber. Native feature controllers own sync actions and API failure handling; the status component does not create another polling or mutation path. Firebase diagnostics expose optional retry/phase fields for compatibility with existing fixtures.

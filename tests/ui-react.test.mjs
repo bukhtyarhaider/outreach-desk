@@ -813,6 +813,14 @@ test(
             const bounds = header.getBoundingClientRect();
             const style = getComputedStyle(header);
             return {
+              sectionNav: (() => {
+                const nav = document.querySelector('.tracking-section-nav');
+                return {
+                  height: nav.getBoundingClientRect().height,
+                  top: nav.getBoundingClientRect().top,
+                  position: getComputedStyle(nav).position,
+                };
+              })(),
               position: style.position,
               top: bounds.top,
               height: bounds.height,
@@ -823,6 +831,17 @@ test(
               fits: header.scrollWidth <= header.clientWidth + 1,
             };
           });
+          if (view === 'tracking') {
+            assert.equal(layout.sectionNav.position, 'sticky');
+            assert(
+              Math.abs(layout.sectionNav.top - layout.offset - layout.height) <= 1,
+              `Tracking section links pin below header: ${JSON.stringify(layout)}`,
+            );
+            assert(
+              layout.scrollInset >= layout.offset + layout.height + layout.sectionNav.height,
+              'Tracking anchors clear section navigation',
+            );
+          }
           const independentInbox = view === 'conversations' && width > 1020;
           assert.equal(
             layout.position,

@@ -64,3 +64,11 @@ It prints only aggregate counts by PC, the old 100-record window, payload shapes
 Regression tests cover pagination past unrelated events, restart/continuation, recovery of acknowledged events, wrong-PC token matching, hash-only events, malformed data, save-before-acknowledgement, disk and cloud-write failures, timeouts, partial database failure, manual/concurrent requests, and durable replay deduplication. Browser tests exercise settings warnings, save/reload, failed-sync feedback, preserved unsaved inputs and responsive layout. See `VALIDATION.md` for this build's final test result.
 
 This package was built and checked locally. Installation, end-to-end syncing and native Windows operation on the other PCs require applying the update there and checking their diagnostics.
+
+## Recovery hardening — 2026-10-31
+
+Temporary network failures, service unavailability and throttling retry at most twice per request with exponential backoff and jitter. Permission/authentication failures remain visible for correction. Cloud requests time out, and each run has a 60-second cloud-work budget; page checkpoints allow the next automatic/manual run to continue. A local disk save must finish before acknowledgement and is not abandoned on a timer. Timed-out SDK requests may finish later; acknowledgements are idempotent and durable local receipts prevent duplicate open application.
+
+A settings change during a scan stops further processing/acknowledgement under stale configuration. Invalid PC IDs/backends stop before querying. Malformed timestamps are counted without blocking later events. Failed checkpoint saves restore the previous cursor, and a failed final status save cannot advance the last completed scan time. Scans cap pages at 250 records to keep Firestore acknowledgements within a bounded batch.
+
+Email Tracking now displays current sync status and a direct Settings link. Settings includes per-backend retries and the run budget. Both sync buttons clearly report rejected/failed results. Existing token ownership, save-before-acknowledgement, pagination and replay protections remain in place. Regression tests use SDK doubles and synthetic local workspaces; this does not establish live connectivity or deployment on another PC.

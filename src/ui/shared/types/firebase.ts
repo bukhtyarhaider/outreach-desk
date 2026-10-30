@@ -13,6 +13,9 @@ export interface SyncBackend extends SyncCounters {
   error: string;
   complete: boolean;
   sweep?: SyncCounters;
+  retries?: number;
+  phase?: string;
+  nextRetryAt?: string | null;
 }
 export interface FirebaseDiagnostics {
   running: boolean;
@@ -45,6 +48,8 @@ export interface FirebaseDiagnostics {
   totalSynced: number;
   pageSize: number;
   maxPages: number;
+  retryAttempts?: number;
+  maxRunMs?: number;
   lastError: string;
   backends: Record<string, SyncBackend>;
 }

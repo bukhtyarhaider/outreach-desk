@@ -52,6 +52,7 @@ test('PC and Firebase settings show effective configuration, warn, save and relo
   assert.equal(await page.locator('#firebaseSyncMode').inputValue(), 'manual');
   await page.locator('#settingsFirebaseSyncBtn').click();
   await page.waitForFunction(() => document.querySelector('#notice').textContent.includes('Disabled by FC_FIREBASE_DISABLE'));
+  assert.match(await page.locator('#notice').innerText(), /Firebase sync failed:/);
   assert(!/up to date/i.test(await page.locator('#notice').innerText()));
   // A diagnostic refresh must not replace unsaved PC settings.
   await page.locator('#trackingPcId').fill('4');
@@ -70,5 +71,12 @@ test('PC and Firebase settings show effective configuration, warn, save and relo
       await page.screenshot({ path: path.join(process.env.FC_UI_SCREENSHOT_DIR, `firebase-settings-${width}.png`) });
     }
   }
+  await page.goto(`http://127.0.0.1:${port}/#tracking`);
+  await page.getByRole('complementary', { name: 'Firebase sync status' }).waitFor();
+  assert.match(await page.getByRole('complementary', { name: 'Firebase sync status' }).innerText(), /Disabled/);
+  await page.locator('#trackingFirebaseSync').click();
+  await page.waitForFunction(() => document.querySelector('#notice').textContent.includes('Firebase sync failed:'));
+  await page.getByRole('link', { name: 'Sync settings', exact: true }).click();
+  await page.locator('#view-settings.active').waitFor();
   assert.deepEqual(errors, []);
 });
