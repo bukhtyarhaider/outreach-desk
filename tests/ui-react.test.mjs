@@ -29,6 +29,7 @@ before(async () => {
     export {App} from './src/ui/app/App';
     export {UIScope} from './src/ui/shared/lifecycle';
     export {workbookLabel} from './src/ui/shared/workspace-store';
+    export {parseUIPreferences, uiPreferencesKey} from './src/ui/shared/ui-preferences';
     export {viewNames, resolveView, navigationParent} from './src/ui/app/routes';
     export {classifyEvent, eventIdentity} from './src/ui/features/live-activity/controller';
     export {Button, Input, Textarea, Select, Dialog} from './src/ui/design-system/primitives';
@@ -72,6 +73,25 @@ test('React retains every original control and separates campaign library, creat
   assert.equal(ui.workbookLabel(null), 'No workbook imported.');
   assert.equal(ui.resolveView('trackingSeedStudio'), 'tracking');
   assert.equal(ui.resolveView('trackingDomainHealth'), 'tracking');
+});
+
+test('appearance preferences recover safely from corrupt, missing and incorrectly typed storage', () => {
+  const defaults = { workspaceContextEnabled: true, workspaceContextCollapsed: false };
+  for (const value of [null, '', '{', 'null', 'false', '42', '[]']) {
+    assert.deepEqual(ui.parseUIPreferences(value), defaults);
+  }
+  assert.deepEqual(
+    ui.parseUIPreferences('{"workspaceContextEnabled":"false","workspaceContextCollapsed":1}'),
+    defaults,
+  );
+  assert.deepEqual(
+    ui.parseUIPreferences('{"workspaceContextEnabled":false,"workspaceContextCollapsed":true}'),
+    { workspaceContextEnabled: false, workspaceContextCollapsed: true },
+  );
+  assert.deepEqual(ui.parseUIPreferences('{"workspaceContextCollapsed":true}'), {
+    ...defaults,
+    workspaceContextCollapsed: true,
+  });
 });
 
 test('activity records keep distinct messages and explicit categories without formatting them as errors', () => {
@@ -452,8 +472,8 @@ test(
       });
       assert.equal(
         layout.panels,
-        7,
-        'All seven sending, integration and app settings panels remain available',
+        8,
+        'Appearance, sending, integration and app settings panels remain available',
       );
       assert(layout.fits && layout.paneFit, `Settings sections fit at ${width}px`);
     }
@@ -609,6 +629,87 @@ test(
       (id) => document.querySelector('#reviewCampaign').value === id,
       created.id,
     );
+
+    // Appearance changes never unmount controller-owned fields or discard unsaved edits.
+    const campaignControl = await page.locator('#campaignSelect').elementHandle();
+    const activeCampaign = await page.locator('#campaignSelect').inputValue();
+    const activeProfile = await page.locator('#profileSelect').inputValue();
+    const templateDraft = await page.locator('#subject').inputValue();
+    await page
+      .getByRole('button', { name: 'Collapse workspace context', exact: true })
+      .press('Space');
+    assert.equal(await page.locator('#workspaceContextContent').isVisible(), false);
+    assert.equal(
+      await page
+        .getByRole('button', { name: 'Expand workspace context' })
+        .getAttribute('aria-expanded'),
+      'false',
+    );
+    assert(await page.locator('.context-summary').isVisible());
+    assert(await campaignControl.evaluate((element) => element.isConnected));
+    await openView('settings');
+    await page.getByLabel('Show workspace context', { exact: true }).uncheck();
+    assert.equal(await page.locator('.workspace-context-shell').isVisible(), false);
+    assert.equal(await page.locator('#campaignSelect').count(), 1);
+    assert(await campaignControl.evaluate((element) => element.isConnected));
+    assert.equal(await page.locator('#campaignSelect').inputValue(), activeCampaign);
+    assert.equal(await page.locator('#profileSelect').inputValue(), activeProfile);
+    assert.equal(await page.locator('#subject').inputValue(), templateDraft);
+    await page.reload();
+    await page.locator('#view-settings.active').waitFor();
+    assert.equal(
+      await page.getByLabel('Show workspace context', { exact: true }).isChecked(),
+      false,
+    );
+    assert.equal(await page.locator('.workspace-context-shell').isVisible(), false);
+    await page.getByLabel('Show workspace context', { exact: true }).check();
+    assert(await page.getByRole('button', { name: 'Expand workspace context' }).isVisible());
+    await page.getByRole('button', { name: 'Expand workspace context' }).press('Enter');
+    assert(await page.locator('#campaignSelect').isVisible());
+    assert.equal(await page.locator('#campaignSelect').inputValue(), activeCampaign);
+    assert.equal(await page.locator('#profileSelect').inputValue(), activeProfile);
+    await page.reload();
+    await page.locator('#campaignSelect option').first().waitFor({ state: 'attached' });
+    assert.equal(
+      await page
+        .getByRole('button', { name: 'Collapse workspace context' })
+        .getAttribute('aria-expanded'),
+      'true',
+    );
+    for (const width of [1440, 1024, 858, 768, 680, 390, 320]) {
+      await page.setViewportSize({ width, height: 1000 });
+      const fits = await page.locator('.app-titlebar').evaluate((header) => {
+        const bounds = header.getBoundingClientRect();
+        const pattern = header.querySelector('.header-pattern').getBoundingClientRect();
+        return (
+          Math.abs(pattern.right - bounds.right) < 1 &&
+          Math.abs(pattern.top - bounds.top) < 1 &&
+          [...header.querySelectorAll('.workspace-breadcrumb, .connection-pill')].every(
+            (element) => {
+              const box = element.getBoundingClientRect();
+              return box.right <= pattern.left && box.left >= bounds.left;
+            },
+          ) &&
+          header.scrollWidth <= header.clientWidth + 1
+        );
+      });
+      assert(fits, `Header pattern and controls fit without overlap at ${width}px`);
+    }
+
+    // Storage denial must preserve working in-session controls and explain the limitation.
+    await page.evaluate(() => {
+      Storage.prototype.setItem = () => {
+        throw new DOMException('Blocked', 'SecurityError');
+      };
+    });
+    await page.getByLabel('Show workspace context', { exact: true }).uncheck();
+    assert.equal(await page.locator('.workspace-context-shell').isVisible(), false);
+    assert.match(
+      await page.locator('#settingsAppearance [role="status"]').innerText(),
+      /Browser storage is unavailable/,
+    );
+    await page.getByLabel('Show workspace context', { exact: true }).check();
+    assert(await page.locator('#campaignSelect').isVisible());
     assert.deepEqual(scriptErrors, []);
   },
 );

@@ -11,6 +11,7 @@ import {
   Users,
 } from '../../design-system/icons';
 import { Button, Input, Panel, Select } from '../../design-system/primitives';
+import { AppearanceSettings } from './AppearanceSettings';
 export function SettingsPage() {
   return (
     <>
@@ -21,7 +22,7 @@ export function SettingsPage() {
             <h1 className={'page-title'}>{'Settings'}</h1>
             <p className={'page-subtitle'}>
               {
-                'Configure sending rules, template checks, eligibility, sync and system diagnostics.'
+                'Personalize your workspace and configure sending rules, checks, sync and diagnostics.'
               }
             </p>
           </div>
@@ -35,12 +36,14 @@ export function SettingsPage() {
           <SectionNavigation
             label="Settings sections"
             items={[
+              { id: 'settingsAppearance', label: 'Appearance' },
               { id: 'settingsSending', label: 'Sending rules' },
               { id: 'settingsConnections', label: 'Sync & coordination' },
               { id: 'settingsAbout', label: 'About' },
             ]}
           />
           <div className="settings-content">
+            <AppearanceSettings />
             <section className="settings-section" id="settingsSending">
               <SectionHeader
                 title="Sending rules"

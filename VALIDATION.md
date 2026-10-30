@@ -293,3 +293,11 @@ Replaced 131 hand-authored inline SVGs and decorative emoji status/timeline icon
 - Canonical typed route labels drive sidebar/breadcrumbs. The runner context shortcut opens actual runner controls. Opening the current campaign preserves batch/drafts; choosing another keeps existing cleanup. Campaign import navigation/activation refresh now belongs to the campaign controller.
 - Full regression: **215 JavaScript tests and 12 Python tests passed**, no failures/skips. Strict TypeScript, formatting, production build and diff checks passed. Browser acceptance covers fifteen views, responsive bounds, long campaign names, local tab keyboard/history, retained edits, dashboard visibility and a real fixture upload that creates a separate paused, review-required campaign.
 - Native visual review used isolated synthetic data; before/after evidence and audit notes are under `outputs/dashboard-navigation/`. No live message, provider connection, saved customer data or server/storage migration was used or changed.
+
+## Workspace visibility and Build 1 header — 2026-10-30
+
+- Added an accessible Workspace context disclosure with a compact campaign/connection/selection summary. Collapsing or disabling the component hides presentation while retaining the native campaign/mailbox/source nodes and their controller state.
+- Settings → Appearance independently enables/disables the context. Browser-local typed preferences remember visibility and collapse across reloads; malformed values fall back to defaults and blocked storage keeps session controls working with a visible explanation.
+- Added the Build 1 red quarter-circle, cobalt bar and yellow circle in the header, preserving the 198:82 proportions and top-right placement. Responsive scaling reserves space for breadcrumbs and mailbox status.
+- `FC_BROWSER_TESTS=1 npm test`: **216 JavaScript tests and 12 Python tests passed**, no failures/skips. Strict types, formatting and production build passed. New checks cover invalid stored preferences, keyboard collapse/expand, enable/disable and reload persistence, retained selectors/drafts, blocked writes, and header bounds from 320px to 1440px.
+- Visual review used the isolated synthetic preview at normal desktop, 1440px desktop and 390px mobile sizes. Evidence: `outputs/workspace-context/`. No sending/API behavior or live mailbox data changed.

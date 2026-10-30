@@ -143,14 +143,23 @@
   background: var(--bg-app);
 }
 .app-titlebar {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  min-height: 64px;
-  padding: 14px 32px;
+  min-height: 88px;
+  padding: 14px 222px 14px 32px;
   border-bottom: 1px solid var(--border-subtle);
   background: var(--bg-app);
+}
+.header-pattern {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 198px;
+  height: 82px;
+  pointer-events: none;
 }
 .workspace-breadcrumb {
   display: flex;
@@ -158,6 +167,9 @@
   gap: 12px;
   font-size: 12px;
   color: var(--text-muted);
+  min-width: 0;
+  flex-wrap: wrap;
+  overflow-wrap: anywhere;
 }
 .workspace-breadcrumb strong {
   color: var(--text-primary);
@@ -175,6 +187,7 @@
   color: var(--accent-red-dark);
   border: 1px solid var(--accent-red-border);
   border-radius: 4px;
+  flex-shrink: 0;
 }
 .connection-pill.good {
   color: var(--accent-emerald);
@@ -251,6 +264,14 @@
   gap: 10px;
 }
 @media (max-width: 1120px) {
+  .app-titlebar {
+    padding-right: 164px;
+    min-height: 76px;
+  }
+  .header-pattern {
+    width: 144px;
+    height: auto;
+  }
   .page-header {
     flex-wrap: wrap;
   }
@@ -306,7 +327,7 @@
     padding: 24px 14px 40px;
   }
   .app-titlebar {
-    padding: 12px 14px;
+    padding: 12px 164px 12px 14px;
     gap: 8px;
   }
   .workspace-breadcrumb {
@@ -365,6 +386,16 @@
   overflow-wrap: anywhere;
 }
 @media (max-width: 680px) {
+  .app-titlebar {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 6px;
+    padding-right: 110px;
+  }
+  .header-pattern {
+    width: 96px;
+  }
   .workspace-breadcrumb > a:first-of-type {
     display: none;
   }

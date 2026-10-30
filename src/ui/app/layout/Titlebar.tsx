@@ -1,6 +1,7 @@
 import { Icon, LayoutGrid } from '../../design-system/icons';
 import { useRouteHash } from '../use-route';
 import { navigationParent, resolveView, routeLabels } from '../routes';
+import { HeaderPattern } from './HeaderPattern';
 export function Titlebar() {
   const route = resolveView(useRouteHash());
   const parent = navigationParent(route);
@@ -21,6 +22,7 @@ export function Titlebar() {
       <span className="connection-pill" id="connection">
         Mailbox disconnected
       </span>
+      <HeaderPattern />
     </header>
   );
 }
