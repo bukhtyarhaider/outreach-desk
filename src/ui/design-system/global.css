@@ -21,7 +21,7 @@ body {
 
 ::selection {
   background: rgba(239, 68, 68, 0.35);
-  color: #fff;
+  color: #181816;
 }
 
 /* Custom Scrollbars */
@@ -33,12 +33,12 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(24, 24, 22, 0.12);
   border-radius: var(--radius-full);
   transition: background var(--transition-fast);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(24, 24, 22, 0.25);
 }
 
 /* Global Links & Focus Resets */

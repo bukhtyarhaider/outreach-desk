@@ -1,3 +1,4 @@
+import { CampaignJourney } from '../campaigns/CampaignJourney';
 import {
   Clock,
   CodeXml,
@@ -29,6 +30,7 @@ export function SettingsPage() {
             <Button id={'saveSettings'}>{'Save sending settings'}</Button>
           </div>
         </div>
+        <CampaignJourney active={2} />
         <div className={'settings-grid'}>
           <div className={'panel settings-profiles-panel'}>
             <div className={'panel-head'}>
@@ -621,7 +623,7 @@ export function SettingsPage() {
             <div className={'settings-system-info'}>
               <div>
                 <span style={{ color: 'var(--text-muted)' }}>{'Lead Engineer / Developer'}</span>
-                <strong style={{ color: '#fff' }}>{'Bukhtyar Haider'}</strong>
+                <strong style={{ color: '#181816' }}>{'Bukhtyar Haider'}</strong>
               </div>
               <div>
                 <span style={{ color: 'var(--text-muted)' }}>{'Application'}</span>

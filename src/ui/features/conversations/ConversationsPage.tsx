@@ -6,7 +6,7 @@ export function ConversationsPage() {
         <header className={'page-header mailroom-header'}>
           <div>
             <p className={'page-eyebrow'}>{'CARRIER EMAIL'}</p>
-            <h1 className={'page-title'}>{'Conversations'}</h1>
+            <h1 className={'page-title'}>{'Unibox'}</h1>
           </div>
           <label className={'mailroom-mailbox'}>
             <span className={'sr-only'}>{'Mailbox'}</span>

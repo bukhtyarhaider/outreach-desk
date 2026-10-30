@@ -1,9 +1,11 @@
+import { publishWorkspace } from '../../shared/workspace-store';
 import { Icon, Trash2 } from '../../design-system/icons';
 import { renderRegion } from '../../shared/regions';
 import { session } from '../../shared/session';
 import { $ } from '../../shared/runtime';
 export function updateControls() {
   if (!session.state) return;
+  publishWorkspace(session.state, session.selected.size, session.rows);
   const prep = $('prepare');
   if (prep)
     prep.disabled = Boolean(

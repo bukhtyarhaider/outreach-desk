@@ -15,3 +15,7 @@
 @import '../features/conversations/styles.css';
 @import '../features/conversations/carrier-workspace.css';
 @import '../features/conversations/mailroom.css';
+
+@import '../design-system/bauhaus/foundations.css';
+@import '../design-system/bauhaus/shell.css';
+@import '../design-system/bauhaus/surfaces.css';

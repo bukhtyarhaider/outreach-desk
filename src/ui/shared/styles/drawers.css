@@ -23,7 +23,7 @@
   height: 100%;
   background: var(--bg-surface);
   border-left: 1px solid var(--border-medium);
-  box-shadow: var(--shadow-drawer);
+  box-shadow: none;
   display: flex;
   flex-direction: column;
   transform: translateX(100%);
@@ -46,7 +46,7 @@
 .drawer-title {
   font-size: 17px;
   font-weight: 700;
-  color: #fff;
+  color: #181816;
   letter-spacing: -0.02em;
 }
 
@@ -66,7 +66,7 @@
 }
 .drawer-close:hover {
   background: var(--bg-surface-hover) !important;
-  color: #fff !important;
+  color: #181816 !important;
   box-shadow: none !important;
   transform: scale(1.05) !important;
 }
@@ -94,7 +94,7 @@
 
 /* Message Preview Box */
 .message-preview-box {
-  background: #0d0f16;
+  background: #f2efe7;
   border: 1px solid var(--border-medium);
   border-radius: var(--radius-lg);
   padding: 20px;
@@ -103,12 +103,12 @@
   font-size: 13.5px;
   line-height: 1.65;
   white-space: pre-wrap;
-  color: #f1f5f9;
-  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.4);
+  color: #262623;
+  box-shadow: none;
 }
 
 .signature-box {
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(24, 24, 22, 0.02);
   border-left: 3px solid var(--accent-red);
   padding: 12px 16px;
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
@@ -122,7 +122,7 @@
 .warning-callout {
   background: var(--accent-amber-bg);
   border: 1px solid var(--accent-amber-border);
-  color: #fcd34d;
+  color: #86520c;
   padding: 12px 16px;
   border-radius: var(--radius-md);
   font-size: 12.5px;
@@ -160,7 +160,7 @@
 }
 
 .drawer-tab:hover {
-  color: #fff !important;
+  color: #181816 !important;
   background: transparent !important;
   border-color: transparent !important;
   box-shadow: none !important;
@@ -168,32 +168,30 @@
 }
 
 .drawer-tab.active {
-  color: #60a5fa !important;
+  color: #1649a8 !important;
   border-bottom-color: #3b82f6 !important;
   background: transparent !important;
   box-shadow: none !important;
 }
 
 .drawer-tab.active svg {
-  color: #60a5fa !important;
+  color: #1649a8 !important;
 }
 
 /* Lead Details Inspector Components */
 .lead-details-hero {
-  background: linear-gradient(180deg, rgba(30, 41, 59, 0.45) 0%, rgba(15, 23, 42, 0.65) 100%);
+  background: linear-gradient(180deg, rgba(242, 239, 231, 0.45) 0%, rgba(242, 239, 231, 0.65) 100%);
   border: 1px solid var(--border-medium);
   border-radius: var(--radius-lg);
   padding: 20px 22px;
   margin-bottom: 18px;
-  box-shadow:
-    var(--shadow-sm),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  box-shadow: none;
 }
 
 .lead-hero-company {
   font-size: 20px;
   font-weight: 700;
-  color: #fff;
+  color: #181816;
   margin: 0 0 4px 0;
   letter-spacing: -0.02em;
 }
@@ -216,12 +214,12 @@
 }
 
 .lead-details-card {
-  background: var(--bg-surface-elevated, #161922);
+  background: var(--bg-surface-elevated, #fffdf8);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   padding: 18px 20px;
   margin-bottom: 16px;
-  box-shadow: var(--shadow-sm);
+  box-shadow: none;
 }
 
 .lead-details-title {
@@ -262,19 +260,19 @@
 
 .lead-detail-value {
   font-size: 13px;
-  color: #f3f4f6;
+  color: #575750;
   font-weight: 500;
   word-break: break-word;
 }
 
 .lead-detail-value a {
-  color: #60a5fa;
+  color: #1649a8;
   text-decoration: none;
   transition: color var(--transition-fast);
 }
 
 .lead-detail-value a:hover {
-  color: #93c5fd;
+  color: #1649a8;
   text-decoration: underline;
 }
 
@@ -296,14 +294,14 @@
 }
 
 .copy-mini-btn:hover {
-  color: #fff !important;
-  background: rgba(255, 255, 255, 0.1) !important;
+  color: #181816 !important;
+  background: rgba(24, 24, 22, 0.1) !important;
   box-shadow: none !important;
   transform: scale(1.08) !important;
 }
 
 .copy-mini-btn.copied {
-  color: #34d399 !important;
+  color: #126c48 !important;
   background: rgba(16, 185, 129, 0.15) !important;
 }
 
@@ -314,7 +312,7 @@
 }
 
 .lead-fields-table tr {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(24, 24, 22, 0.05);
 }
 
 .lead-fields-table tr:last-child {
@@ -334,7 +332,7 @@
 }
 
 .lead-fields-table td.field-val {
-  color: #e2e8f0;
+  color: #343432;
   font-family: var(--font-mono, monospace);
   font-size: 11.5px;
   word-break: break-all;

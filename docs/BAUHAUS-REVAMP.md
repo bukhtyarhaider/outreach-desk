@@ -1,7 +1,7 @@
 # Bauhaus SaaS revamp
 
 Branch: `feat/bauhaus-saas-ui-revamp`, based on `f5bc8c1`.
-Status: product architecture and visual direction exploration; implementation awaits visual selection.
+Status: first visual direction selected and implemented with persistent operational context and modular React/TypeScript ownership.
 
 ## Product brief
 
@@ -46,3 +46,9 @@ Three independent campaign-editor concepts at 1440 × 1024 will establish the sh
 ## Implementation and verification after selection
 
 Build shared tokens and accessible primitives first, then the five priority surfaces, then Accounts, Reports and Settings and all mapped secondary tools. Preserve current routes or explicit aliases, native control semantics, API contracts, resource teardown, draft retention, protection/recovery rules and source evidence. Validate populated/empty/loading/error/disabled states, long labels and metadata, keyboard focus, responsive layouts and actual visual output. Use the existing full regression baseline plus meaningful checks for the redesigned interactions. No deployment or real sending is implied.
+
+## Implementation notes
+
+Campaign creation is available from the shell and dashboard. The editor foregrounds importing/reviewing the audience and continuing to messages; the existing campaign-scope controls remain available in its review section. The dashboard includes the real campaign inventory. The shared journey links the existing reviewed import, template, mailbox and review workflows; it does not fabricate isolated campaign-specific scheduling or saved drafts. Unibox is the current carrier conversation implementation with the new visual language and its existing evidence, review and capture controls. Send history and Email Tracking retain explicit separate navigation labels to keep both available. Accounts remain in Mailbox & Settings and the global mailbox switcher.
+
+The user's approved extension to the concept keeps campaign/mailbox switching, connection status, selected batch, workbook, queue and allowances visible. Desktop uses a persistent context bar; narrow screens stack its fields and retain connection/file text. Customer brand/monogram remains available rather than replacing it with the exploratory mock logo. See UI-DX.md for ownership and extension rules.

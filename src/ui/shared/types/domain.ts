@@ -19,7 +19,8 @@ export interface Profile {
   business: Business;
 }
 export interface Workbook {
-  name: string;
+  name?: string;
+  file?: string;
   path?: string;
 }
 export interface Sheet {
@@ -30,9 +31,10 @@ export interface Sheet {
 }
 export interface Campaign {
   id: string;
+  reviewRequired?: boolean;
   name: string;
   enabled: boolean;
-  sheets: string[];
+  sheets?: string[];
   mapping: Dictionary<JsonValue>;
   workbook?: Workbook;
   templateKeys?: string[];

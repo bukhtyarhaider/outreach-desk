@@ -19,6 +19,7 @@ export function isTrackingSection(value: string): value is TrackingSection {
   return trackingSections.some((section) => section === value);
 }
 export function resolveView(value: string): ViewName {
+  if (value === 'campaignReview') return 'campaigns';
   if (isTrackingSection(value)) return 'tracking';
   return viewNames.find((view) => view === value) ?? 'dashboard';
 }

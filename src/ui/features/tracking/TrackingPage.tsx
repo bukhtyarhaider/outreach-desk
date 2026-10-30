@@ -228,7 +228,7 @@ export function TrackingPage() {
           <form id={'placementForm'} className={'placement-dock-form'} hidden={true}>
             <Input id={'placementId'} type={'hidden'} />
             <div className={'placement-dock-header'}>
-              <Icon icon={Activity} size={16} color={'#60a5fa'} />
+              <Icon icon={Activity} size={16} color={'#1649a8'} />
               <strong>{'Record Manual Seed Placement Inspection'}</strong>
             </div>
             <div className={'placement-dock-grid'}>
@@ -276,7 +276,7 @@ export function TrackingPage() {
             style={{ alignItems: 'flex-start', flexWrap: 'wrap', gap: '14px' }}
           >
             <div style={{ flex: '1 1 280px', minWidth: 0 }}>
-              <span className={'page-eyebrow'} style={{ fontSize: '10px', color: '#60a5fa' }}>
+              <span className={'page-eyebrow'} style={{ fontSize: '10px', color: '#1649a8' }}>
                 {'DELIVERABILITY & INBOX PLACEMENT TESTING'}
               </span>
               <h2 className={'panel-title'} style={{ marginTop: '3px' }}>
@@ -297,7 +297,7 @@ export function TrackingPage() {
                 id={'seedCountBadge'}
                 style={{
                   background: 'rgba(16, 185, 129, 0.15)',
-                  color: '#34d399',
+                  color: '#126c48',
                   border: '1px solid rgba(16, 185, 129, 0.3)',
                   fontWeight: '600',
                   padding: '4px 10px',
@@ -416,7 +416,7 @@ export function TrackingPage() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span
                     className={'seed-step-num'}
-                    style={{ background: 'rgba(96, 165, 250, 0.2)', color: '#60a5fa' }}
+                    style={{ background: 'rgba(96, 165, 250, 0.2)', color: '#1649a8' }}
                   >
                     {'2'}
                   </span>
@@ -483,7 +483,7 @@ export function TrackingPage() {
             style={{ alignItems: 'flex-start', flexWrap: 'wrap', gap: '14px' }}
           >
             <div style={{ flex: '1 1 280px', minWidth: 0 }}>
-              <span className={'page-eyebrow'} style={{ fontSize: '10px', color: '#a78bfa' }}>
+              <span className={'page-eyebrow'} style={{ fontSize: '10px', color: '#57419a' }}>
                 {'SENDER REPUTATION & AUTHENTICATION'}
               </span>
               <h2 className={'panel-title'} style={{ marginTop: '3px' }}>
@@ -505,7 +505,7 @@ export function TrackingPage() {
                 className={'status-pill'}
                 style={{
                   background: 'rgba(167, 139, 250, 0.15)',
-                  color: '#c4b5fd',
+                  color: '#57419a',
                   border: '1px solid rgba(167, 139, 250, 0.3)',
                   fontWeight: '600',
                   padding: '4px 10px',
@@ -568,7 +568,7 @@ export function TrackingPage() {
                     display: 'block',
                     fontSize: '12px',
                     fontWeight: '600',
-                    color: '#cbd5e1',
+                    color: '#494946',
                     marginBottom: '6px',
                   }}
                 >
@@ -588,7 +588,7 @@ export function TrackingPage() {
                     display: 'block',
                     fontSize: '12px',
                     fontWeight: '600',
-                    color: '#cbd5e1',
+                    color: '#494946',
                     marginBottom: '6px',
                   }}
                 >
@@ -662,7 +662,7 @@ export function TrackingPage() {
             </div>
           </div>
           <div className={'daemon-config-box'}>
-            <Icon icon={Info} size={16} color={'#60a5fa'} />
+            <Icon icon={Info} size={16} color={'#1649a8'} />
             <p id={'trackingConfig'} className={'tracking-note'} style={{ margin: '0' }}></p>
           </div>
           <div className={'daemon-terminal-window'}>

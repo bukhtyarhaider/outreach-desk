@@ -1,3 +1,4 @@
+import { CampaignJourney } from '../campaigns/CampaignJourney';
 import {
   Check,
   Download,
@@ -53,6 +54,7 @@ export function TemplatesPage() {
             <Button id={'saveTemplate'}>{'Save template'}</Button>
           </div>
         </div>
+        <CampaignJourney active={1} />
         <div className={'dashboard-grid'}>
           <div className={'panel'}>
             <div className={'form-group'}>

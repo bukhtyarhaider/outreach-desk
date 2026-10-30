@@ -1,3 +1,4 @@
+import { CampaignJourney } from '../campaigns/CampaignJourney';
 import { Button, Input, Textarea, Select } from '../../design-system/primitives';
 export function ImportsPage() {
   return (
@@ -14,6 +15,7 @@ export function ImportsPage() {
             </p>
           </div>
         </div>{' '}
+        <CampaignJourney active={0} />
         <section className={'panel'}>
           <div className={'experiment-form'}>
             <label htmlFor={'reviewCampaign'}>

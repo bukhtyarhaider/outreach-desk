@@ -1,3 +1,4 @@
+import { workbookLabel } from '../../shared/workspace-store';
 import { Button } from '../../design-system/primitives';
 import { renderRegion } from '../../shared/regions';
 import { displayText } from '../../shared/utils';
@@ -33,7 +34,7 @@ export async function refresh() {
   }
   const wbName = $('workbookName');
   if (wbName) {
-    wbName.textContent = session.state.workbook?.name || 'No workbook imported.';
+    wbName.textContent = workbookLabel(session.state);
   }
   const options = JSON.stringify(session.state.sheets);
   const sheetSelect = $('sheet');

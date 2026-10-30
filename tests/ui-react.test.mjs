@@ -28,6 +28,7 @@ before(async () => {
       contents: `
     export {App} from './src/ui/app/App';
     export {UIScope} from './src/ui/shared/lifecycle';
+    export {workbookLabel} from './src/ui/shared/workspace-store';
     export {viewNames, resolveView} from './src/ui/app/routes';
     export {classifyEvent, eventIdentity} from './src/ui/features/live-activity/controller';
     export {Button, Input, Textarea, Select, Dialog} from './src/ui/design-system/primitives';
@@ -62,6 +63,9 @@ test('React retains every original main-app control ID and all twelve hash route
   assert.deepEqual([...ui.viewNames].sort(), [...contract.views].sort());
   for (const view of ui.viewNames) assert.equal(ui.resolveView(view), view);
   assert.equal(ui.resolveView('missing-route'), 'dashboard');
+  assert.equal(ui.resolveView('campaignReview'), 'campaigns');
+  assert.equal(ui.workbookLabel({ workbook: { file: 'copies/legacy.xlsx' } }), 'legacy.xlsx');
+  assert.equal(ui.workbookLabel(null), 'No workbook imported.');
   assert.equal(ui.resolveView('trackingSeedStudio'), 'tracking');
   assert.equal(ui.resolveView('trackingDomainHealth'), 'tracking');
 });
@@ -250,6 +254,38 @@ test(
       } catch {}
       await new Promise((resolve) => setTimeout(resolve, 50));
     }
+    const previewApi = async (route, data) => {
+      const result = await fetch(
+        `http://127.0.0.1:${port}/api/${route}`,
+        data === undefined
+          ? {}
+          : {
+              method: 'POST',
+              headers: { 'X-FC-Request': '1', 'Content-Type': 'application/json' },
+              body: JSON.stringify(data),
+            },
+      );
+      const body = await result.json();
+      assert(result.ok, body.error);
+      return body;
+    };
+    const reviewed = await previewApi('import-review', {
+      campaignId: 'c1',
+      mapping: {},
+      addStatusColumns: { Leads: 'D' },
+    });
+    const revision = await previewApi('import-apply', {
+      previewId: reviewed.previewId,
+      confirmExperiment: true,
+      provenance: { label: 'Synthetic UI fixture', permission: 'unknown' },
+    });
+    const archive = await previewApi('imports?campaignId=c1');
+    await previewApi('import-activate', {
+      campaignId: 'c1',
+      revisionId: revision.revisionId,
+      expectedToken: archive.activationToken,
+      confirmActivation: true,
+    });
     browser = await loadPlaywright().chromium.launch({
       channel: process.env.FC_TEST_BROWSER_CHANNEL || 'chrome',
       headless: true,
@@ -429,6 +465,29 @@ test(
       );
     });
     await page.locator('#closeDrawerBtn').click();
+    await page.locator('#leadRows input[type="checkbox"]:not(:disabled)').first().check();
+    await page.waitForFunction(() =>
+      document.querySelector('.context-selection').textContent.includes('1 selected'),
+    );
+    await page.locator('[data-view="campaigns"]').click();
+    assert(await page.locator('.workspace-context #campaignSelect').isVisible());
+    assert(await page.locator('.workspace-context #profileSelect').isVisible());
+    assert.match(await page.locator('.context-selection').innerText(), /1 selected/);
+    assert.match(await page.locator('.context-connection').innerText(), /Mailbox (dis)?connected/);
+    assert.match(await page.locator('.context-source').innerText(), /File:/);
+    await page.locator('#view-campaigns .campaign-journey a[href="#campaignReview"]').click();
+    await page.locator('.sidebar-create').click();
+    await page.waitForFunction(
+      () =>
+        location.hash === '#campaigns' && document.querySelector('.app-viewport').scrollTop === 0,
+    );
+
+    await page.locator('.audience-footer a[href="#templates"]').click();
+    assert.equal(await page.locator('#subject').inputValue(), draft);
+    assert.equal(
+      await page.locator('#view-templates .campaign-journey [aria-current="step"]').count(),
+      1,
+    );
     await page.locator('[data-view="tracking"]').click();
     await page.waitForFunction(
       () => document.querySelector('.view-page.active').id === 'view-tracking',

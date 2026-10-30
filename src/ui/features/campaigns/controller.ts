@@ -42,6 +42,17 @@ export function fillCampaign() {
   }
 }
 
+/** Shared campaign switching owns selection cleanup and audience refresh. */
+export async function selectCampaign(id: string) {
+  await api('/api/select-campaign', { id });
+  session.selected.clear();
+  session.previewId = null;
+  session.offset = 0;
+  await refresh();
+  fillCampaign();
+  await loadLeads();
+}
+
 export function mountCampaigns() {
   if ($('upload'))
     uiScope.handler($('upload'), 'onchange', () =>
@@ -84,12 +95,7 @@ export function mountCampaigns() {
   if ($('campaignSelect'))
     uiScope.handler($('campaignSelect'), 'onchange', () =>
       action($('reload'), async () => {
-        await api('/api/select-campaign', { id: $('campaignSelect').value });
-        session.selected.clear();
-        session.previewId = null;
-        session.offset = 0;
-        await refresh();
-        fillCampaign();
+        await selectCampaign($('campaignSelect').value);
       }),
     );
   if ($('saveCampaign'))

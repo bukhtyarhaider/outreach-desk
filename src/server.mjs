@@ -1773,17 +1773,20 @@ const server = http.createServer(async (req, res) => {
       "/app.js": "app.js",
       "/style.css": "style.css",
       "/icons/chevron-down.svg": "icons/chevron-down.svg",
+      "/fonts/Manrope.ttf": "fonts/Manrope.ttf",
     };
     if (!files[pathname]) return response(res, { error: "Not found" }, 404);
     const file = files[pathname];
     res.writeHead(200, {
-      "Content-Type": file.endsWith(".svg")
-        ? "image/svg+xml"
-        : file.endsWith(".css")
-        ? "text/css"
-        : file.endsWith(".js")
-          ? "text/javascript"
-          : "text/html",
+      "Content-Type": file.endsWith(".ttf")
+        ? "font/ttf"
+        : file.endsWith(".svg")
+          ? "image/svg+xml"
+          : file.endsWith(".css")
+            ? "text/css"
+            : file.endsWith(".js")
+              ? "text/javascript"
+              : "text/html",
       "Cache-Control": "no-store",
       "Content-Security-Policy":
         "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'",

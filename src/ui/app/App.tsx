@@ -1,3 +1,4 @@
+import { WorkspaceContext } from './layout/WorkspaceContext';
 import { DashboardPage } from '../features/dashboard/DashboardPage';
 import { LeadsPage } from '../features/leads/LeadsPage';
 import { CampaignsPage } from '../features/campaigns/CampaignsPage';
@@ -23,6 +24,7 @@ export function App() {
         <div className="app-container">
           <Sidebar />
           <main className="app-viewport">
+            <WorkspaceContext />
             <p id="releasePreviewBanner" className="carrier-preview-banner" hidden>
               Sample preview · Sending and live mailbox capture are disabled. Use your normal app
               window for real inbox capture.

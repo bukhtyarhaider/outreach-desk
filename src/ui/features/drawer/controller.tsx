@@ -149,7 +149,7 @@ export function renderLeadDetails(lead: Lead, message: Message | null, warnings:
         <div
           style={{
             fontSize: '12px',
-            color: '#93c5fd',
+            color: '#1649a8',
             background: 'rgba(59, 130, 246, 0.1)',
             border: '1px solid rgba(59, 130, 246, 0.25)',
             borderRadius: '6px',
@@ -192,14 +192,14 @@ export function renderLeadDetails(lead: Lead, message: Message | null, warnings:
     historicalNotesHtml = (
       <>
         <div className={'lead-details-card'} style={{ borderLeft: '3px solid #f59e0b' }}>
-          <h4 className={'lead-details-title'} style={{ color: '#fbbf24' }}>
+          <h4 className={'lead-details-title'} style={{ color: '#86520c' }}>
             <Icon icon={FileText} size={14} />
             {'\n          Historical Notes / Remarks\n        '}
           </h4>
           <div
             style={{
               fontSize: '12.5px',
-              color: '#e5e7eb',
+              color: '#575750',
               lineHeight: '1.5',
               whiteSpace: 'pre-wrap',
             }}
@@ -450,9 +450,9 @@ export function renderLeadDetails(lead: Lead, message: Message | null, warnings:
           style={{
             maxHeight: '280px',
             overflowY: 'auto',
-            border: '1px solid rgba(255, 255, 255, 0.05)',
+            border: '1px solid rgba(24, 24, 22, 0.05)',
             borderRadius: 'var(--radius-sm)',
-            background: '#111318',
+            background: '#f2efe7',
           }}
         >
           <table className={'lead-fields-table'}>
@@ -462,7 +462,7 @@ export function renderLeadDetails(lead: Lead, message: Message | null, warnings:
       </div>
       <div className={'lead-action-cta'}>
         <div>
-          <div style={{ fontSize: '12px', fontWeight: '600', color: '#fff' }}>
+          <div style={{ fontSize: '12px', fontWeight: '600', color: '#181816' }}>
             {'Personalized Email Preview'}
           </div>
           <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
@@ -497,7 +497,7 @@ export function renderLeadDetails(lead: Lead, message: Message | null, warnings:
         renderRegion(
           btn,
           <>
-            <Icon icon={Check} size={12} color={'#10b981'} />
+            <Icon icon={Check} size={12} color={'#126c48'} />
           </>,
         );
         uiScope.timeout(() => {

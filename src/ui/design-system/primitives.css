@@ -14,9 +14,7 @@
   padding: 24px;
   position: relative;
   margin-bottom: 20px;
-  box-shadow:
-    var(--shadow-sm),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  box-shadow: none;
   transition: border-color var(--transition-fast);
 }
 
@@ -43,7 +41,7 @@
   font-size: 15px;
   font-weight: 700;
   letter-spacing: -0.2px;
-  color: #fff;
+  color: #181816;
   display: flex;
   align-items: center;
   gap: 9px;
@@ -56,14 +54,12 @@
 
 /* Live Operational Pulse Card */
 .runner-card {
-  background: linear-gradient(180deg, #161922 0%, #11141c 100%);
+  background: linear-gradient(180deg, #fffdf8 0%, #f6f3ec 100%);
   border: 1px solid var(--border-medium);
   border-radius: var(--radius-lg);
   padding: 24px;
   margin-bottom: 20px;
-  box-shadow:
-    var(--shadow-md),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  box-shadow: none;
 }
 
 .runner-header {
@@ -96,8 +92,8 @@
 .status-badge.active {
   background: var(--accent-emerald-bg);
   border-color: var(--accent-emerald-border);
-  color: #34d399;
-  box-shadow: 0 0 12px rgba(16, 185, 129, 0.2);
+  color: #126c48;
+  box-shadow: none;
 }
 
 .runner-message {
@@ -115,21 +111,21 @@ progress {
   border: none;
   border-radius: var(--radius-full);
   overflow: hidden;
-  background: #0f1218;
+  background: #f2efe7;
   display: block;
   margin: 12px 0;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+  box-shadow: none;
 }
 
 progress::-webkit-progress-bar {
-  background: #0f1218;
+  background: #f2efe7;
   border-radius: var(--radius-full);
 }
 
 progress::-webkit-progress-value {
   background: linear-gradient(90deg, #ef4444 0%, #ff6b6b 100%);
   border-radius: var(--radius-full);
-  box-shadow: 0 0 14px var(--accent-red-glow);
+  box-shadow: none;
   transition: width 0.3s ease;
 }
 
@@ -149,16 +145,16 @@ progress::-webkit-progress-value {
   border-radius: var(--radius-md);
   padding: 12px 16px;
   font-size: 12.5px;
-  color: #93c5fd;
+  color: #1649a8;
   margin: 14px 0;
   display: flex;
   align-items: center;
   gap: 12px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  box-shadow: none;
 }
 .quota-banner svg {
   flex-shrink: 0;
-  color: #60a5fa;
+  color: #1649a8;
 }
 
 /* ==========================================================================
@@ -199,7 +195,7 @@ button.secondary,
   background: var(--bg-surface-elevated);
   border: 1px solid var(--border-medium);
   color: var(--text-primary);
-  box-shadow: var(--shadow-sm);
+  box-shadow: none;
 }
 
 button:not(.primary):not(.danger):not(.success):not(.token-chip):not(.drawer-close):not(
@@ -212,8 +208,8 @@ button.secondary:hover,
 .button.secondary:hover {
   background: var(--bg-surface-hover);
   border-color: var(--border-light);
-  color: #fff;
-  box-shadow: var(--shadow-md);
+  color: #181816;
+  box-shadow: none;
   transform: translateY(-1px);
 }
 
@@ -226,7 +222,7 @@ button:not(.primary):not(.danger):not(.success):not(.token-chip):not(.drawer-clo
 button.secondary:active,
 .button.secondary:active {
   transform: translateY(1px);
-  box-shadow: var(--shadow-sm);
+  box-shadow: none;
 }
 
 /* Primary Action Buttons (Mission-critical CTAs) */
@@ -248,10 +244,8 @@ button[type='submit']:not(.secondary):not(.danger),
 #domainSubmitBtn {
   background: var(--accent-red) !important;
   border: 1px solid var(--accent-red) !important;
-  color: #fff !important;
-  box-shadow:
-    0 1px 4px rgba(0, 0, 0, 0.4),
-    0 0 10px rgba(239, 68, 68, 0.25) !important;
+  color: #181816 !important;
+  box-shadow: none !important;
 }
 
 button.primary:hover,
@@ -272,7 +266,7 @@ button[type='submit']:not(.secondary):not(.danger):hover,
 #domainSubmitBtn:hover {
   background: var(--accent-red-hover) !important;
   border-color: var(--accent-red-hover) !important;
-  box-shadow: 0 0 16px var(--accent-red-glow) !important;
+  box-shadow: none !important;
   transform: translateY(-1px);
 }
 
@@ -292,7 +286,7 @@ button.primary:active,
 #seedCreateBtn:active,
 #domainSubmitBtn:active {
   transform: translateY(1px);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
+  box-shadow: none !important;
 }
 
 button:disabled,
@@ -308,7 +302,7 @@ button.danger,
 .button.danger {
   background: rgba(220, 38, 38, 0.16) !important;
   border: 1px solid rgba(220, 38, 38, 0.45) !important;
-  color: #fca5a5 !important;
+  color: #a92b20 !important;
   box-shadow: none !important;
 }
 
@@ -316,8 +310,8 @@ button.danger:hover,
 .button.danger:hover {
   background: #dc2626 !important;
   border-color: #dc2626 !important;
-  color: #fff !important;
-  box-shadow: 0 0 14px rgba(220, 38, 38, 0.5) !important;
+  color: #181816 !important;
+  box-shadow: none !important;
   transform: translateY(-1px);
 }
 
@@ -329,17 +323,17 @@ button.danger:active,
 /* Success Buttons */
 button.success,
 .button.success {
-  background: #10b981 !important;
-  border: 1px solid #10b981 !important;
-  color: #fff !important;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35) !important;
+  background: #126c48 !important;
+  border: 1px solid #126c48 !important;
+  color: #181816 !important;
+  box-shadow: none !important;
 }
 
 button.success:hover,
 .button.success:hover {
   background: #059669 !important;
   border-color: #059669 !important;
-  box-shadow: 0 0 14px rgba(16, 185, 129, 0.55) !important;
+  box-shadow: none !important;
   transform: translateY(-1px);
 }
 
@@ -371,7 +365,7 @@ textarea {
   width: 100%;
   transition: all var(--transition-fast);
   outline: none;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
+  box-shadow: none;
 }
 
 /* Native checkboxes keep their intrinsic size even outside a checkbox row. */
@@ -387,10 +381,8 @@ input:focus,
 select:focus,
 textarea:focus {
   border-color: var(--accent-red);
-  box-shadow:
-    0 0 0 3px var(--accent-red-glow),
-    inset 0 1px 2px rgba(0, 0, 0, 0.2);
-  background: #11141c;
+  box-shadow: none;
+  background: #f6f3ec;
 }
 
 input::placeholder,
@@ -502,11 +494,11 @@ select {
   border-radius: var(--radius-md);
   padding: 16px 20px;
   margin-bottom: 16px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  box-shadow: none;
 }
 
 #recovery strong {
-  color: #fcd34d;
+  color: #86520c;
   font-size: 13.5px;
   display: block;
   margin-bottom: 5px;
@@ -549,7 +541,7 @@ select {
 
 /* History Inspector */
 .history-inspector {
-  background: #0d0f15;
+  background: #f2efe7;
   border: 1px solid var(--border-medium);
   border-radius: var(--radius-lg);
   padding: 20px;
@@ -558,10 +550,10 @@ select {
   font-size: 12px;
   line-height: 1.6;
   white-space: pre-wrap;
-  color: #e2e8f0;
+  color: #343432;
   max-height: 420px;
   overflow-y: auto;
-  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.6);
+  box-shadow: none;
 }
 
 .ui-icon {

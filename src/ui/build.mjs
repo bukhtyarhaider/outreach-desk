@@ -22,7 +22,7 @@ const options = {
   },
   outdir: 'public',
   bundle: true,
-  external: ['/icons/*'],
+  external: ['/icons/*', '/fonts/*'],
   splitting: false,
   format: 'esm',
   platform: 'browser',

@@ -266,3 +266,11 @@ Live Namecheap Sent-header/marker retention, real DSN behavior, seed-provider cr
 ## Lucide React icons — 2026-10-30
 
 Replaced 131 hand-authored inline SVGs and decorative emoji status/timeline icons with `lucide-react@1.65.0`, using the typed shared icon primitive. Preserved native controls, event handlers, IDs and existing sizes. The native-select arrow is generated from Lucide React at build time and served by an explicit SVG asset route; this route requires restarting already-running app processes. Isolated asset verification returned HTTP 200 with the correct SVG MIME type and Lucide markup. The running main app contained 165 Lucide SVGs and zero custom SVGs after reload. Strict TypeScript, formatting and production build passed. Full regression passed 215 Node tests and 12 Python tests. Local screenshot: `outputs/ui-qa-lucide/settings.png`.
+
+## Bauhaus campaign-centered UI — 2026-10-30
+
+- Implemented the selected first direction across all twelve existing routes, with persistent campaign/mailbox/file/batch/queue context, real campaign inventory and an audience-first setup journey. Native controls/IDs and sending/recovery protections remain intact.
+- Added typed navigation configuration, a read-only React presentation store, modular campaign components and a shared campaign switching controller. Legacy campaigns with missing worksheet lists and file-only workbook labels are supported.
+- Full regression: 215 Node tests and 12 Python tests passed, no failures/skips. Subsequent focused UI acceptance passed after final navigation refinements. Strict TypeScript, formatting, production build and diff checks passed.
+- Desktop/mobile visual evidence and the source comparison are in `outputs/bauhaus-review/`; see `design-qa.md`.
+- Portable package includes the local font and OFL license, sources, generated assets and DX guides, excluding runtime customer data and secrets. Normal running servers require a restart for the new font route.

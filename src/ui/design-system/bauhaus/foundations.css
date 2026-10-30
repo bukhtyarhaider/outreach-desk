@@ -1,0 +1,143 @@
+@font-face {
+  font-family: Manrope;
+  src: url('/fonts/Manrope.ttf') format('truetype');
+  font-weight: 200 800;
+  font-display: swap;
+}
+
+html,
+body {
+  font-size: 14px;
+  user-select: text;
+}
+::selection {
+  background: #ffe48b;
+  color: #181816;
+}
+::-webkit-scrollbar-thumb {
+  background: #bbb7ac;
+}
+h1,
+h2,
+h3,
+h4 {
+  color: var(--text-primary);
+}
+button,
+.button,
+input,
+select,
+textarea {
+  font-family: var(--font-sans);
+  font-size: 13px;
+}
+button,
+.button {
+  min-height: 36px;
+  font-weight: 700;
+  box-shadow: none !important;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+button:hover,
+.button:hover {
+  transform: none !important;
+}
+button.primary,
+.button.primary,
+button[type='submit']:not(.secondary):not(.danger),
+#start,
+#saveSettings,
+#saveProfile,
+#saveCampaign {
+  background: var(--accent-red);
+  color: #fffdf8;
+  border-color: var(--accent-red);
+}
+button.secondary,
+.button.secondary {
+  background: transparent;
+  color: var(--text-primary);
+  border-color: var(--border-medium);
+}
+button:disabled {
+  opacity: 0.48;
+}
+input,
+select,
+textarea {
+  background: var(--bg-input);
+  color: var(--text-primary);
+  border-color: var(--border-medium);
+  box-shadow: none;
+}
+input:focus,
+select:focus,
+textarea:focus {
+  background: var(--bg-input);
+  box-shadow: 0 0 0 3px #174cce22;
+  border-color: var(--accent-blue);
+}
+:focus-visible {
+  outline: 3px solid var(--accent-blue);
+  outline-offset: 3px;
+}
+input[type='checkbox'] {
+  accent-color: var(--accent-blue);
+}
+select {
+  padding-right: 32px;
+}
+.hint {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+.status-pill {
+  gap: 5px;
+  font-size: 11px;
+  letter-spacing: 0;
+  font-weight: 700;
+}
+.status-pill.good,
+.status-pill.ready {
+  color: #126c48;
+  background: #e5f1e8;
+}
+.status-pill.warn {
+  color: #86520c;
+  background: #fff0c8;
+}
+.status-pill.blocked {
+  color: #a92b20;
+  background: #fbe7df;
+}
+.panel,
+.runner-card,
+.stat-card {
+  background: var(--bg-surface);
+  box-shadow: none;
+}
+.panel-head,
+.panel-title {
+  color: var(--text-primary);
+}
+.panel-title {
+  font-size: 16px;
+}
+summary {
+  cursor: pointer;
+}
+pre,
+code {
+  color: var(--text-primary);
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

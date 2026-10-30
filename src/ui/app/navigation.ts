@@ -17,13 +17,19 @@ export function revealTrackingSection(value: string) {
 // Navigation View Routing
 export function navigate(viewName: string) {
   const target = resolveView(viewName);
+  if (document.querySelector('.view-page.active')?.id !== `view-${target}`) {
+    document.querySelector<HTMLElement>('.app-viewport')?.scrollTo(0, 0);
+  }
 
   document.body.classList.toggle('mailroom-active', target === 'conversations');
   document.querySelectorAll<HTMLElement>('.view-page').forEach((el) => {
     el.classList.toggle('active', el.id === `view-${target}`);
   });
   document.querySelectorAll<HTMLElement>('.nav-link').forEach((link) => {
-    link.classList.toggle('active', link.dataset.view === target);
+    const active = link.dataset.view === target;
+    link.classList.toggle('active', active);
+    if (active) link.setAttribute('aria-current', 'page');
+    else link.removeAttribute('aria-current');
   });
   if (target === 'imports' && session.state)
     window.dispatchEvent(
@@ -39,6 +45,8 @@ export function navigate(viewName: string) {
     void loadTracking()
       .then(() => revealTrackingSection(viewName))
       .catch((e) => notice(errorMessage(e)));
+  if (viewName === 'campaignReview')
+    document.getElementById('campaignReview')?.scrollIntoView({ block: 'start' });
   revealTrackingSection(viewName);
   if (target === 'live-activity') {
     renderLiveActivityView();
@@ -53,8 +61,8 @@ export function mountNavigation() {
   document.querySelectorAll<HTMLElement>('.nav-link').forEach((link) => {
     if (!link.getAttribute('aria-label')) link.setAttribute('aria-label', link.textContent.trim());
     link.title = link.getAttribute('aria-label') || '';
-    uiScope.listen(link, 'click', () => {
-      link.blur();
+    uiScope.listen(link, 'click', (event) => {
+      if (event.detail > 0) link.blur();
     });
   });
 }

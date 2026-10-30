@@ -130,7 +130,7 @@
 }
 .catalog-current {
   border-color: var(--accent-red-border);
-  box-shadow: inset 3px 0 var(--accent-red);
+  box-shadow: none;
 }
 .catalog-editor > .hint {
   margin: 10px 0 18px;

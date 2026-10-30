@@ -1,3 +1,5 @@
+import { CreateCampaignLink } from '../campaigns/CreateCampaignLink';
+import { CampaignOverview } from '../campaigns/CampaignOverview';
 import {
   Activity,
   Check,
@@ -11,20 +13,21 @@ import {
   Square,
   UsersRound,
 } from '../../design-system/icons';
-import { Button, Input, Select, Progress } from '../../design-system/primitives';
+import { Button, Input, Progress } from '../../design-system/primitives';
 export function DashboardPage() {
   return (
     <>
       <section className={'view-page active'} id={'view-dashboard'}>
         <div className={'page-header'}>
           <div>
-            <p className={'page-eyebrow'}>{'MISSION CONTROL'}</p>
-            <h1 className={'page-title'}>{'Operational Desk'}</h1>
+            <p className={'page-eyebrow'}>{'OVERVIEW'}</p>
+            <h1 className={'page-title'}>{'Your outreach, in motion.'}</h1>
             <p className={'page-subtitle'}>
               {'Webmail submission status, queue pacing, and continuous outreach.'}
             </p>
           </div>
           <div className={'header-actions'}>
+            <CreateCampaignLink />
             <Button id={'start'}>
               <Icon icon={Play} size={14} />
               {'\n                  Start continuous outreach\n                '}
@@ -78,6 +81,7 @@ export function DashboardPage() {
             <div className={'stat-hint'}>{'Confirmed webmail submissions'}</div>
           </div>
         </div>
+        <CampaignOverview />
         <section className={'panel carrier-attention'}>
           <div className={'panel-head'}>
             <h2 className={'panel-title'}>{'Carrier messages needing attention'}</h2>
@@ -100,7 +104,9 @@ export function DashboardPage() {
                   <span className={'status-badge'} id={'jobStatus'}>
                     {'Idle'}
                   </span>
-                  <strong style={{ color: '#fff', fontSize: '14px' }}>{'Outreach Runner'}</strong>
+                  <strong style={{ color: '#181816', fontSize: '14px' }}>
+                    {'Outreach Runner'}
+                  </strong>
                 </div>
                 <span
                   id={'nextSend'}
@@ -171,10 +177,7 @@ export function DashboardPage() {
                   {'\n                      Mailbox Connection\n                    '}
                 </h2>
               </div>
-              <div className={'form-group'}>
-                <label htmlFor={'profileSelect'}>{'Active Mailbox Profile'}</label>
-                <Select id={'profileSelect'}></Select>
-              </div>
+              <p className="hint">Choose your active mailbox in the workspace bar above.</p>
               <div className={'form-group'}>
                 <label htmlFor={'password'}>{'Password (optional for a saved session)'}</label>
                 <Input

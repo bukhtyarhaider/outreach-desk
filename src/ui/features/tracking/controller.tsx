@@ -265,7 +265,7 @@ export async function loadTracking() {
             </div>
             <div className={'telemetry-chip'}>
               <span className={'chip-label'}>{'Confirmed Dispatched'}</span>
-              <strong className={'chip-val'} style={{ color: '#34d399' }}>
+              <strong className={'chip-val'} style={{ color: '#126c48' }}>
                 {sent}
               </strong>
             </div>
@@ -273,7 +273,7 @@ export async function loadTracking() {
               <span className={'chip-label'}>{'Failed Submissions'}</span>
               <strong
                 className={'chip-val'}
-                style={nativeStyle('color: ' + (summary.send_failed ? '#f87171' : 'inherit') + ';')}
+                style={nativeStyle('color: ' + (summary.send_failed ? '#bd3022' : 'inherit') + ';')}
               >
                 {summary.send_failed || 0}
               </strong>
@@ -282,7 +282,7 @@ export async function loadTracking() {
               <span className={'chip-label'}>{'Hard Bounces'}</span>
               <strong
                 className={'chip-val'}
-                style={nativeStyle('color: ' + (hardBounced ? '#f87171' : 'inherit') + ';')}
+                style={nativeStyle('color: ' + (hardBounced ? '#bd3022' : 'inherit') + ';')}
               >
                 {hardBounced}
               </strong>
@@ -291,20 +291,20 @@ export async function loadTracking() {
               <span className={'chip-label'}>{'Soft Bounces'}</span>
               <strong
                 className={'chip-val'}
-                style={nativeStyle('color: ' + (softBounced ? '#fbbf24' : 'inherit') + ';')}
+                style={nativeStyle('color: ' + (softBounced ? '#86520c' : 'inherit') + ';')}
               >
                 {softBounced}
               </strong>
             </div>
             <div className={'telemetry-chip'}>
               <span className={'chip-label'}>{'Open Signals'}</span>
-              <strong className={'chip-val'} style={{ color: '#60a5fa' }}>
+              <strong className={'chip-val'} style={{ color: '#1649a8' }}>
                 {opens}
               </strong>
             </div>
             <div className={'telemetry-chip'}>
               <span className={'chip-label'}>{'Seed Inbox'}</span>
-              <strong className={'chip-val'} style={{ color: '#34d399' }}>
+              <strong className={'chip-val'} style={{ color: '#126c48' }}>
                 {summary.inbox || 0}
               </strong>
             </div>
@@ -312,7 +312,7 @@ export async function loadTracking() {
               <span className={'chip-label'}>{'Seed Spam'}</span>
               <strong
                 className={'chip-val'}
-                style={nativeStyle('color: ' + (summary.spam ? '#f87171' : 'inherit') + ';')}
+                style={nativeStyle('color: ' + (summary.spam ? '#bd3022' : 'inherit') + ';')}
               >
                 {summary.spam || 0}
               </strong>
@@ -431,7 +431,7 @@ export async function loadTracking() {
               ) : (
                 <>
                   <div className={'clean-delivery-chip'}>
-                    <Icon icon={Shield} size={13} color={'#10b981'} />
+                    <Icon icon={Shield} size={13} color={'#126c48'} />
                     <span>
                       <Icon icon={Check} size={12} />
                       {'Clean Delivery'}
@@ -1015,7 +1015,7 @@ export function renderTrackingDetail(r: TrackingRecord) {
           desc: `${displayText(ev.signal || 'Remote 1x1 image request received from mail client.')} ${
             openRelative ? (
               <>
-                <strong style={{ color: '#10b981' }}>
+                <strong style={{ color: '#126c48' }}>
                   {'('}
                   {openRelative}
                   {')'}
@@ -1184,7 +1184,7 @@ export function renderTrackingDetail(r: TrackingRecord) {
               <span
                 className={'lead-detail-value'}
                 style={nativeStyle(
-                  'color: ' + (r.firstOpenAt ? '#10b981' : 'var(--text-muted)') + ';',
+                  'color: ' + (r.firstOpenAt ? '#126c48' : 'var(--text-muted)') + ';',
                 )}
               >
                 {r.firstOpenAt ? `Seen (${r.opens?.length || 1}x)` : 'Unopened'}
@@ -1199,7 +1199,7 @@ export function renderTrackingDetail(r: TrackingRecord) {
               <span className={'lead-detail-label'}>{'Deliverability Health'}</span>
               <span
                 className={'lead-detail-value'}
-                style={nativeStyle('color: ' + (r.bounceStatus ? '#ef4444' : '#10b981') + ';')}
+                style={nativeStyle('color: ' + (r.bounceStatus ? '#ef4444' : '#126c48') + ';')}
               >
                 {r.bounceStatus ? `${displayText(r.bounceStatus)}` : 'Clean (No DSN)'}
               </span>
@@ -1213,7 +1213,7 @@ export function renderTrackingDetail(r: TrackingRecord) {
         {r.bounceReason || r.bounceStatus ? (
           <>
             <div className={'lead-details-card'} style={{ borderLeft: '3px solid #ef4444' }}>
-              <h4 className={'lead-details-title'} style={{ color: '#f87171' }}>
+              <h4 className={'lead-details-title'} style={{ color: '#bd3022' }}>
                 <Icon icon={TriangleAlert} size={14} />
                 {'\n          Delivery Failure Diagnostic ('}
                 {displayText(r.bounceStatus || 'bounced')}
@@ -1223,7 +1223,7 @@ export function renderTrackingDetail(r: TrackingRecord) {
                 style={{
                   fontSize: '13px',
                   fontWeight: '600',
-                  color: '#fca5a5',
+                  color: '#a92b20',
                   fontFamily: 'ui-monospace, SFMono-Regular, monospace',
                   marginBottom: '6px',
                   wordBreak: 'break-all',
@@ -1344,7 +1344,7 @@ export function renderTrackingDetail(r: TrackingRecord) {
               <span className={'lead-detail-value'}>
                 {r.firstOpenAt ? (
                   <>
-                    <span style={{ color: '#10b981', fontWeight: '600' }}>
+                    <span style={{ color: '#126c48', fontWeight: '600' }}>
                       {fmt(r.firstOpenAt)}
                       {openRelative ? (
                         <>
@@ -1396,10 +1396,10 @@ export function renderTrackingDetail(r: TrackingRecord) {
                       style={nativeStyle(
                         'color: ' +
                           (r.placement?.status === 'inbox'
-                            ? '#10b981'
+                            ? '#126c48'
                             : r.placement?.status === 'spam'
                               ? '#ef4444'
-                              : '#fff') +
+                              : '#181816') +
                           ';',
                       )}
                     >
@@ -1508,7 +1508,7 @@ export function renderTrackingDetail(r: TrackingRecord) {
               fontFamily: 'ui-monospace, SFMono-Regular, monospace',
               fontSize: '11.5px',
               lineHeight: '1.5',
-              color: '#cbd5e1',
+              color: '#494946',
               background: 'var(--bg-surface-elevated, #1a1e26)',
               borderRadius: 'var(--radius-sm)',
               padding: '12px',
@@ -1534,7 +1534,7 @@ export function renderTrackingDetail(r: TrackingRecord) {
         renderRegion(
           copySummaryBtn,
           <>
-            <Icon icon={Check} size={14} color={'#10b981'} />
+            <Icon icon={Check} size={14} color={'#126c48'} />
             {' Copied!'}
           </>,
         );
@@ -1556,7 +1556,7 @@ export function renderTrackingDetail(r: TrackingRecord) {
         renderRegion(
           btn,
           <>
-            <Icon icon={Check} size={12} color={'#10b981'} />
+            <Icon icon={Check} size={12} color={'#126c48'} />
           </>,
         );
         uiScope.timeout(() => {
@@ -1673,7 +1673,7 @@ export function renderDomainReport(result: DomainReport) {
             className={'status-pill'}
             style={{
               background: 'rgba(16, 185, 129, 0.15)',
-              color: '#34d399',
+              color: '#126c48',
               border: '1px solid rgba(16, 185, 129, 0.3)',
               fontWeight: '600',
               padding: '4px 10px',
@@ -1693,7 +1693,7 @@ export function renderDomainReport(result: DomainReport) {
             className={'status-pill'}
             style={{
               background: 'rgba(245, 158, 11, 0.15)',
-              color: '#fbbf24',
+              color: '#86520c',
               border: '1px solid rgba(245, 158, 11, 0.3)',
               fontWeight: '600',
               padding: '4px 10px',
@@ -1713,7 +1713,7 @@ export function renderDomainReport(result: DomainReport) {
             className={'status-pill'}
             style={{
               background: 'rgba(239, 68, 68, 0.15)',
-              color: '#f87171',
+              color: '#bd3022',
               border: '1px solid rgba(239, 68, 68, 0.3)',
               fontWeight: '600',
               padding: '4px 10px',
@@ -1747,8 +1747,8 @@ export function renderDomainReport(result: DomainReport) {
               style={nativeStyle(
                 'background: ' +
                   (spfFound
-                    ? 'rgba(16, 185, 129, 0.12); color: #34d399;'
-                    : 'rgba(239, 68, 68, 0.12); color: #f87171;') +
+                    ? 'rgba(16, 185, 129, 0.12); color: #126c48;'
+                    : 'rgba(239, 68, 68, 0.12); color: #bd3022;') +
                   ' font-weight: 700; font-size: 11px;',
               )}
             >
@@ -1773,7 +1773,7 @@ export function renderDomainReport(result: DomainReport) {
         <div
           style={nativeStyle(
             'font-size: 11.5px; color: ' +
-              (spfFound ? '#34d399' : '#f87171') +
+              (spfFound ? '#126c48' : '#bd3022') +
               '; display: flex; align-items: center; gap: 6px;',
           )}
         >
@@ -1800,8 +1800,8 @@ export function renderDomainReport(result: DomainReport) {
               style={nativeStyle(
                 'background: ' +
                   (dkimFound
-                    ? 'rgba(16, 185, 129, 0.12); color: #34d399;'
-                    : 'rgba(239, 68, 68, 0.12); color: #f87171;') +
+                    ? 'rgba(16, 185, 129, 0.12); color: #126c48;'
+                    : 'rgba(239, 68, 68, 0.12); color: #bd3022;') +
                   ' font-weight: 700; font-size: 11px;',
               )}
             >
@@ -1820,20 +1820,20 @@ export function renderDomainReport(result: DomainReport) {
                   {' — '}
                   {d.state === 'found' ? (
                     <>
-                      <span style={{ color: '#34d399' }}>{'Valid RSA Key'}</span>
+                      <span style={{ color: '#126c48' }}>{'Valid RSA Key'}</span>
                       <br />
                       {displayText(d.records.join('\n'))}
                     </>
                   ) : (
                     <>
-                      <span style={{ color: '#f87171' }}>{'Key missing'}</span>
+                      <span style={{ color: '#bd3022' }}>{'Key missing'}</span>
                     </>
                   )}
                 </>
               ))
             ) : (
               <>
-                <span style={{ color: '#94a3b8' }}>{'No DKIM selectors queried.'}</span>
+                <span style={{ color: '#575750' }}>{'No DKIM selectors queried.'}</span>
               </>
             )}
           </div>
@@ -1841,7 +1841,7 @@ export function renderDomainReport(result: DomainReport) {
         <div
           style={nativeStyle(
             'font-size: 11.5px; color: ' +
-              (dkimFound ? '#34d399' : '#f87171') +
+              (dkimFound ? '#126c48' : '#bd3022') +
               '; display: flex; align-items: center; gap: 6px;',
           )}
         >
@@ -1873,8 +1873,8 @@ export function renderDomainReport(result: DomainReport) {
               style={nativeStyle(
                 'background: ' +
                   (dmarcFound
-                    ? 'rgba(16, 185, 129, 0.12); color: #34d399;'
-                    : 'rgba(245, 158, 11, 0.15); color: #fbbf24;') +
+                    ? 'rgba(16, 185, 129, 0.12); color: #126c48;'
+                    : 'rgba(245, 158, 11, 0.15); color: #86520c;') +
                   ' font-weight: 700; font-size: 11px;',
               )}
             >
@@ -1889,7 +1889,7 @@ export function renderDomainReport(result: DomainReport) {
               displayText(result.dmarc.records.join('\n'))
             ) : (
               <>
-                <span style={{ color: '#fbbf24' }}>
+                <span style={{ color: '#86520c' }}>
                   {'No record at '}
                   <code>
                     {'_dmarc.'}
@@ -1904,7 +1904,7 @@ export function renderDomainReport(result: DomainReport) {
         <div
           style={nativeStyle(
             'font-size: 11.5px; color: ' +
-              (dmarcFound ? '#34d399' : '#fbbf24') +
+              (dmarcFound ? '#126c48' : '#86520c') +
               '; display: flex; align-items: center; gap: 6px;',
           )}
         >
@@ -1924,7 +1924,7 @@ export function renderDomainReport(result: DomainReport) {
             {''}
           </div>
           <div style={{ flex: '1' }}>
-            <div style={{ fontSize: '13.5px', fontWeight: '700', color: '#fde68a' }}>
+            <div style={{ fontSize: '13.5px', fontWeight: '700', color: '#575750' }}>
               {
                 '\n            Action Required: Add Recommended DMARC TXT Record to Namecheap DNS\n          '
               }
@@ -1932,7 +1932,7 @@ export function renderDomainReport(result: DomainReport) {
             <p
               style={{
                 fontSize: '12.5px',
-                color: '#e2e8f0',
+                color: '#343432',
                 margin: '6px 0 10px 0',
                 lineHeight: '1.5',
               }}
@@ -1945,7 +1945,7 @@ export function renderDomainReport(result: DomainReport) {
             </p>
             <div
               style={{
-                background: '#0f1219',
+                background: '#fffdf8',
                 border: '1px solid #283044',
                 borderRadius: '8px',
                 padding: '12px',
@@ -1957,7 +1957,7 @@ export function renderDomainReport(result: DomainReport) {
                   <tr>
                     <td>{'Type:'}</td>
                     <td>
-                      <strong style={{ color: '#38bdf8' }}>{'TXT Record'}</strong>
+                      <strong style={{ color: '#1649a8' }}>{'TXT Record'}</strong>
                     </td>
                   </tr>
                   <tr>
@@ -1971,7 +1971,7 @@ export function renderDomainReport(result: DomainReport) {
                     <td>
                       <code
                         id={'dmarcRecordText'}
-                        style={{ color: '#a7f3d0', wordBreak: 'break-all' }}
+                        style={{ color: '#126c48', wordBreak: 'break-all' }}
                       >
                         {displayText(recommendedDmarcVal)}
                       </code>
@@ -2043,8 +2043,10 @@ export function renderDomainReport(result: DomainReport) {
             />
           </div>
           <div>
-            <div style={{ fontSize: '15px', fontWeight: '700', color: '#fff' }}>{bannerTitle}</div>
-            <div style={{ fontSize: '12.5px', color: '#cbd5e1', marginTop: '2px' }}>
+            <div style={{ fontSize: '15px', fontWeight: '700', color: '#181816' }}>
+              {bannerTitle}
+            </div>
+            <div style={{ fontSize: '12.5px', color: '#494946', marginTop: '2px' }}>
               {bannerDesc}
             </div>
           </div>
@@ -2265,7 +2267,7 @@ export function mountTracking() {
           $('seedPlanResult'),
           <>
             <div className={'seed-plan-success-box'}>
-              <Icon icon={Check} size={16} color={'#10b981'} />
+              <Icon icon={Check} size={16} color={'#126c48'} />
               <div>
                 <strong>
                   {'Plan '}

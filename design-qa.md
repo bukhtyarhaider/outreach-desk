@@ -1,3 +1,43 @@
+# Bauhaus branch design QA — 2026-10-30
+
+final result: passed
+
+## Target and approved adaptation
+
+The first displayed concept is the selected visual direction. The user clarified that the concept is an approach, not an exact final screen specification, and required the existing operational information and all working features to remain visible/accessible. This QA assesses that approved product adaptation rather than claiming pixel-for-pixel fidelity.
+
+Source: `outputs/bauhaus-review/selected-reference.png`. Comparison: `outputs/bauhaus-review/comparison.png` places the source and implemented campaign screen together at matched desktop proportions. Full implementation captures are 1440×1024; the generated source is normalized proportionally for the comparison board. Desktop/mobile review boards and individual screenshots are in the same directory. The five core screens, all twelve existing destinations, review controls and a mobile lead drawer were captured with synthetic data. Normal customer records were not modified or sent.
+
+## Visual iteration and fixes
+
+- P1: inherited dark tracking ribbons/callouts made dark text unreadable on the paper theme. Replaced their dark surface fills, removed inherited elevation and recaptured the tracking screen; counts and explanatory text are readable on the new surface.
+- P2: inherited primary-button selectors retained dark text and glow shadows. Corrected foreground/elevation precedence; recaptured campaign, settings and template controls with light text on the vermilion action.
+- P2: sidebar flex distribution left excessive blank space above navigation. Made navigation consume the remaining sidebar space and verified the primary destinations start below Create campaign.
+- P2: inherited minimum table height created excessive empty space in the compact audience preview. Limited that rule to working data tables and verified the campaign preview/footer together.
+- P1: mobile hid the desktop connection/file indicators. Added explicit connection and file presentation to the global workspace bar and verified the narrow layouts, not just the desktop header.
+
+The post-fix comparison and all-route review boards show no remaining blocking P0/P1/P2 visual findings in the exercised states.
+
+## Required surfaces
+
+- Typography: bundled variable Manrope with readable sans-serif hierarchy, bold geometric campaign heading, restrained uppercase labels and conventional body/table text. The font is served locally with its OFL license; no runtime CDN is needed.
+- Spacing/layout: flat paper surfaces, vermilion action/step accents, thin dividers, restrained radii and local table scrolling follow the selected direction. Added context bar, full navigation inventory and review controls deliberately consume more space than the exploratory mock. Mobile stacks these controls rather than dropping them.
+- Tokens/colors: canonical paper/ink/status tokens live in the shared token file; shared Bauhaus foundations, shell and feature surface rules apply them. Errors, warnings, protected recipients and disabled actions remain distinct from brand styling. Focus uses a cobalt outline and reduced-motion preferences are respected.
+- Imagery/assets: the current customer's text/monogram identity is retained rather than substituting the mock brand. No photo/illustration placeholders are required by this data-focused screen. Existing Lucide icons are retained per the user's request; step geometry is functional navigation.
+- Copy/content: counts and source rows are real data, not mock dashboard metrics. The audience preview explicitly follows the current Leads filter; import activation and queue launch remain separate. Unibox preserves capture consent, evidence and reply-review controls. The UI never treats an image request as proof of reading or a webmail send as guaranteed delivery.
+
+## Behavior and scope checks
+
+The existing 215 Node and 12 Python test baseline passed. Affected UI/Unibox integration checks were rerun after fixing an omitted worksheet list in a legacy campaign record. Final UI acceptance verifies all original IDs/routes, retained edits, current batch context, section navigation, repeated Create campaign entry, event text and responsive bounds. Keyboard navigation retains focus and exposes the current page. Full accessibility certification and Windows/Edge rollout were not performed.
+
+Remaining P3: consider a user-controlled compact workspace context on very small screens; the current default favors the user's explicit requirement to retain operational visibility. Separate Accounts/Reports navigation can be explored later; all current mailbox, history and tracking functions remain directly accessible with their familiar labels.
+
+Implementation checklist: shared tokens/primitives; typed navigation; read-only presentation bridge; modular campaign views and shared switching mutation; all legacy routes/features retained; local font/license; build/type/format/diff checks; browser/behavior verification; portable-package contents checked.
+
+---
+
+## Earlier release QA
+
 # Dashboard read-message dismissal QA — 2.2.0-rc.9
 
 final result: passed
