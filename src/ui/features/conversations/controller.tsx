@@ -98,7 +98,8 @@ export function mountConversations() {
     function markSelection() {
       if (!mailroom) return;
       document.querySelectorAll<HTMLElement>('#mailroomList [data-reply]').forEach((b) => {
-        const active = b.dataset.reply === selection?.id;
+        const active =
+          b.dataset.reply === selection?.id && $('mailroomWorkspace').dataset.threadOpen === 'true';
         b.classList.toggle('selected', active);
         b.setAttribute('aria-pressed', String(active));
       });
@@ -124,13 +125,28 @@ export function mountConversations() {
                 size="item"
                 type={'button'}
                 title={displayText(r.recipient)}
-                className={'mailroom-card ' + (r.id === selection?.id ? 'selected' : '')}
+                className={
+                  'mailroom-card ' +
+                  (r.id === selection?.id && $('mailroomWorkspace').dataset.threadOpen === 'true'
+                    ? 'selected'
+                    : '')
+                }
                 data-reply={displayText(r.id)}
                 data-type={r.type}
-                aria-pressed={r.id === selection?.id}
+                aria-pressed={
+                  r.id === selection?.id && $('mailroomWorkspace').dataset.threadOpen === 'true'
+                }
+                data-unread={r.unread ? 'true' : 'false'}
               >
                 <span className={'mailroom-card-top'}>
-                  <strong>{displayText(r.contactName || r.company || r.recipient)}</strong>
+                  <strong>
+                    <span className="mailroom-contact-initial" aria-hidden="true">
+                      {Array.from(
+                        r.contactName || r.company || r.recipient || '?',
+                      )[0].toLocaleUpperCase()}
+                    </span>
+                    {displayText(r.contactName || r.company || r.recipient)}
+                  </strong>
                   <time>{displayText(compactTime(r.lastReplyAt || r.at))}</time>
                 </span>
                 {r.contactName && r.company && r.company !== r.recipient ? (
@@ -195,7 +211,10 @@ export function mountConversations() {
           <>
             <div className={'mailroom-list-empty'}>
               <strong>{'No conversations in this queue'}</strong>
-              <p>{'Try All, change the filters, or scan your previous replies.'}</p>
+              <p>
+                Try another queue or clear your filters. If you expect new messages, check capture
+                settings and sync coverage.
+              </p>
             </div>
           </>,
         ),
@@ -230,6 +249,14 @@ export function mountConversations() {
         $('mailroomQueueLabel').textContent =
           `Queue: ${work.selectedOptions[0]?.textContent || work.value}`;
       }
+      const filterCount = [
+        $('replySearch').value.trim(),
+        $('replyMailbox').value,
+        $('replyCategory').value,
+      ].filter(Boolean).length;
+      $('mailroomFiltersOpen').dataset.activeFilters = filterCount ? String(filterCount) : '';
+      const clearFilters = document.getElementById('mailroomResetFilters');
+      if (clearFilters) clearFilters.hidden = filterCount === 0;
       $('replyPage').textContent = report!.total
         ? `${offset + 1}–${Math.min(offset + report!.rows.length, report!.total)} of ${report!.total}`
         : '0 conversations';
@@ -1153,6 +1180,10 @@ export function mountConversations() {
       if (mailroom) {
         $('mailroomWorkspace').dataset.threadOpen = 'false';
         $('mailroomEmpty').hidden = false;
+        markSelection();
+        Array.from($('mailroomList').querySelectorAll<HTMLElement>('[data-reply]'))
+          .find((row) => row.dataset.reply === selection?.id)
+          ?.focus({ preventScroll: true });
       }
     });
     uiScope.handler($('replyThreadRefresh'), 'onclick', () =>

@@ -217,6 +217,10 @@ export function mountCarrierWorkspace() {
       if (saving) return;
       saving = true;
       const b = $('replyConfigSave');
+      const fields = document.getElementById('mailroomConfigFields');
+      if (fields instanceof HTMLFieldSetElement) fields.disabled = true;
+      const feedback = document.getElementById('mailroomConfigFeedback');
+      if (feedback) feedback.textContent = 'Saving capture settings…';
       b.textContent = 'Saving…';
       b.disabled = true;
       try {
@@ -235,12 +239,16 @@ export function mountCarrierWorkspace() {
         dirty = false;
         $('replyConfigConfirm').checked = false;
         window.dispatchEvent(new Event('fc-conversation-view'));
+        if (feedback)
+          feedback.textContent = 'Capture settings saved. Secret values were not stored.';
         notice('Read-only capture configuration saved. Secret values were not stored.');
       } catch (e) {
+        if (feedback) feedback.textContent = errorMessage(e) + ' Your settings draft is retained.';
         notice(errorMessage(e));
         $('replyConfigNote').textContent = errorMessage(e) + ' Your settings draft is retained.';
       } finally {
         saving = false;
+        if (fields instanceof HTMLFieldSetElement) fields.disabled = false;
         b.textContent = 'Save capture settings';
         b.disabled = false;
       }

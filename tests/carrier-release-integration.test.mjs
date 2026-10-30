@@ -49,6 +49,40 @@ test('integrated release UI supports guided mapping, activation, lead provenance
  await page.locator('#mailroomToolsOpen').click();if(!await page.locator('#replyConfigPanel summary').isVisible())await page.locator('#replyCaptureSummary').click();await page.locator('#replyConfigPanel summary').click();await page.locator('#replyConfigAdd').click();await page.locator('[data-config-field="email"]').fill(account);await page.locator('[data-config-field="host"]').fill('mail.example.com');await page.locator('[data-config-field="passwordEnv"]').fill('REP_IMAP_PASSWORD');await page.locator('#replyConfigSave').click();await page.waitForFunction(()=>document.querySelector('#notice').textContent.includes('configuration saved'));assert.equal((await f.api('conversations')).capture.enabled,false);
  for(const width of [1440,390]){await page.setViewportSize({width,height:1100});assert(await page.evaluate(()=>Math.max(document.documentElement.scrollWidth,document.body.scrollWidth)<=innerWidth+1));if(process.env.FC_UI_SCREENSHOT_DIR){await fs.mkdir(process.env.FC_UI_SCREENSHOT_DIR,{recursive:true});await page.screenshot({path:path.join(process.env.FC_UI_SCREENSHOT_DIR,`carrier-release-${width}.png`)});}}
  await page.locator('[data-close-mailroom=mailroomToolsDialog]').click();await page.reload();await page.locator('[data-mailroom-work=all]').click();await page.locator('#mailroomList button').waitFor();assert.equal(await page.locator('#replyCaptureTools').getAttribute('open'),null);assert.match(await page.locator('#replyProtectionDelivery').innerText(),/Independent PC/);
+
+ // Unibox shortcuts expose setup directly, retain failed drafts, and acknowledge in-flight saves.
+ await page.setViewportSize({width:1440,height:1000});
+ await page.getByRole('button',{name:'Capture settings',exact:true}).click();
+ assert.equal(await page.locator('#replyConfigPanel').getAttribute('open'),'');
+ await page.waitForFunction(()=>{const panel=document.querySelector('#replyConfigPanel').getBoundingClientRect(),heading=document.querySelector('#mailroomToolsDialog .mailroom-dialog-heading').getBoundingClientRect();return panel.top>=heading.bottom&&panel.top<=heading.bottom+140;});
+ await page.locator('#replyConfigPages').fill('7');
+ let releaseSave;const saveGate=new Promise(resolve=>{releaseSave=resolve;});
+ await page.route('**/api/conversations/config',async route=>{await saveGate;await route.fulfill({status:400,contentType:'application/json',body:JSON.stringify({error:'Synthetic configuration failure'})});});
+ await page.locator('#replyConfigSave').click();
+ await page.waitForFunction(()=>document.querySelector('#mailroomConfigFields').disabled);
+ assert(await page.locator('#replyConfigPages').isDisabled());
+ releaseSave();await page.waitForFunction(()=>!document.querySelector('#mailroomConfigFields').disabled);
+ assert.match(await page.locator('#mailroomConfigFeedback').innerText(),/Synthetic configuration failure.*draft is retained/);
+ assert.equal(await page.locator('#replyConfigPages').inputValue(),'7');
+ await page.unroute('**/api/conversations/config');
+ for(const width of [1440,768,390,320]){
+   await page.setViewportSize({width,height:1000});
+   await page.getByRole('button',{name:'Mailbox setup',exact:true}).click();
+   await page.waitForFunction(()=>{const panel=document.querySelector('#replyConfigPanel').getBoundingClientRect(),heading=document.querySelector('#mailroomToolsDialog .mailroom-dialog-heading').getBoundingClientRect();return panel.top>=heading.bottom&&panel.top<=heading.bottom+140;});
+   assert(await page.locator('#mailroomToolsDialog').evaluate(dialog=>dialog.scrollWidth<=dialog.clientWidth+1),`Mailbox setup fits at ${width}px`);
+ }
+ await page.locator('[data-close-mailroom=mailroomToolsDialog]').click();
+ await page.locator('#replySearch').fill('no-carrier-matches-this-filter');
+ await page.locator('#mailroomResetFilters').waitFor({state:'visible'});
+ await page.locator('#mailroomResetFilters').click();
+ await page.locator('#mailroomList [data-reply]').first().waitFor();
+ assert.equal(await page.locator('#replySearch').inputValue(),'');
+ await page.locator('#mailroomList [data-reply]').first().click();
+ await page.locator('#replyInspector').waitFor({state:'visible'});
+ await page.locator('#replyClose').click();
+ assert.equal(await page.locator('#mailroomList .selected').count(),0);
+ await page.locator('#mailroomList [data-reply]').first().press('Home');
+ assert(await page.evaluate(()=>document.activeElement.matches('#mailroomList [data-reply]')));
  assert.deepEqual(errors,[]);assert.deepEqual(external,[]);
 });
 

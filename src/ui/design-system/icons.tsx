@@ -51,6 +51,7 @@ export {
   Search,
   Send,
   Settings,
+  SlidersHorizontal,
   Shield,
   ShieldAlert,
   ShieldCheck,

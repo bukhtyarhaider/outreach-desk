@@ -24,3 +24,5 @@
 @import '../features/dashboard/styles.css';
 @import '../features/campaigns/styles.css';
 @import './layout/sticky-headers.css';
+
+@import '../features/conversations/refinement.css';
