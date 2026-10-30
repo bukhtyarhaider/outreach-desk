@@ -330,3 +330,9 @@ Replaced 131 hand-authored inline SVGs and decorative emoji status/timeline icon
 - Extracted setup/filter dialogs into feature modules. Native controls/IDs, read-only authorization, credential-reference handling, evidence review, opt-outs, stale-approval guards and operator-only native-mailbox sending remain compatible. See `docs/UNIBOX-UX.md`.
 - Full suite: **217 JavaScript and 12 Python tests passed**, no failures/skips. Final focused React/release acceptance passed 20 tests; final dialog positioning/recovery acceptance passed 12 tests after the section-scroll refinement. Typecheck, formatting, production builds and diff checks passed.
 - Accepted screenshots and numbered flow findings are under `outputs/unibox-refinement/`. Desktop/mobile review used synthetic data. Live provider connections, actual sending and full accessibility conformance were not claimed.
+
+## Dashboard operational panels — 2026-10-31
+
+- Refined Outreach runner, Mailbox, Carrier inbox and Selected batch around a reusable scoped panel heading, consistent surfaces/spacing, and distinct state/action hierarchy. Runner capacity displays actual rolling allowances; mailbox identity and connection actions remain explicit. Carrier counters open the original queues and conversation rows retain recipient, subject, intent, excerpt, unread state and guarded review/read actions. The batch panel names its campaign and guides an empty selection toward Leads.
+- Preserved every native control ID, connection/session option, template choice, progress update, queue/batch guard and read-dismissal workflow. Existing stat visuals and unread-message priority remain intact.
+- `FC_BROWSER_TESTS=1 npm test`: **217 JavaScript tests and 12 Python tests passed**, no failures/skips. Strict types, formatting, production builds and diff checks passed. Desktop/mobile visual review and evidence: `outputs/dashboard-panels/`. Synthetic data only; no messages or live provider actions were performed.

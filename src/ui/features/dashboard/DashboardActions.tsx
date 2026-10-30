@@ -1,15 +1,17 @@
-import { Notice, SectionHeader, StatusBadge } from '../../design-system/layout';
+import { DashboardPanelHeader } from './DashboardPanelHeader';
+import { Notice, StatusBadge } from '../../design-system/layout';
 import { ActionLink, Button, Input, Panel, Progress } from '../../design-system/primitives';
-import { Icon, Play, Square, Send } from '../../design-system/icons';
+import { Icon, Play, Square, Send, Activity, Mail, Users } from '../../design-system/icons';
 import { useWorkspace } from '../../shared/workspace-store';
 export function OutreachRunnerPanel() {
   const { state } = useWorkspace();
   const included = state?.campaigns.filter((c) => c.enabled && !c.reviewRequired).length ?? 0;
   return (
     <Panel className="dispatch-panel" id="outreachRunner" aria-label="Outreach runner controls">
-      <SectionHeader
+      <DashboardPanelHeader
+        icon={Activity}
         title="Outreach runner"
-        description={`${included} ${included === 1 ? 'campaign' : 'campaigns'} included`}
+        description={`Continuous · ${included} ${included === 1 ? 'campaign' : 'campaigns'} included`}
         actions={
           <span className="status-badge" id="jobStatus">
             Idle
@@ -34,7 +36,19 @@ export function OutreachRunnerPanel() {
           </Button>
         </div>
       </div>
-      <Progress id="progress" value={0} max={1} aria-label="Outreach queue progress" />
+      <div className="dashboard-capacity">
+        <dl>
+          <div>
+            <dt>Rolling hour remaining</dt>
+            <dd>{state?.remaining ?? '—'}</dd>
+          </div>
+          <div>
+            <dt>Rolling 24h remaining</dt>
+            <dd>{state?.dayRemaining ?? '—'}</dd>
+          </div>
+        </dl>
+        <Progress id="progress" value={0} max={1} aria-label="Outreach queue progress" />
+      </div>
       <p className="dispatch-allowance">
         <span id="quota">Loading hourly and daily allowances…</span>
       </p>
@@ -63,8 +77,10 @@ export function MailboxConnectionPanel() {
   const profile = state?.profiles.find((p) => p.id === state.activeProfile);
   return (
     <Panel className="dashboard-mailbox" aria-label="Active mailbox connection">
-      <SectionHeader
+      <DashboardPanelHeader
+        icon={Mail}
         title="Mailbox"
+        description="Active sending account"
         actions={
           <StatusBadge tone={state?.connected ? 'positive' : 'warning'}>
             {state?.connected ? 'Connected' : state?.signInOpen ? 'Sign-in open' : 'Disconnected'}
@@ -72,8 +88,13 @@ export function MailboxConnectionPanel() {
         }
       />
       <div className="dashboard-mailbox-identity">
-        <strong>{profile?.name || 'No mailbox profile'}</strong>
-        <p>{profile?.email || 'Add a mailbox in Accounts to get started.'}</p>
+        <span className="dashboard-mailbox-avatar" aria-hidden="true">
+          {Array.from(profile?.name || profile?.email || '?')[0].toLocaleUpperCase()}
+        </span>
+        <div>
+          <strong>{profile?.name || 'No mailbox profile'}</strong>
+          <p>{profile?.email || 'Add a mailbox in Accounts to get started.'}</p>
+        </div>
       </div>
       <div className="dashboard-mailbox-actions">
         <Button variant="primary" id="connect" disabled>
@@ -112,17 +133,24 @@ export function MailboxConnectionPanel() {
   );
 }
 export function ManualBatchPanel() {
-  const { selected } = useWorkspace();
+  const { state, selected } = useWorkspace();
+  const campaign = state?.campaigns.find((item) => item.id === state.activeCampaign);
   return (
     <Panel className="dashboard-batch" aria-label="Selected lead batch">
-      <SectionHeader
+      <DashboardPanelHeader
+        icon={Users}
         title="Selected batch"
+        description="Manual outreach · active campaign"
         actions={
           <StatusBadge id="selectedCount" tone={selected ? 'info' : 'neutral'}>
             0 selected
           </StatusBadge>
         }
       />
+      <div className="dashboard-batch-summary">
+        <strong>{selected ? 'Your selected audience' : 'Build a focused batch'}</strong>
+        <p title={campaign?.name}>{campaign?.name || 'No active campaign'}</p>
+      </div>
       <p className="hint">
         {selected
           ? 'Send only the leads selected in the active campaign.'
@@ -132,12 +160,14 @@ export function ManualBatchPanel() {
         <Input id="randomTemplates" type="checkbox" defaultChecked />
         Randomly select enabled, matching templates
       </label>
-      <div className="form-actions">
+      <div className="form-actions dashboard-batch-actions">
         <Button id="batch">
           <Icon icon={Send} size={14} />
           Send selected leads
         </Button>
-        <ActionLink href="#leads">{selected ? 'Review selection' : 'Select leads'}</ActionLink>
+        <ActionLink variant={selected ? 'secondary' : 'primary'} href="#leads">
+          {selected ? 'Review selection' : 'Select leads'}
+        </ActionLink>
       </div>
     </Panel>
   );

@@ -993,7 +993,12 @@ export function mountConversationAssistant() {
           $('carrierAttentionMetrics'),
           metrics.map(([label, key, work]) => (
             <>
-              <Button className={'secondary'} data-carrier-work={work}>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="dashboard-inbox-counter"
+                data-carrier-work={work}
+              >
                 <strong>{r.summary[key]}</strong>
                 <span>{label}</span>
               </Button>
@@ -1008,6 +1013,7 @@ export function mountConversationAssistant() {
                 item.carrierInboxId && item.latestInboundId ? (
                   <>
                     <Button
+                      size="sm"
                       className={'secondary'}
                       data-carrier-read={esc(item.carrierInboxId)}
                       data-read-version={esc(item.statusVersion)}
@@ -1030,14 +1036,24 @@ export function mountConversationAssistant() {
                 <>
                   <article className={'carrier-highlight ' + (item.unread ? 'unread' : '')}>
                     <div>
-                      <strong>{esc(item.recipient)}</strong>
-                      <p>
-                        {esc(item.intent?.intent || item.category)}
-                        {' · '}
-                        {esc(item.subject)}
-                        {item.unread ? ' · New/unread' : item.latestInboundId ? ' · Read' : ''}
+                      <div className="carrier-highlight-heading">
+                        <strong>{esc(item.recipient)}</strong>
+                        <span
+                          className={
+                            item.unread ? 'dashboard-unread-label' : 'dashboard-read-label'
+                          }
+                        >
+                          {item.unread ? 'New/unread' : item.latestInboundId ? 'Read' : 'Follow-up'}
+                        </span>
+                      </div>
+                      <p className="carrier-highlight-subject">
+                        {esc(item.subject || 'Carrier conversation')}
+                        <span className="carrier-highlight-intent">
+                          {' '}
+                          · {esc((item.intent?.intent || item.category || '').replaceAll('_', ' '))}
+                        </span>
                       </p>
-                      <p>
+                      <p className="carrier-highlight-excerpt">
                         {esc(
                           item.excerpt ||
                             'No captured human response. Check capture coverage before a follow-up.',
@@ -1046,6 +1062,7 @@ export function mountConversationAssistant() {
                     </div>
                     <div className={'carrier-highlight-actions'}>
                       <Button
+                        size="sm"
                         className={'secondary'}
                         data-carrier-open={item.id}
                         data-carrier-type={item.type}
