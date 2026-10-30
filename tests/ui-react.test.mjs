@@ -696,6 +696,94 @@ test(
       assert(fits, `Header pattern and controls fit without overlap at ${width}px`);
     }
 
+    // Every route shares the same sticky title/actions, including both context modes and hiding.
+    for (const width of [1440, 390]) {
+      await page.setViewportSize({ width, height: 1000 });
+      for (const mode of ['expanded', 'collapsed', 'hidden']) {
+        await openView('settings');
+        if (mode === 'collapsed') {
+          await page.getByRole('button', { name: 'Collapse workspace context' }).click();
+        } else if (mode === 'hidden') {
+          await page.getByLabel('Show workspace context', { exact: true }).uncheck();
+        } else {
+          await page.getByLabel('Show workspace context', { exact: true }).check();
+          if (await page.getByRole('button', { name: 'Expand workspace context' }).isVisible()) {
+            await page.getByRole('button', { name: 'Expand workspace context' }).click();
+          }
+        }
+        for (const view of ui.viewNames) {
+          await openView(view);
+          const layout = await page.evaluate(async () => {
+            const viewport = document.querySelector('.app-viewport');
+            viewport.scrollTo(0, 0);
+            await new Promise((resolve) =>
+              requestAnimationFrame(() => requestAnimationFrame(resolve)),
+            );
+            const header = document.querySelector('.view-page.active > .page-header');
+            const context = document.querySelector('.workspace-context-shell');
+            const offset =
+              getComputedStyle(context).position === 'sticky'
+                ? context.getBoundingClientRect().height
+                : 0;
+            const naturalTop = header.getBoundingClientRect().top;
+            viewport.scrollTo(0, 700);
+            await new Promise((resolve) => requestAnimationFrame(resolve));
+            const bounds = header.getBoundingClientRect();
+            const style = getComputedStyle(header);
+            return {
+              position: style.position,
+              top: bounds.top,
+              height: bounds.height,
+              offset,
+              scrolled: viewport.scrollTop,
+              naturalTop,
+              scrollInset: parseFloat(getComputedStyle(viewport).scrollPaddingTop),
+              fits: header.scrollWidth <= header.clientWidth + 1,
+            };
+          });
+          const independentInbox = view === 'conversations' && width > 1020;
+          assert.equal(
+            layout.position,
+            independentInbox ? 'relative' : 'sticky',
+            `${view}/${mode}/${width}: shared page header`,
+          );
+          assert(layout.fits, `${view}/${mode}/${width}: header actions fit`);
+          if (!independentInbox && layout.scrolled >= layout.naturalTop - layout.offset) {
+            assert(
+              Math.abs(layout.top - layout.offset) <= 1,
+              `${view}/${mode}/${width}: title/actions pin below context (${JSON.stringify(layout)})`,
+            );
+          }
+          assert(
+            layout.scrollInset >= layout.offset + layout.height,
+            `${view}/${mode}/${width}: anchors clear the sticky stack`,
+          );
+        }
+        await openView('settings');
+        await page.getByRole('button', { name: 'Sync & coordination', exact: true }).click();
+        await page.waitForFunction(() => {
+          const section = document.querySelector('#settingsConnections').getBoundingClientRect();
+          const header = document
+            .querySelector('#view-settings > .page-header')
+            .getBoundingClientRect();
+          return section.top >= header.bottom && section.top < innerHeight;
+        });
+        const saveButtonIsClear = await page.locator('#saveSettings').evaluate((button) => {
+          const bounds = button.getBoundingClientRect();
+          return button.contains(
+            document.elementFromPoint(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2),
+          );
+        });
+        assert(
+          saveButtonIsClear,
+          `Settings save action remains unobstructed after section navigation (${mode}/${width})`,
+        );
+      }
+    }
+    await openView('settings');
+    await page.getByLabel('Show workspace context', { exact: true }).check();
+    await page.getByRole('button', { name: 'Expand workspace context' }).click();
+
     // Storage denial must preserve working in-session controls and explain the limitation.
     await page.evaluate(() => {
       Storage.prototype.setItem = () => {

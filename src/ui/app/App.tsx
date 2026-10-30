@@ -18,14 +18,16 @@ import { Titlebar } from './layout/Titlebar';
 import { Sidebar } from './layout/Sidebar';
 import { LeadDrawer } from './layout/LeadDrawer';
 import { TrackingDrawer } from './layout/TrackingDrawer';
+import { useStickyHeaders } from './layout/use-sticky-headers';
 /** Feature adapters own mutable leaves. Keep page trees mounted to preserve unsaved edits across navigation. */
 export function App() {
+  const viewportRef = useStickyHeaders();
   return (
     <>
       <div className="app-shell">
         <div className="app-container">
           <Sidebar />
-          <main className="app-viewport">
+          <main className="app-viewport" ref={viewportRef}>
             <Titlebar />
             <WorkspaceContext />
             <p id="releasePreviewBanner" className="carrier-preview-banner" hidden>

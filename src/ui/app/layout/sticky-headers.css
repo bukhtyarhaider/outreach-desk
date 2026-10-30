@@ -1,0 +1,30 @@
+/* One sticky stack for every page, including wrapped actions and browser-local context modes. */
+.app-viewport {
+  --workspace-sticky-height: 0px;
+  --active-page-header-height: 0px;
+  scroll-padding-top: calc(
+    var(--workspace-sticky-height) + var(--active-page-header-height) + 16px
+  );
+}
+.view-page > .page-header {
+  position: sticky;
+  top: var(--workspace-sticky-height, 0px);
+  z-index: 30;
+  background: var(--bg-app);
+  padding-top: 12px;
+  margin-top: -12px;
+}
+.settings-section,
+.dispatch-panel {
+  scroll-margin-top: 0;
+}
+.ui-section-navigation {
+  top: calc(var(--workspace-sticky-height) + var(--active-page-header-height) + 16px);
+}
+/* Desktop Unibox already keeps its title/tools above independently scrolling message panes. */
+@media (min-width: 1021px) {
+  .mailroom-page > .page-header {
+    position: relative;
+    top: auto;
+  }
+}
