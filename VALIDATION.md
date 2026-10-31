@@ -362,3 +362,9 @@ Replaced 131 hand-authored inline SVGs and decorative emoji status/timeline icon
 
 - Carrier counters now use shared Metric/MetricGroup and StatMark primitives, matching the dashboard stat typography, surfaces and Bauhaus geometry. Responsive columns adapt to desktop and mobile; labeled Unibox actions retain each work filter, including follow-up eligibility.
 - Follow-up-only rows are excluded on the server and filtered from legacy responses in the UI. Follow-up tasks remain available in Unibox. Strict type, formatting and production build checks passed; focused React/browser and carrier-inbox regression passed 24 tests.
+
+## Outreach runner motion — 2026-10-31
+
+- Added a shared brand-geometry motion component for queue and header, synchronized to job state and wall-clock phase. Working, waiting and idle presentations remain separate from confirmation evidence. Reduced-motion preferences stop decorative movement.
+- Dashboard adds a live next-check countdown, processed run count, explicitly scoped campaign readiness/PC confirmations and rest-cycle information. Native action IDs, disabled guards, existing progress/allowance messages and sending logic are unchanged.
+- Settings → Appearance saves a header-only animation preference locally and restores the static pattern when disabled. Final React/browser suite: **8 passed**, including reload persistence of the new toggle and responsive navigation/layout checks. Typecheck, formatting, production build and diff checks passed. No live outreach was started for verification.

@@ -28,6 +28,23 @@ export function AppearanceSettings() {
               }
             />
           </label>
+          <label className="appearance-option" htmlFor="headerRunnerAnimation">
+            <span>
+              <strong>Header outreach animation</strong>
+              <small>
+                Show synchronized queue motion in the header while outreach is active.
+                Reduced-motion preferences are always respected.
+              </small>
+            </span>
+            <Input
+              id="headerRunnerAnimation"
+              type="checkbox"
+              checked={preferences.headerRunnerAnimation}
+              onChange={(event) =>
+                updateUIPreferences({ headerRunnerAnimation: event.currentTarget.checked })
+              }
+            />
+          </label>
           <p className="hint" role="status">
             {persisted
               ? 'Saved automatically in this browser. Applies to every page.'

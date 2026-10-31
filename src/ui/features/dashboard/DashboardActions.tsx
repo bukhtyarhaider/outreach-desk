@@ -1,3 +1,4 @@
+import { RunnerProcess } from './RunnerProcess';
 import { DashboardPanelHeader } from './DashboardPanelHeader';
 import { Notice, StatusBadge } from '../../design-system/layout';
 import { ActionLink, Button, Input, Panel, Progress } from '../../design-system/primitives';
@@ -18,6 +19,7 @@ export function OutreachRunnerPanel() {
           </span>
         }
       />
+      <RunnerProcess />
       <div className="dispatch-command">
         <div>
           <p id="jobMessage" className="runner-message">
