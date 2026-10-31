@@ -1,5 +1,13 @@
 import { Check, Icon } from './icons';
 
+export type StatTone = 'info' | 'attention' | 'success' | 'pending';
+const toneColors: Record<StatTone, string> = {
+  info: '--accent-blue',
+  attention: '--brand-red',
+  success: '--accent-emerald',
+  pending: '--brand-yellow',
+};
+
 export type StatKind = 'total' | 'ready' | 'excluded' | 'sent' | 'signal' | 'warning' | 'timing';
 
 /** Audience shares use a campaign denominator; PC-wide sends deliberately have no progress scale. */
@@ -16,14 +24,24 @@ function sectorPath(cx: number, cy: number, radius: number, start: number, sweep
   return `M${cx},${cy}L${point(start)}A${radius},${radius} 0 ${sweep > 180 ? 1 : 0},1 ${point(start + sweep)}Z`;
 }
 
-export function StatMark({ kind, value, total }: { kind: StatKind; value: number; total: number }) {
+export function StatMark({
+  kind,
+  value,
+  total,
+  tone,
+}: {
+  kind: StatKind;
+  value: number;
+  total: number;
+  tone?: StatTone;
+}) {
   const share = ['signal', 'warning', 'timing'].includes(kind)
     ? Number.isFinite(value) && value > 0
       ? 1
       : 0
     : audienceShare(value, total);
   const hasValue = Number.isFinite(value) && value > 0;
-  const color = `var(${kind === 'timing' ? '--brand-yellow' : kind === 'ready' || kind === 'signal' ? '--accent-blue' : '--brand-red'})`;
+  const color = `var(${tone ? toneColors[tone] : kind === 'timing' ? '--brand-yellow' : kind === 'ready' || kind === 'signal' ? '--accent-blue' : '--brand-red'})`;
   const shape =
     kind === 'ready' || kind === 'signal' ? (
       <circle cx="22" cy="22" r="20" />

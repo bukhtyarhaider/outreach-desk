@@ -610,3 +610,20 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* The legacy counter wrapper was a five-column grid: its single MetricGroup
+   child must span the full panel rather than occupying one of those columns. */
+#view-dashboard .carrier-attention-metrics {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  margin: 16px 0;
+}
+#view-dashboard .carrier-attention-metrics .ui-metric dt {
+  min-height: 2.8em;
+  overflow-wrap: anywhere;
+}
+#view-dashboard .carrier-attention-metrics .ui-metric-value {
+  flex-wrap: wrap;
+  gap: 8px;
+}

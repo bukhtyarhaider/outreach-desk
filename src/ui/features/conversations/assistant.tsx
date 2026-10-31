@@ -1,6 +1,6 @@
 import type { StartThreadResponse } from '../../shared/types/api';
 import { Metric, MetricGroup } from '../../design-system/layout';
-import { StatMark } from '../../design-system/StatMark';
+import { StatMark, type StatTone } from '../../design-system/StatMark';
 import { Button, Select } from '../../design-system/primitives';
 import { uiScope } from '../../shared/lifecycle';
 import { contentOr } from '../../shared/regions';
@@ -984,6 +984,13 @@ export function mountConversationAssistant() {
             </>,
           );
         }
+        const metricTones: Record<string, StatTone> = {
+          unread: 'info',
+          needsReply: 'attention',
+          interested: 'success',
+          awaitingApproval: 'pending',
+          followUpReady: 'pending',
+        };
         const metrics = [
           ['New / unread', 'unread', 'unread'],
           ['Needs my reply', 'needsReply', 'needs_reply'],
@@ -999,7 +1006,14 @@ export function mountConversationAssistant() {
                 key={key}
                 label={label}
                 value={r.summary[key] ?? 0}
-                visual={<StatMark kind="signal" value={Number(r.summary[key] ?? 0)} total={0} />}
+                visual={
+                  <StatMark
+                    kind="signal"
+                    tone={metricTones[key]}
+                    value={Number(r.summary[key] ?? 0)}
+                    total={0}
+                  />
+                }
                 detail={
                   <Button
                     size="sm"

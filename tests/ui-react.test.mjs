@@ -758,6 +758,22 @@ test(
         .getAttribute('aria-expanded'),
       'true',
     );
+    await openView('dashboard');
+    await page.locator('#carrierAttentionMetrics .ui-metric').first().waitFor();
+    for (const width of [1440, 1024, 390, 320]) {
+      await page.setViewportSize({ width, height: 1000 });
+      const statsFit = await page.locator('#carrierAttentionMetrics').evaluate((wrapper) => {
+        const group = wrapper.querySelector('.ui-metric-group');
+        return (
+          Math.abs(group.getBoundingClientRect().width - wrapper.getBoundingClientRect().width) <
+            2 &&
+          [...group.querySelectorAll('.ui-metric')].every(
+            (card) => card.scrollWidth <= card.clientWidth + 1,
+          )
+        );
+      });
+      assert(statsFit, `Carrier statistics fill the panel without overlapping at ${width}px`);
+    }
     for (const width of [1440, 1024, 858, 768, 680, 390, 320]) {
       await page.setViewportSize({ width, height: 1000 });
       const fits = await page.locator('.app-titlebar').evaluate((header) => {
