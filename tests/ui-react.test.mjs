@@ -689,14 +689,14 @@ test(
     await page.unroute(/\/api\/tracking\?/);
     await page.locator('#trackingResetFilters').click();
     for (const section of ['trackingSeedStudio', 'trackingDomainHealth']) {
-      await page.locator(`a[href="#${section}"]`).click();
+      await page.locator(`#tab-${section}`).click();
       await page.waitForFunction(
         (section) =>
           location.hash === `#${section}` &&
           document.querySelector('.view-page.active').id === 'view-tracking',
         section,
       );
-      assert(await page.locator(`#${section}`).isVisible());
+      await page.locator(`#${section}`).waitFor({ state: 'visible' });
       const header = await page.locator(`#${section} .panel-head`).evaluate((element) => {
         const right = element.getBoundingClientRect().right;
         return [...element.children].every(
@@ -705,8 +705,20 @@ test(
       });
       assert(header, `${section}: header children fit inside the panel at mobile width`);
     }
+    assert.equal(await page.locator('#view-tracking [role=tabpanel]:visible').count(), 1);
+    await page.locator('#healthDomain').fill('preserved.example.com');
+    await page.getByRole('tab', { name: 'Domain Health', exact: true }).press('Home');
+    await page.locator('#trackingMessagePanel').waitFor({ state: 'visible' });
+    assert.equal(
+      await page.getByRole('tab', { name: 'Messages', exact: true }).getAttribute('aria-selected'),
+      'true',
+    );
+    await page.getByRole('tab', { name: 'Messages', exact: true }).press('End');
+    await page.locator('#trackingDiagnostics').waitFor({ state: 'visible' });
+    await page.getByRole('tab', { name: 'Domain Health', exact: true }).click();
+    assert.equal(await page.locator('#healthDomain').inputValue(), 'preserved.example.com');
     await page.goto(`${url}/#trackingSeedStudio`);
-    await page.locator('#trackingRows tr').first().waitFor();
+    await page.locator('#trackingRows tr').first().waitFor({ state: 'attached' });
     assert.equal(await page.locator('.view-page.active').getAttribute('id'), 'view-tracking');
     await page.setViewportSize({ width: 1440, height: 1000 });
     await openView('dashboard');
@@ -908,10 +920,11 @@ test(
           });
           if (view === 'tracking') {
             assert.equal(layout.sectionNav.position, 'sticky');
-            assert(
-              Math.abs(layout.sectionNav.top - layout.offset - layout.height) <= 1,
-              `Tracking section links pin below header: ${JSON.stringify(layout)}`,
-            );
+            if (layout.scrolled >= layout.naturalTop - layout.offset + layout.height + 16)
+              assert(
+                Math.abs(layout.sectionNav.top - layout.offset - layout.height) <= 1,
+                `Tracking section links pin below header: ${JSON.stringify(layout)}`,
+              );
             assert(
               layout.scrollInset >= layout.offset + layout.height + layout.sectionNav.height,
               'Tracking anchors clear section navigation',

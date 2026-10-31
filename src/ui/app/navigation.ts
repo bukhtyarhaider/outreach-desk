@@ -7,10 +7,10 @@ import { notice } from '../shared/runtime';
 import { loadHistory } from '../features/history/controller';
 import { loadTracking } from '../features/tracking/controller';
 import { renderLiveActivityView } from '../features/live-activity/controller';
-/** Hash anchors within Tracking are sections of that workspace, not unknown pages. */
+/** Tracking tab hashes remain workspace routes; reveal the selected mounted panel. */
 export function revealTrackingSection(value: string) {
-  if (isTrackingSection(value) && location.hash === `#${value}`) {
-    document.getElementById(value)?.scrollIntoView({ block: 'start' });
+  if ((value === 'tracking' || isTrackingSection(value)) && location.hash === `#${value}`) {
+    document.querySelector<HTMLElement>('.app-viewport')?.scrollTo(0, 0);
   }
 }
 

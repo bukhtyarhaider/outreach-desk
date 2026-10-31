@@ -33,7 +33,12 @@ export const routeLabels: Record<ViewName, string> = {
   accounts: 'Accounts',
   settings: 'Settings',
 };
-export const trackingSections = ['trackingSeedStudio', 'trackingDomainHealth'] as const;
+export const trackingSections = [
+  'trackingMessages',
+  'trackingSeedStudio',
+  'trackingDomainHealth',
+  'trackingDiagnostics',
+] as const;
 export type TrackingSection = (typeof trackingSections)[number];
 export function isTrackingSection(value: string): value is TrackingSection {
   return trackingSections.some((section) => section === value);

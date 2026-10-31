@@ -1,3 +1,4 @@
+import { TrackingTabs, useTrackingTab } from './TrackingTabs';
 import { FirebaseSyncStatus } from './FirebaseSyncStatus';
 import { StatusBadge } from '../../design-system/layout';
 import {
@@ -21,12 +22,12 @@ import {
   ShieldAlert,
   ShieldCheck,
   Sprout,
-  Star,
   X,
   Zap,
 } from '../../design-system/icons';
-import { ActionLink, Button, Input, Panel, Select } from '../../design-system/primitives';
+import { Button, Input, Panel, Select } from '../../design-system/primitives';
 export function TrackingPage() {
+  const activeTab = useTrackingTab();
   return (
     <>
       <section className={'view-page'} id={'view-tracking'}>
@@ -64,266 +65,250 @@ export function TrackingPage() {
           </div>
         </div>
 
-        <nav className="tracking-section-nav" aria-label="Tracking sections">
-          <Button
-            size="sm"
-            variant="ghost"
-            type="button"
-            onClick={() =>
-              document.getElementById('trackingMessages')?.scrollIntoView({ block: 'start' })
-            }
-          >
-            Messages
-          </Button>
-          <ActionLink href={'#trackingSeedStudio'} variant="ghost" size="sm">
-            <Icon icon={Star} size={13} />
-            {'\n                  Seed Studio\n                '}
-          </ActionLink>
-          <ActionLink href={'#trackingDomainHealth'} variant="ghost" size="sm">
-            <Icon icon={Shield} size={13} />
-            {'\n                  Domain Health\n                '}
-          </ActionLink>
-          <Button
-            size="sm"
-            variant="ghost"
-            type="button"
-            onClick={() =>
-              document.getElementById('trackingDiagnostics')?.scrollIntoView({ block: 'start' })
-            }
-          >
-            Mailbox monitoring
-          </Button>
-        </nav>
+        <TrackingTabs active={activeTab} />
         <FirebaseSyncStatus />
-        <div id={'trackingMetrics'} className={'tracking-metrics'} aria-live={'polite'}></div>
-        <details className="tracking-evidence-guide">
-          <summary>
-            <Icon icon={Info} size={14} /> How to read these signals
-          </summary>
-          <div className={'tracking-advisory-banner'}>
-            <div className={'advisory-icon'}>
-              <Icon icon={ShieldAlert} size={20} />
-            </div>
-            <div className={'advisory-content'}>
-              <strong>{'Evidence & Verification Protocol:'}</strong>
-              {
-                ' Webmail confirmation records transmission. DSN notices report delivery failures; controlled seed inspections verify placement in the tested mailbox. Remote 1×1 image requests capture open signals (which security gateways may also scan). Seed placement reflects the tested mailbox environment.\n              '
-              }
-            </div>
-          </div>
-
-          <div id={'trackingRate'} className={'tracking-rate-callout'}></div>
-        </details>
-
-        <Panel as="div" className={'panel tracking-main-panel'} id="trackingMessages">
-          <div className={'panel-head tracking-panel-head'}>
-            <div>
-              <h2 className={'panel-title'}>
-                <Icon icon={Mail} size={17} />
-                {'\n                    Message activity\n                  '}
-              </h2>
-              <p className={'panel-subtitle'}>
-                {'Filter and inspect the evidence recorded for each message.'}
-              </p>
-            </div>
-            <div className={'tracking-live-tag'}>
-              <span id={'trackingRecordCountBadge'}>{'Loading messages…'}</span>
-              <span id="trackingLoadStatus" role="status" className="tracking-load-status" />
-            </div>
-          </div>
-
-          <div className={'tracking-toolbar-container'}>
-            <div className={'tracking-quick-pills'} id={'trackingQuickPills'}>
-              <Button
-                size="sm"
-                type={'button'}
-                className={'filter-chip active'}
-                data-pill-status={''}
-              >
-                {'All Records'}
-              </Button>
-              <Button
-                size="sm"
-                type={'button'}
-                className={'filter-chip'}
-                data-pill-status={'webmail_sent'}
-              >
-                <Icon icon={Check} size={12} />
-                {'Webmail confirmed'}
-              </Button>
-              <Button
-                size="sm"
-                type={'button'}
-                className={'filter-chip'}
-                data-pill-status={'open_detected'}
-              >
-                <Icon icon={Eye} size={12} />
-                {'Open signals'}
-              </Button>
-              <Button
-                size="sm"
-                type={'button'}
-                className={'filter-chip'}
-                data-pill-status={'hard_bounced'}
-              >
-                <Icon icon={Ban} size={12} />
-                {'Permanent bounces'}
-              </Button>
-              <Button
-                size="sm"
-                type={'button'}
-                className={'filter-chip'}
-                data-pill-status={'seeds'}
-              >
-                <Icon icon={Sprout} size={12} />
-                {'Seed Tests'}
-              </Button>
-            </div>
-
-            <div className={'tracking-filters-row'}>
-              <div className={'filter-search-box'}>
-                <Icon icon={Search} size={14} />
-                <Input
-                  id={'trackingSearch'}
-                  aria-label="Search tracked messages"
-                  type={'search'}
-                  placeholder={'Search recipient, sender, subject…'}
-                  spellCheck={'false'}
-                />
+        <div
+          role="tabpanel"
+          id="trackingMessagePanel"
+          aria-labelledby="tab-trackingMessages"
+          hidden={activeTab !== 'trackingMessages'}
+        >
+          <div id={'trackingMetrics'} className={'tracking-metrics'} aria-live={'polite'}></div>
+          <details className="tracking-evidence-guide">
+            <summary>
+              <Icon icon={Info} size={14} /> How to read these signals
+            </summary>
+            <div className={'tracking-advisory-banner'}>
+              <div className={'advisory-icon'}>
+                <Icon icon={ShieldAlert} size={20} />
               </div>
-              <div className={'filter-select-group'}>
-                <label className={'filter-inline-label'} htmlFor={'trackingCampaign'}>
-                  {'Campaign'}
-                </label>
-                <Select id={'trackingCampaign'}>
-                  <option value={''}>{'All campaigns'}</option>
-                </Select>
+              <div className={'advisory-content'}>
+                <strong>{'Evidence & Verification Protocol:'}</strong>
+                {
+                  ' Webmail confirmation records transmission. DSN notices report delivery failures; controlled seed inspections verify placement in the tested mailbox. Remote 1×1 image requests capture open signals (which security gateways may also scan). Seed placement reflects the tested mailbox environment.\n              '
+                }
               </div>
-              <div className={'filter-select-group'}>
-                <label className={'filter-inline-label'} htmlFor={'trackingStatus'}>
-                  {'Status'}
-                </label>
-                <Select id={'trackingStatus'}>
-                  <option value={''}>{'All statuses'}</option>
-                  <option value={'pending'}>{'Pending'}</option>
-                  <option value={'send_attempted'}>{'Send attempted'}</option>
-                  <option value={'webmail_sent'}>{'Webmail confirmed'}</option>
-                  <option value={'send_failed'}>{'Submission failed'}</option>
-                  <option value={'hard_bounced'}>{'Permanent bounce'}</option>
-                  <option value={'soft_bounced'}>{'Temporary bounce'}</option>
-                  <option value={'open_detected'}>{'Open signal recorded'}</option>
-                  <option value={'delivery_unknown'}>{'Delivery unknown'}</option>
-                </Select>
-              </div>
-              <div className={'filter-date-group'}>
-                <label className={'filter-date-item'}>
-                  <span>{'From (UTC)'}</span>
-                  <Input id={'trackingFrom'} type={'date'} />
-                </label>
-                <label className={'filter-date-item'}>
-                  <span>{'Until (UTC)'}</span>
-                  <Input id={'trackingUntil'} type={'date'} />
-                </label>
-              </div>
-              <Button
-                size="sm"
-                type={'button'}
-                id={'trackingResetFilters'}
-                className={'secondary tracking-clear-btn'}
-                title={'Reset all active search filters'}
-              >
-                <Icon icon={X} size={12} />
-                {'\n                    Reset\n                  '}
-              </Button>
             </div>
-          </div>
 
-          <p id="trackingFilterSummary" className="tracking-filter-summary" role="status" />
-          <div className={'table-wrap tracking-table-wrap'}>
-            <table className={'tracking-table'}>
-              <thead>
-                <tr>
-                  <th>
-                    <span className={'th-label'}>{'Recipient / Subject'}</span>
-                  </th>
-                  <th>
-                    <span className={'th-label'}>{'Send status / Time'}</span>
-                  </th>
-                  <th>
-                    <span className={'th-label'}>{'Delivery failure'}</span>
-                  </th>
-                  <th>
-                    <span className={'th-label'}>{'Open signal / Placement'}</span>
-                  </th>
-                  <th style={{ textAlign: 'right' }}>
-                    <span className={'th-label'}>{'Actions'}</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody id={'trackingRows'}></tbody>
-            </table>
-          </div>
+            <div id={'trackingRate'} className={'tracking-rate-callout'}></div>
+          </details>
 
-          <div className={'table-footer'}>
-            <span id={'trackingPageInfo'} className={'tracking-page-info'}></span>
-            <div className={'pagination-controls'}>
-              <Button id={'trackingPrev'} className={'secondary'} title={'Previous 50 records'}>
-                <Icon icon={ChevronLeft} size={13} />
-                {'\n                    Previous\n                  '}
-              </Button>
-              <Button id={'trackingNext'} className={'secondary'} title={'Next 50 records'}>
-                {'\n                    Next\n                    '}
-                <Icon icon={ChevronRight} size={13} />
-              </Button>
-            </div>
-          </div>
-
-          <form id={'placementForm'} className={'placement-dock-form'} hidden={true}>
-            <Input id={'placementId'} type={'hidden'} />
-            <div className={'placement-dock-header'}>
-              <Icon icon={Activity} size={16} color={'#1649a8'} />
-              <strong>{'Record Manual Seed Placement Inspection'}</strong>
-            </div>
-            <div className={'placement-dock-grid'}>
-              <div className={'placement-dock-field'}>
-                <label htmlFor={'placementStatus'}>{'Observed Folder'}</label>
-                <Select id={'placementStatus'}>
-                  <option value={'inbox'}>{'Inbox'}</option>
-                  <option value={'spam'}>{'Spam / Junk'}</option>
-                  <option value={'other'}>{'Other folder'}</option>
-                  <option value={'not_found'}>{'Not found'}</option>
-                  <option value={'awaiting'}>{'Awaiting arrival'}</option>
-                </Select>
+          <Panel as="div" className={'panel tracking-main-panel'} id="trackingMessages">
+            <div className={'panel-head tracking-panel-head'}>
+              <div>
+                <h2 className={'panel-title'}>
+                  <Icon icon={Mail} size={17} />
+                  {'\n                    Message activity\n                  '}
+                </h2>
+                <p className={'panel-subtitle'}>
+                  {'Filter and inspect the evidence recorded for each message.'}
+                </p>
               </div>
-              <div className={'placement-dock-field evidence-field'}>
-                <label htmlFor={'placementEvidence'}>{'Inspection Evidence & Notes'}</label>
-                <Input
-                  id={'placementEvidence'}
-                  required={true}
-                  maxLength={500}
-                  placeholder={'e.g. Primary inbox verified at 14:35 UTC without spam warning'}
-                />
+              <div className={'tracking-live-tag'}>
+                <span id={'trackingRecordCountBadge'}>{'Loading messages…'}</span>
+                <span id="trackingLoadStatus" role="status" className="tracking-load-status" />
               </div>
-              <div className={'placement-dock-actions'}>
-                <Button type={'submit'} className={'primary-btn'}>
-                  {'Save Placement'}
+            </div>
+
+            <div className={'tracking-toolbar-container'}>
+              <div className={'tracking-quick-pills'} id={'trackingQuickPills'}>
+                <Button
+                  size="sm"
+                  type={'button'}
+                  className={'filter-chip active'}
+                  data-pill-status={''}
+                >
+                  {'All Records'}
                 </Button>
                 <Button
+                  size="sm"
                   type={'button'}
-                  className={'secondary'}
-                  onClick={() => {
-                    const form = document.getElementById('placementForm');
-                    if (form) form.hidden = true;
-                  }}
+                  className={'filter-chip'}
+                  data-pill-status={'webmail_sent'}
                 >
-                  {'Cancel'}
+                  <Icon icon={Check} size={12} />
+                  {'Webmail confirmed'}
+                </Button>
+                <Button
+                  size="sm"
+                  type={'button'}
+                  className={'filter-chip'}
+                  data-pill-status={'open_detected'}
+                >
+                  <Icon icon={Eye} size={12} />
+                  {'Open signals'}
+                </Button>
+                <Button
+                  size="sm"
+                  type={'button'}
+                  className={'filter-chip'}
+                  data-pill-status={'hard_bounced'}
+                >
+                  <Icon icon={Ban} size={12} />
+                  {'Permanent bounces'}
+                </Button>
+                <Button
+                  size="sm"
+                  type={'button'}
+                  className={'filter-chip'}
+                  data-pill-status={'seeds'}
+                >
+                  <Icon icon={Sprout} size={12} />
+                  {'Seed Tests'}
+                </Button>
+              </div>
+
+              <div className={'tracking-filters-row'}>
+                <div className={'filter-search-box'}>
+                  <Icon icon={Search} size={14} />
+                  <Input
+                    id={'trackingSearch'}
+                    aria-label="Search tracked messages"
+                    type={'search'}
+                    placeholder={'Search recipient, sender, subject…'}
+                    spellCheck={'false'}
+                  />
+                </div>
+                <div className={'filter-select-group'}>
+                  <label className={'filter-inline-label'} htmlFor={'trackingCampaign'}>
+                    {'Campaign'}
+                  </label>
+                  <Select id={'trackingCampaign'}>
+                    <option value={''}>{'All campaigns'}</option>
+                  </Select>
+                </div>
+                <div className={'filter-select-group'}>
+                  <label className={'filter-inline-label'} htmlFor={'trackingStatus'}>
+                    {'Status'}
+                  </label>
+                  <Select id={'trackingStatus'}>
+                    <option value={''}>{'All statuses'}</option>
+                    <option value={'pending'}>{'Pending'}</option>
+                    <option value={'send_attempted'}>{'Send attempted'}</option>
+                    <option value={'webmail_sent'}>{'Webmail confirmed'}</option>
+                    <option value={'send_failed'}>{'Submission failed'}</option>
+                    <option value={'hard_bounced'}>{'Permanent bounce'}</option>
+                    <option value={'soft_bounced'}>{'Temporary bounce'}</option>
+                    <option value={'open_detected'}>{'Open signal recorded'}</option>
+                    <option value={'delivery_unknown'}>{'Delivery unknown'}</option>
+                  </Select>
+                </div>
+                <div className={'filter-date-group'}>
+                  <label className={'filter-date-item'}>
+                    <span>{'From (UTC)'}</span>
+                    <Input id={'trackingFrom'} type={'date'} />
+                  </label>
+                  <label className={'filter-date-item'}>
+                    <span>{'Until (UTC)'}</span>
+                    <Input id={'trackingUntil'} type={'date'} />
+                  </label>
+                </div>
+                <Button
+                  size="sm"
+                  type={'button'}
+                  id={'trackingResetFilters'}
+                  className={'secondary tracking-clear-btn'}
+                  title={'Reset all active search filters'}
+                >
+                  <Icon icon={X} size={12} />
+                  {'\n                    Reset\n                  '}
                 </Button>
               </div>
             </div>
-          </form>
-        </Panel>
 
-        <Panel as="div" className={'panel seed-studio-panel'} id={'trackingSeedStudio'}>
+            <p id="trackingFilterSummary" className="tracking-filter-summary" role="status" />
+            <div className={'table-wrap tracking-table-wrap'}>
+              <table className={'tracking-table'}>
+                <thead>
+                  <tr>
+                    <th>
+                      <span className={'th-label'}>{'Recipient / Subject'}</span>
+                    </th>
+                    <th>
+                      <span className={'th-label'}>{'Send status / Time'}</span>
+                    </th>
+                    <th>
+                      <span className={'th-label'}>{'Delivery failure'}</span>
+                    </th>
+                    <th>
+                      <span className={'th-label'}>{'Open signal / Placement'}</span>
+                    </th>
+                    <th style={{ textAlign: 'right' }}>
+                      <span className={'th-label'}>{'Actions'}</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody id={'trackingRows'}></tbody>
+              </table>
+            </div>
+
+            <div className={'table-footer'}>
+              <span id={'trackingPageInfo'} className={'tracking-page-info'}></span>
+              <div className={'pagination-controls'}>
+                <Button id={'trackingPrev'} className={'secondary'} title={'Previous 50 records'}>
+                  <Icon icon={ChevronLeft} size={13} />
+                  {'\n                    Previous\n                  '}
+                </Button>
+                <Button id={'trackingNext'} className={'secondary'} title={'Next 50 records'}>
+                  {'\n                    Next\n                    '}
+                  <Icon icon={ChevronRight} size={13} />
+                </Button>
+              </div>
+            </div>
+
+            <form id={'placementForm'} className={'placement-dock-form'} hidden={true}>
+              <Input id={'placementId'} type={'hidden'} />
+              <div className={'placement-dock-header'}>
+                <Icon icon={Activity} size={16} color={'#1649a8'} />
+                <strong>{'Record Manual Seed Placement Inspection'}</strong>
+              </div>
+              <div className={'placement-dock-grid'}>
+                <div className={'placement-dock-field'}>
+                  <label htmlFor={'placementStatus'}>{'Observed Folder'}</label>
+                  <Select id={'placementStatus'}>
+                    <option value={'inbox'}>{'Inbox'}</option>
+                    <option value={'spam'}>{'Spam / Junk'}</option>
+                    <option value={'other'}>{'Other folder'}</option>
+                    <option value={'not_found'}>{'Not found'}</option>
+                    <option value={'awaiting'}>{'Awaiting arrival'}</option>
+                  </Select>
+                </div>
+                <div className={'placement-dock-field evidence-field'}>
+                  <label htmlFor={'placementEvidence'}>{'Inspection Evidence & Notes'}</label>
+                  <Input
+                    id={'placementEvidence'}
+                    required={true}
+                    maxLength={500}
+                    placeholder={'e.g. Primary inbox verified at 14:35 UTC without spam warning'}
+                  />
+                </div>
+                <div className={'placement-dock-actions'}>
+                  <Button type={'submit'} className={'primary-btn'}>
+                    {'Save Placement'}
+                  </Button>
+                  <Button
+                    type={'button'}
+                    className={'secondary'}
+                    onClick={() => {
+                      const form = document.getElementById('placementForm');
+                      if (form) form.hidden = true;
+                    }}
+                  >
+                    {'Cancel'}
+                  </Button>
+                </div>
+              </div>
+            </form>
+          </Panel>
+        </div>
+        <Panel
+          as="div"
+          role="tabpanel"
+          aria-labelledby="tab-trackingSeedStudio"
+          hidden={activeTab !== 'trackingSeedStudio'}
+          className={'panel seed-studio-panel'}
+          id={'trackingSeedStudio'}
+        >
           <div
             className={'panel-head'}
             style={{ alignItems: 'flex-start', flexWrap: 'wrap', gap: '14px' }}
@@ -530,7 +515,14 @@ export function TrackingPage() {
           </div>
         </Panel>
 
-        <Panel as="div" className={'panel domain-health-panel'} id={'trackingDomainHealth'}>
+        <Panel
+          as="div"
+          role="tabpanel"
+          aria-labelledby="tab-trackingDomainHealth"
+          hidden={activeTab !== 'trackingDomainHealth'}
+          className={'panel domain-health-panel'}
+          id={'trackingDomainHealth'}
+        >
           <div
             className={'panel-head'}
             style={{ alignItems: 'flex-start', flexWrap: 'wrap', gap: '14px' }}
@@ -694,7 +686,14 @@ export function TrackingPage() {
           </details>
         </Panel>
 
-        <Panel as="div" className={'panel daemon-monitor-panel'} id="trackingDiagnostics">
+        <Panel
+          as="div"
+          role="tabpanel"
+          aria-labelledby="tab-trackingDiagnostics"
+          hidden={activeTab !== 'trackingDiagnostics'}
+          className={'panel daemon-monitor-panel'}
+          id="trackingDiagnostics"
+        >
           <div className={'panel-head'}>
             <div>
               <h2 className={'panel-title'}>

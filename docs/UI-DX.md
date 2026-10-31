@@ -82,3 +82,9 @@ Use `confirmAction(message, options)` from `shared/confirmation` for destructive
 The shared `action` adapter asks before saving edited profiles, templates and campaign details, and wraps identified save/delete/reset operations with `withSaveFeedback`. The pending overlay cannot be dismissed as if a write had been canceled: it closes when the actual operation settles. Errors return through existing in-drawer feedback and retain inputs. Existing specialized mailbox/reply workflows keep their inline progress and exact approval safeguards. Do not add redundant success acknowledgements to ordinary saves or replace provider-native security prompts.
 
 Native confirmation call sites were migrated across campaigns, leads, profiles, templates, suppression, import activation/restore, activity-log clearing, reset overrides and reply-wording replacement. Drawer fields remain mounted; overlay decisions never authorize sending emails or clear existing backend protections.
+
+### Tracking tabs
+
+`TrackingTabs` owns only tab presentation and hash-based selection. Messages (`#tracking`, with `#trackingMessages` as an alias), Seed Studio, Domain Health and Mailbox monitoring (`#trackingDiagnostics`) each have one accessible tab panel. Panels remain mounted and are hidden rather than recreated, retaining native controller regions, filters and unfinished input. Arrow keys, Home/End and roving tab focus are supported. Hash listeners clean up on unmount; reload and browser history resolve the active section normally.
+
+Tracking navigation starts at the workspace top instead of scrolling to an old section anchor. Re-selecting a tab also restores the top, keeping message metrics visible rather than behind the sticky stack. The existing measured sticky tab bar and native action owners remain intact.

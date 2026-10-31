@@ -58,8 +58,11 @@ test('tracking dashboard filters, displays evidence and fits desktop/mobile with
   assert.match(await page.locator('#trackingRows').innerText(), /bounce@example.com/);
   await page.locator('#trackingRows button').first().click();
   assert.match(await page.locator('#trackingDetail').innerText(), /550 mailbox unavailable/);
+  await page.locator('#closeTrackingDrawer').click();
   await page.locator('#trackingStatus').selectOption('');
   await page.waitForFunction(() => document.querySelector('#trackingRows').querySelectorAll('tr').length === 2);
+  await page.getByRole('tab', { name: 'Messages', exact: true }).click();
+  assert(await page.locator('#trackingMetrics').evaluate(el => el.getBoundingClientRect().top >= document.querySelector('.tracking-section-nav').getBoundingClientRect().bottom), 'Message stats clear the sticky tab bar');
   if (process.env.FC_UI_SCREENSHOT_DIR) {
     await fs.mkdir(process.env.FC_UI_SCREENSHOT_DIR, { recursive: true });
     await page.screenshot({ path: path.join(process.env.FC_UI_SCREENSHOT_DIR, 'tracking-desktop.png'), fullPage: true });
@@ -70,6 +73,7 @@ test('tracking dashboard filters, displays evidence and fits desktop/mobile with
   assert(widths.content <= widths.screen + 1, JSON.stringify(widths));
   await page.locator('#trackingRefresh').scrollIntoViewIfNeeded();
   if (process.env.FC_UI_SCREENSHOT_DIR) await page.screenshot({ path: path.join(process.env.FC_UI_SCREENSHOT_DIR, 'tracking-mobile.png') });
+  await page.getByRole('tab', { name: 'Domain Health', exact: true }).click();
   await page.locator('#domainForm').scrollIntoViewIfNeeded();
   assert(await page.locator('#domainForm button').isVisible());
   assert.deepEqual(errors, []);
