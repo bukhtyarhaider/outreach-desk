@@ -1,93 +1,88 @@
-import { Button, ActionLink } from '../../design-system/primitives';
-import { Icon, FileText, Eye, Layers, Check, ArrowRight } from '../../design-system/icons';
-
-const steps = [
-  { name: 'Inspect source', detail: 'Choose a campaign and read its workbook.', icon: FileText },
-  { name: 'Preview columns', detail: 'Match fields and compare the result.', icon: Eye },
-  { name: 'Save a copy', detail: 'Record the source and save a revision.', icon: Layers },
-  { name: 'Use in campaign', detail: 'Choose a saved copy, then activate it.', icon: ArrowRight },
+import { Button } from '../../design-system/primitives';
+import { Icon, Check } from '../../design-system/icons';
+export const importSteps = ['Source', 'Columns', 'Preview', 'Save copy', 'Activate'] as const;
+export type ImportStep = 0 | 1 | 2 | 3 | 4;
+const panels = [
+  'importStepSource',
+  'importStepColumns',
+  'importStepPreview',
+  'importStepSave',
+  'importStepActivate',
 ];
 export function ImportJourney({
   step,
   busy,
-  published,
-  onNext,
-  hasCampaign,
+  available,
+  completed,
+  campaign,
+  onNavigate,
 }: {
-  step: number;
+  step: ImportStep;
   busy: boolean;
-  published: boolean;
-  onNext: () => void;
-  hasCampaign: boolean;
+  available: readonly boolean[];
+  completed: readonly boolean[];
+  campaign: string;
+  onNavigate: (step: ImportStep) => void;
 }) {
   return (
-    <section className="import-journey" aria-label="Import review progress">
-      <div className="import-journey-heading">
-        <div>
-          <p className="page-eyebrow">A clear path from file to campaign</p>
-          <h2>Review. Preview. Save. Activate.</h2>
-        </div>
-        <span className="import-safe-label">Outreach stays under your control</span>
+    <nav className="import-stepper" aria-label="Import setup steps">
+      <div className="import-stepper-context">
+        <span>{campaign ? `Reviewing: ${campaign}` : 'Choose a source campaign'}</span>
+        <small>
+          Step {step + 1} of 5 · {importSteps[step]}
+        </small>
       </div>
       <ol>
-        {steps.map((item, index) => (
-          <li
-            key={item.name}
-            aria-current={step === index ? 'step' : undefined}
-            data-complete={index < step}
-          >
-            <span className="import-step-mark">
-              <Icon icon={index < step ? Check : item.icon} size={18} />
-            </span>
-            <div>
-              <small>0{index + 1}</small>
-              <strong>{item.name}</strong>
-              <p>{item.detail}</p>
-            </div>
+        {importSteps.map((label, index) => (
+          <li key={label} data-current={step === index}>
+            <Button
+              variant="ghost"
+              aria-current={step === index ? 'step' : undefined}
+              aria-controls={panels[index]}
+              disabled={busy || !available[index]}
+              title={
+                !available[index]
+                  ? index === 4
+                    ? 'Save a reviewed copy first. Existing copies are available here too.'
+                    : 'Complete the previous step first.'
+                  : `Open ${label.toLowerCase()}`
+              }
+              onClick={() => onNavigate(index as ImportStep)}
+              onKeyDown={(event) => {
+                const allowed = available
+                  .map((enabled, i) => (enabled ? i : -1))
+                  .filter((i) => i >= 0);
+                const position = allowed.indexOf(index);
+                const next =
+                  event.key === 'ArrowRight'
+                    ? allowed[(position + 1) % allowed.length]
+                    : event.key === 'ArrowLeft'
+                      ? allowed[(position + allowed.length - 1) % allowed.length]
+                      : event.key === 'Home'
+                        ? allowed[0]
+                        : event.key === 'End'
+                          ? allowed.at(-1)
+                          : undefined;
+                if (next === undefined) return;
+                event.preventDefault();
+                onNavigate(next as ImportStep);
+                document
+                  .querySelectorAll<HTMLButtonElement>('#importJourney ol button')
+                  [next]?.focus({ preventScroll: true });
+              }}
+            >
+              <span className="import-step-number" data-done={completed[index] && index < step}>
+                {completed[index] && index < step ? (
+                  <Icon icon={Check} size={14} />
+                ) : (
+                  `0${index + 1}`
+                )}
+              </span>
+              <span>{label}</span>
+            </Button>
           </li>
         ))}
       </ol>
-      <div className="import-next-action" role="status">
-        <div>
-          <strong>
-            {published
-              ? 'A reviewed revision is connected to this campaign.'
-              : [
-                  'Start with the original workbook.',
-                  'Check the columns below, then preview.',
-                  'Your preview is ready. Record its source.',
-                  'Your saved copy is ready to inspect and activate.',
-                ][step]}
-          </strong>
-          <p>
-            {published
-              ? 'Inspect the campaign leads before deciding whether to enable outreach.'
-              : [
-                  'Select a campaign, then inspect its saved mapping. This does not change the file.',
-                  'Previewing calculates the result without saving or activating anything.',
-                  'Saving creates a recoverable revision. It does not change the campaign workbook.',
-                  'Activation is separate from saving and keeps the campaign paused.',
-                ][step]}
-          </p>
-        </div>
-        {published ? (
-          <ActionLink href="#leads">
-            Inspect campaign leads <Icon icon={ArrowRight} size={14} />
-          </ActionLink>
-        ) : (
-          <Button disabled={busy} onClick={onNext} variant="primary">
-            {
-              [
-                hasCampaign ? 'Inspect workbook' : 'Choose a campaign',
-                'Preview selected columns',
-                'Review source details',
-                'Review saved copies',
-              ][step]
-            }
-            <Icon icon={ArrowRight} size={14} />
-          </Button>
-        )}
-      </div>
-    </section>
+    </nav>
   );
 }

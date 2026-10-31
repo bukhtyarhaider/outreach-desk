@@ -1,4 +1,5 @@
-import { ImportJourney } from './ImportJourney';
+import { selectCampaign } from '../campaigns/controller';
+import { ImportJourney, type ImportStep } from './ImportJourney';
 import { ImportPreviewSummary } from './ImportPreviewSummary';
 import { confirmAction } from '../../shared/confirmation';
 import { StatValue } from '../../design-system/StatValue';
@@ -30,60 +31,73 @@ export function mountExperiment() {
       return requestJson<T>(route(url), data);
     }
     let justSaved = false;
-    let justActivated = false;
+    let activeStep: ImportStep = 0;
+    const stepAvailability = () => [
+      true,
+      !!saved,
+      !!previewId,
+      !!previewId,
+      !!workspace?.activeRevision,
+    ];
+    function showStep(step: ImportStep) {
+      if (!production) return;
+      activeStep = step;
+      controls();
+      document.querySelector<HTMLElement>('.app-viewport')?.scrollTo(0, 0);
+      document
+        .querySelector<HTMLElement>(
+          `#view-imports [data-import-view="${step}"] .import-step-heading h2`,
+        )
+        ?.focus({ preventScroll: true });
+    }
+    function navigateStep(step: ImportStep, focusStepper = true) {
+      if (busy || !stepAvailability()[step]) return;
+      showStep(step);
+      if (focusStepper)
+        document
+          .querySelectorAll<HTMLButtonElement>('#importJourney ol button')
+          [step]?.focus({ preventScroll: true });
+    }
+    function centerCurrentStep() {
+      const stepList = document.querySelector<HTMLElement>('#importJourney ol');
+      const currentButton = stepList?.querySelectorAll<HTMLButtonElement>('button')[activeStep];
+      if (stepList && currentButton)
+        stepList.scrollLeft +=
+          currentButton.getBoundingClientRect().left -
+          stepList.getBoundingClientRect().left -
+          (stepList.clientWidth - currentButton.clientWidth) / 2;
+    }
     function renderJourney() {
       if (!production) return;
-      const published = !!workspace?.publishedRevision && !previewId && (!saved || justActivated);
-      const step = previewId
-        ? 2
-        : justSaved || (!saved && workspace?.activeRevision)
-          ? 3
-          : saved
-            ? 1
-            : 0;
+      const available = stepAvailability();
+      if (!available[activeStep]) activeStep = saved ? 1 : 0;
+      $('view-imports').dataset.importStep = String(activeStep);
       renderRegion(
         $('importJourney'),
         <ImportJourney
-          step={published ? 4 : step}
+          step={activeStep}
           busy={busy}
-          published={published}
-          hasCampaign={!!$('reviewCampaign').value}
-          onNext={() => {
-            if (busy) return;
-            if (step === 0) {
-              if (!$('reviewCampaign').value) {
-                if (
-                  !document.querySelector('#reviewCampaign option:not(:disabled):not([value=""])')
-                ) {
-                  location.hash = 'campaigns';
-                  return;
-                }
-                $('reviewCampaign').scrollIntoView({ block: 'center' });
-                $('reviewCampaign').focus();
-                return;
-              }
-              $('reviewLoad').click();
-              return;
-            }
-            if (step === 1) {
-              $('reviewPreview').click();
-              return;
-            }
-            if (step === 3 && !workspace?.activeRevision) {
-              $('workspaceRefresh').click();
-              return;
-            }
-            const target = step === 2 ? $('repairPanel') : $('workspacePanel');
-            target.scrollIntoView({ block: 'center', behavior: 'smooth' });
-            (step === 2
-              ? !$('repairSource').value.trim()
-                ? $('repairSource')
-                : $('repairConfirm')
-              : $('workspaceRevision')
-            ).focus({ preventScroll: true });
-          }}
+          available={available}
+          completed={[
+            !!saved,
+            !!previewId || justSaved,
+            !!previewId || justSaved,
+            !!workspace?.activeRevision,
+            !!workspace?.publishedRevision,
+          ]}
+          campaign={
+            document.querySelector<HTMLSelectElement>('#reviewCampaign')?.selectedOptions[0]
+              ?.textContent || ''
+          }
+          onNavigate={navigateStep}
         />,
       );
+      centerCurrentStep();
+      document
+        .querySelectorAll<HTMLButtonElement>('#view-imports [data-import-go]')
+        .forEach((button) => {
+          button.disabled = busy || !available[Number(button.dataset.importGo)];
+        });
       if ($('repairReadiness'))
         $('repairReadiness').textContent = !previewId
           ? 'Next: preview your current column choices before saving.'
@@ -171,6 +185,7 @@ export function mountExperiment() {
         $('reviewError').textContent = errorMessage(error);
         $('reviewError').hidden = false;
         $('reviewStatus').textContent = 'Review needs attention. Your mapping draft is retained.';
+        if (production) document.querySelector<HTMLElement>('.app-viewport')?.scrollTo(0, 0);
       } finally {
         busy = false;
         button.textContent = label;
@@ -187,8 +202,24 @@ export function mountExperiment() {
           ? 'This exact preview is ready to save as a reviewed revision.'
           : 'This exact preview is ready to save to an experiment copy.'
         : 'Preview your proposal before saving.';
-      $('reviewHeading').textContent =
-        report.mode === 'preview'
+      if (production && report.mode === 'preview') {
+        renderMappingWizard(report);
+        renderRegion(
+          $('importPreviewSummary'),
+          <ImportPreviewSummary
+            baseline={baseline!}
+            proposed={report.summary}
+            preview
+            before={saved!}
+            after={report.mapping}
+          />,
+        );
+        showStep(2);
+        return;
+      }
+      $('reviewHeading').textContent = production
+        ? 'Workbook overview'
+        : report.mode === 'preview'
           ? 'Proposed mapping · preview only'
           : 'Saved mapping · review only';
       $('reviewBasis').textContent = report.basis;
@@ -358,7 +389,7 @@ export function mountExperiment() {
         campaignId: $('reviewCampaign').value,
       });
       justSaved = false;
-      justActivated = false;
+
       reviewedCampaign = report.campaignId;
       saved = report.mapping;
       baseline = report.summary;
@@ -368,6 +399,21 @@ export function mountExperiment() {
       workspaceOffset = 0;
       await loadWorkspace();
     }
+    if (production) uiScope.listen(window, 'resize', centerCurrentStep);
+    if (production)
+      uiScope.listen($('view-imports'), 'click', (event) => {
+        const button = eventElement(event).closest<HTMLElement>('[data-import-go]');
+        const step = Number(button?.dataset.importGo);
+        if (button && Number.isInteger(step) && step >= 0 && step <= 4)
+          navigateStep(step as ImportStep, false);
+      });
+    if (production && $('importInspectLeads'))
+      uiScope.handler($('importInspectLeads'), 'onclick', () =>
+        run($('importInspectLeads'), async () => {
+          await selectCampaign($('reviewCampaign').value);
+          location.hash = 'leads';
+        }),
+      );
     uiScope.handler($('reviewLoad'), 'onclick', () => run($('reviewLoad'), loadSaved));
     uiScope.handler($('reviewReset'), 'onclick', () => run($('reviewReset'), loadSaved));
     uiScope.handler($('reviewPreview'), 'onclick', () =>
@@ -380,12 +426,12 @@ export function mountExperiment() {
             addStatusColumns: JSON.parse($('reviewStatusColumns').value),
           }),
         );
-        if (production) $('importPreviewSummary').scrollIntoView({ block: 'start' });
       }),
     );
     uiScope.handler($('reviewCampaign'), 'onchange', () => {
+      activeStep = 0;
       justSaved = false;
-      justActivated = false;
+
       saved = null;
       baseline = null;
       reviewedCampaign = null;
@@ -406,8 +452,9 @@ export function mountExperiment() {
       if ($('reviewCampaign').value) run($('workspaceRefresh'), loadWorkspace);
     });
     function invalidate() {
+      if (production && (activeStep === 2 || activeStep === 3)) activeStep = 1;
       justSaved = false;
-      justActivated = false;
+
       previewId = null;
       $('repairConfirm').checked = false;
       $('repairPreviewNote').textContent = 'Proposal changed. Preview again before saving.';
@@ -439,10 +486,14 @@ export function mountExperiment() {
           : workspace.sourceChanged
             ? 'Source workbook changed since this revision. Review the source again before a new repair.'
             : 'Saved in the separate experiment workspace. Original campaign files are unchanged.';
-      if (production)
+      if (production) {
+        const active = workspace.revisions.find(
+          (revision) => revision.revisionId === workspace!.publishedRevision,
+        );
         $('workspaceNote').textContent = workspace.publishedRevision
-          ? `Campaign uses revision ${workspace.publishedRevision}. ${workspace.campaignEnabled ? 'Campaign enabled.' : 'Campaign paused.'} Saved revisions remain separate until activated.`
-          : 'No reviewed revision has been activated for this campaign. Save and activate one to connect its identity and provenance to leads.';
+          ? `Active copy: ${active?.sourceLabel || 'Reviewed workbook'}. ${workspace.campaignEnabled ? 'Outreach is enabled.' : 'Campaign is paused.'} A different saved copy will only replace it when you activate that copy.`
+          : 'No reviewed copy is active yet. Choose a saved revision, inspect its records, then activate it.';
+      }
       const selected = $('workspaceRevision').value;
       renderRegion(
         $('workspaceRevision'),
@@ -550,12 +601,12 @@ export function mountExperiment() {
         previewId = null;
         $('repairConfirm').checked = false;
         $('repairPreviewNote').textContent = production
-          ? 'Revision saved. Select it below and activate it when ready.'
+          ? 'Revision saved. Inspect the selected copy before activating it.'
           : 'Experiment revision saved. To save another repair, preview again.';
         workspaceOffset = 0;
         $('workspaceRevision').value = '';
         await loadWorkspace();
-        if (production) $('workspacePanel').scrollIntoView({ block: 'start' });
+        if (production) showStep(4);
       }),
     );
     uiScope.handler($('workspaceRefresh'), 'onclick', () =>
@@ -595,7 +646,8 @@ export function mountExperiment() {
         $('repairAcquired').value = revision.acquiredAt || '';
         $('repairPermission').value = revision.permission;
         invalidate();
-        $('reviewMapping').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (production) showStep(1);
+        else $('reviewMapping').scrollIntoView({ behavior: 'smooth', block: 'center' });
       }),
     );
     uiScope.handler($('workspaceRestore'), 'onclick', async () => {
@@ -614,7 +666,7 @@ export function mountExperiment() {
             confirmActivation: true,
           });
           await loadWorkspace();
-          justActivated = true;
+
           window.dispatchEvent(new Event('fc-import-activated'));
           return value.message;
         });
@@ -686,9 +738,9 @@ export function mountExperiment() {
                 {label}
                 <Select data-map-sheet={displayText(sheet.name)} data-map-field={field}>
                   <option value={''}>
-                    {'Automatic ('}
-                    {displayText(automatic || 'not detected')}
-                    {')'}
+                    {automatic
+                      ? `Use detected column ${displayText(automatic)}`
+                      : 'No column detected'}
                   </option>
                   {columns.map(([col, header]) => (
                     <>
@@ -707,15 +759,15 @@ export function mountExperiment() {
             <>
               <div className={'mapping-sheet'}>
                 <h3>{displayText(sheet.name)}</h3>
-                {select('email', 'Email column', sheet.emailColumn)}
+                {select('email', 'Contact email', sheet.emailColumn)}
                 {select(
                   'carrier legal name',
-                  'Company column',
+                  'Company / carrier name',
                   columns.find(([, h]) =>
                     /^(company|company name|carrier legal name|legal name)$/i.test(h),
                   )?.[0],
                 )}
-                {select('status', 'Outreach status column', sheet.statusColumn)}
+                {select('status', 'Outreach status', sheet.statusColumn)}
                 {sheet.review.unusedStatusColumn ? (
                   <>
                     <Button
@@ -724,7 +776,7 @@ export function mountExperiment() {
                       data-status-sheet={displayText(sheet.name)}
                       data-status-column={sheet.review.unusedStatusColumn}
                     >
-                      {'Add Status header in unused column '}
+                      {'Add a Status column to the copy · '}
                       {sheet.review.unusedStatusColumn}
                     </Button>
                   </>
@@ -752,7 +804,7 @@ export function mountExperiment() {
             confirmActivation: true,
           });
           await loadWorkspace();
-          justActivated = true;
+
           window.dispatchEvent(new Event('fc-import-activated'));
           return value.message;
         });
