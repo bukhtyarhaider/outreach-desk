@@ -88,3 +88,9 @@ Native confirmation call sites were migrated across campaigns, leads, profiles, 
 `TrackingTabs` owns only tab presentation and hash-based selection. Messages (`#tracking`, with `#trackingMessages` as an alias), Seed Studio, Domain Health and Mailbox monitoring (`#trackingDiagnostics`) each have one accessible tab panel. Panels remain mounted and are hidden rather than recreated, retaining native controller regions, filters and unfinished input. Arrow keys, Home/End and roving tab focus are supported. Hash listeners clean up on unmount; reload and browser history resolve the active section normally.
 
 Tracking navigation starts at the workspace top instead of scrolling to an old section anchor. Re-selecting a tab also restores the top, keeping message metrics visible rather than behind the sticky stack. The existing measured sticky tab bar and native action owners remain intact.
+
+### Self-guided import review
+
+`ImportJourney` presents Inspect → Preview → Save → Activate using controller-owned state. Its shortcuts invoke existing guarded actions or focus the next required fields; they do not duplicate request or activation logic. Existing saved copies remain reachable for recovery, and activation completion is shown only from actual workspace publication state. An empty campaign picker directs the operator toward campaign setup.
+
+`ImportPreviewSummary` compares saved/proposed column mappings and parsing counts, with labeled stacked comparisons on mobile. A mapping edit invalidates the preview and replaces old comparisons with a clear re-preview instruction. `repairReadiness` explains the next missing save prerequisite. Guided mapping controls now lock during requests, including after newly rendered reports; provenance and recovery protections remain server-owned. Successful previews reveal their comparison, and saves reveal the revision workspace. Standalone experiment behavior and native control IDs remain compatible.

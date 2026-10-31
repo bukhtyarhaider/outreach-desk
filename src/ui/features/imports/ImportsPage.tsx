@@ -17,7 +17,13 @@ export function ImportsPage() {
             <ActionLink href="#campaigns">Back to campaigns</ActionLink>
           </div>
         </div>
-        <section className={'panel'}>
+        <div id="importJourney" />
+        <section className={'panel import-source-panel'}>
+          <h2>1. Choose the source to inspect</h2>
+          <p className="hint">
+            Pick a campaign with an imported workbook. Read its current mapping before proposing
+            changes.
+          </p>
           <div className={'experiment-form'}>
             <label htmlFor={'reviewCampaign'}>
               {'Campaign'}
@@ -42,9 +48,10 @@ export function ImportsPage() {
           <div id={'reviewMetrics'} className={'experiment-metrics'}></div>
           <p id={'reviewBasis'} className={'hint'}></p>
           <p id={'reviewIdentity'} className={'hint'}></p>
+          <div id="importPreviewSummary" />
           <div className={'experiment-layout'}>
             <section className={'panel experiment-mapping'}>
-              <h2>{'Choose columns'}</h2>
+              <h2>{'2. Match the worksheet columns'}</h2>
               <p className={'hint'}>
                 {
                   'Choose columns that match the original worksheet. Keep outreach Status separate from operating status. Preview before saving.'
@@ -83,7 +90,7 @@ export function ImportsPage() {
               </p>
             </section>
             <section className={'experiment-sheets'}>
-              <h2>{'Worksheet evidence'}</h2>
+              <h2>{'Original file · evidence'}</h2>
               <p className={'hint'}>
                 {
                   'Email-column candidates are syntax counts, not verified addresses. Mixed layouts may need separate source sheets. Counts alone are not a safe reason to remap a whole worksheet.'
@@ -94,7 +101,7 @@ export function ImportsPage() {
           </div>
         </section>
         <section id={'repairPanel'} className={'panel experiment-repair'} hidden={true}>
-          <h2>{'Save this reviewed repair'}</h2>
+          <h2>{'3. Save a reviewed copy'}</h2>
           <p className={'hint'}>
             {
               'Save the exact preview as a new reviewed revision. Each revision keeps its original workbook, repaired copy, mapping and source details. Save first, then explicitly activate the selected revision below. Activation keeps the campaign paused.'
@@ -129,13 +136,14 @@ export function ImportsPage() {
           <Button id={'repairApply'} disabled={true}>
             {'Save reviewed revision'}
           </Button>
+          <p id="repairReadiness" className="import-readiness" role="status" />
           <p id={'repairPreviewNote'} className={'hint'}>
             {'Preview your proposal before saving.'}
           </p>
         </section>
         <section id={'workspacePanel'} className={'panel experiment-workspace'} hidden={true}>
           <div className={'experiment-result-heading'}>
-            <h2>{'Saved revisions'}</h2>
+            <h2>{'4. Choose the copy your campaign will use'}</h2>
             <Button id={'workspaceRefresh'} className={'secondary'}>
               {'Refresh revisions'}
             </Button>

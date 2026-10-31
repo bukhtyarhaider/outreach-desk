@@ -225,3 +225,238 @@ body.experiment-body {
     grid-template-columns: 1fr;
   }
 }
+
+#view-imports .import-journey {
+  margin: 0 0 24px;
+  padding: 24px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 5px;
+}
+.import-journey-heading {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+}
+.import-journey-heading h2 {
+  margin: 8px 0 0;
+  font-size: 24px;
+  letter-spacing: -0.6px;
+}
+.import-safe-label {
+  font-size: 11px;
+  padding: 8px 10px;
+  background: var(--accent-emerald-bg);
+  color: var(--accent-emerald);
+  border-radius: 3px;
+}
+.import-journey ol {
+  list-style: none;
+  padding: 0;
+  margin: 24px 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+.import-journey li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  border-top: 2px solid var(--border-subtle);
+}
+.import-journey li[aria-current='step'] {
+  border-color: var(--accent-blue);
+  background: var(--accent-blue-bg);
+}
+.import-journey li[data-complete='true'] {
+  border-color: var(--accent-emerald);
+}
+.import-step-mark {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: 3px;
+  color: var(--accent-blue);
+  background: var(--bg-surface);
+}
+.import-journey li small {
+  display: block;
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+.import-journey li strong {
+  font-size: 12px;
+}
+.import-journey li p {
+  font-size: 11px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 6px 0 0;
+}
+.import-next-action {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-subtle);
+}
+.import-next-action strong {
+  font-size: 14px;
+}
+.import-next-action p,
+.import-preview-summary p {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin: 6px 0 0;
+}
+.import-next-action .ui-button {
+  flex-shrink: 0;
+}
+#importPreviewSummary {
+  margin: 20px 0;
+}
+.import-preview-summary {
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid var(--accent-blue);
+  padding: 20px;
+  border-radius: 4px;
+  background: var(--bg-surface);
+}
+.import-preview-summary h3 {
+  font-size: 20px;
+  margin: 8px 0;
+  letter-spacing: -0.4px;
+}
+.import-preview-summary table {
+  width: 100%;
+  margin-top: 16px;
+  text-align: left;
+  border-collapse: collapse;
+}
+.import-preview-summary th,
+.import-preview-summary td {
+  padding: 10px;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.import-preview-caveat {
+  padding: 10px;
+  background: var(--accent-amber-bg);
+}
+.import-readiness {
+  padding: 12px;
+  border-left: 3px solid var(--accent-blue);
+  background: var(--bg-app);
+  font-size: 12px;
+  margin-top: 16px;
+}
+#view-imports .experiment-mapping {
+  align-self: start;
+}
+#view-imports .experiment-sheets {
+  min-width: 0;
+}
+@media (max-width: 1050px) {
+  .import-journey ol {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 680px) {
+  #view-imports .import-journey {
+    padding: 16px;
+  }
+  .import-journey ol {
+    gap: 6px;
+  }
+  .import-journey li {
+    padding: 8px 4px;
+    gap: 8px;
+  }
+  .import-next-action {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .import-next-action .ui-button {
+    white-space: normal;
+  }
+  .import-step-mark {
+    width: 26px;
+    height: 26px;
+  }
+  .import-preview-summary {
+    padding: 14px;
+  }
+}
+
+.import-journey li .import-step-mark {
+  color: var(--text-muted);
+}
+.import-journey li[aria-current='step'] .import-step-mark {
+  color: var(--accent-blue);
+}
+.import-journey li[data-complete='true'] .import-step-mark {
+  color: var(--accent-emerald);
+}
+@media (max-width: 680px) {
+  .import-preview-summary .experiment-scroll {
+    overflow: visible;
+  }
+  .import-preview-summary table,
+  .import-preview-summary tbody {
+    display: block;
+    width: 100%;
+  }
+  .import-preview-summary thead {
+    display: none;
+  }
+  .import-preview-summary tr {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin: 0 0 10px;
+    border: 1px solid var(--border-subtle);
+  }
+  .import-preview-summary th {
+    grid-column: 1/-1;
+    white-space: normal;
+  }
+  .import-preview-summary td {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    font-size: 14px;
+    gap: 5px;
+  }
+  .import-preview-summary td::before {
+    content: attr(data-label);
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--text-secondary);
+  }
+  .import-preview-summary .import-mapping-changes tr {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .import-preview-summary .experiment-scroll table {
+    min-width: 0;
+    max-width: 100%;
+  }
+  .import-preview-summary .experiment-scroll th,
+  .import-preview-summary .experiment-scroll td {
+    max-width: none;
+    box-sizing: border-box;
+  }
+}

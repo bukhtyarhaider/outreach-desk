@@ -1,3 +1,5 @@
+import { ImportJourney } from './ImportJourney';
+import { ImportPreviewSummary } from './ImportPreviewSummary';
 import { confirmAction } from '../../shared/confirmation';
 import { StatValue } from '../../design-system/StatValue';
 import { Button, Select } from '../../design-system/primitives';
@@ -27,12 +29,84 @@ export function mountExperiment() {
     async function request<T = ActionResult>(url: string, data?: unknown): Promise<T> {
       return requestJson<T>(route(url), data);
     }
+    let justSaved = false;
+    let justActivated = false;
+    function renderJourney() {
+      if (!production) return;
+      const published = !!workspace?.publishedRevision && !previewId && (!saved || justActivated);
+      const step = previewId
+        ? 2
+        : justSaved || (!saved && workspace?.activeRevision)
+          ? 3
+          : saved
+            ? 1
+            : 0;
+      renderRegion(
+        $('importJourney'),
+        <ImportJourney
+          step={published ? 4 : step}
+          busy={busy}
+          published={published}
+          hasCampaign={!!$('reviewCampaign').value}
+          onNext={() => {
+            if (busy) return;
+            if (step === 0) {
+              if (!$('reviewCampaign').value) {
+                if (
+                  !document.querySelector('#reviewCampaign option:not(:disabled):not([value=""])')
+                ) {
+                  location.hash = 'campaigns';
+                  return;
+                }
+                $('reviewCampaign').scrollIntoView({ block: 'center' });
+                $('reviewCampaign').focus();
+                return;
+              }
+              $('reviewLoad').click();
+              return;
+            }
+            if (step === 1) {
+              $('reviewPreview').click();
+              return;
+            }
+            if (step === 3 && !workspace?.activeRevision) {
+              $('workspaceRefresh').click();
+              return;
+            }
+            const target = step === 2 ? $('repairPanel') : $('workspacePanel');
+            target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            (step === 2
+              ? !$('repairSource').value.trim()
+                ? $('repairSource')
+                : $('repairConfirm')
+              : $('workspaceRevision')
+            ).focus({ preventScroll: true });
+          }}
+        />,
+      );
+      if ($('repairReadiness'))
+        $('repairReadiness').textContent = !previewId
+          ? 'Next: preview your current column choices before saving.'
+          : !$('repairSource').value.trim()
+            ? 'Next: describe where the leads came from.'
+            : !$('repairConfirm').checked
+              ? 'Next: confirm that this copy should be saved without starting outreach.'
+              : 'Ready to save this exact preview as a new revision.';
+    }
     function controls() {
+      renderJourney();
       $('reviewCampaign').disabled = busy;
       $('reviewLoad').disabled = busy || !$('reviewCampaign').value;
       $('reviewPreview').disabled = busy || !saved;
       $('reviewReset').disabled = busy || !saved;
       $('reviewMapping').disabled = busy;
+      document
+        .querySelectorAll<HTMLButtonElement | HTMLSelectElement>(
+          '#reviewMappingWizard button, #reviewMappingWizard select',
+        )
+        .forEach((control) => {
+          control.disabled = busy;
+        });
       $('reviewStatusColumns').disabled = busy;
       for (const id of [
         'repairSource',
@@ -67,7 +141,15 @@ export function mountExperiment() {
       const label = button.textContent;
       button.textContent = 'Working…';
       $('reviewError').hidden = true;
-      $('reviewStatus').textContent = 'Reading the workbook and checking columns…';
+      $('reviewStatus').textContent =
+        (
+          {
+            reviewPreview: 'Calculating your preview. No files are being changed…',
+            repairApply: 'Saving the reviewed workbook copy and source details…',
+            workspaceRestore: 'Connecting the selected revision to the campaign…',
+            workspaceUndo: 'Restoring the previous campaign workbook…',
+          } as Record<string, string>
+        )[button.id] || 'Reading the workbook and checking columns…';
       controls();
       try {
         const note = await fn();
@@ -121,7 +203,19 @@ export function mountExperiment() {
         ['Invalid / missing email', 'invalidEmailRows'],
         ['Extra rows sharing email', 'duplicateEmailRows'],
       ];
-      if (production) renderMappingWizard(report);
+      if (production) {
+        renderMappingWizard(report);
+        renderRegion(
+          $('importPreviewSummary'),
+          <ImportPreviewSummary
+            baseline={baseline!}
+            proposed={report.summary}
+            preview={report.mode === 'preview'}
+            before={saved!}
+            after={report.mapping}
+          />,
+        );
+      }
       renderRegion(
         $('reviewMetrics'),
         metrics.map(([label, key]) => (
@@ -257,11 +351,14 @@ export function mountExperiment() {
           </>,
         ),
       );
+      controls();
     }
     async function loadSaved() {
       const report = await request<ImportReport>('/api/experiment/import-review', {
         campaignId: $('reviewCampaign').value,
       });
+      justSaved = false;
+      justActivated = false;
       reviewedCampaign = report.campaignId;
       saved = report.mapping;
       baseline = report.summary;
@@ -283,9 +380,12 @@ export function mountExperiment() {
             addStatusColumns: JSON.parse($('reviewStatusColumns').value),
           }),
         );
+        if (production) $('importPreviewSummary').scrollIntoView({ block: 'start' });
       }),
     );
     uiScope.handler($('reviewCampaign'), 'onchange', () => {
+      justSaved = false;
+      justActivated = false;
       saved = null;
       baseline = null;
       reviewedCampaign = null;
@@ -306,9 +406,16 @@ export function mountExperiment() {
       if ($('reviewCampaign').value) run($('workspaceRefresh'), loadWorkspace);
     });
     function invalidate() {
+      justSaved = false;
+      justActivated = false;
       previewId = null;
       $('repairConfirm').checked = false;
       $('repairPreviewNote').textContent = 'Proposal changed. Preview again before saving.';
+      if (production && baseline)
+        renderRegion(
+          $('importPreviewSummary'),
+          <ImportPreviewSummary baseline={baseline} proposed={baseline} preview={false} stale />,
+        );
       controls();
     }
     uiScope.handler($('reviewMapping'), 'oninput', invalidate);
@@ -439,6 +546,7 @@ export function mountExperiment() {
             permission: $('repairPermission').value,
           },
         });
+        justSaved = true;
         previewId = null;
         $('repairConfirm').checked = false;
         $('repairPreviewNote').textContent = production
@@ -447,6 +555,7 @@ export function mountExperiment() {
         workspaceOffset = 0;
         $('workspaceRevision').value = '';
         await loadWorkspace();
+        if (production) $('workspacePanel').scrollIntoView({ block: 'start' });
       }),
     );
     uiScope.handler($('workspaceRefresh'), 'onclick', () =>
@@ -505,6 +614,7 @@ export function mountExperiment() {
             confirmActivation: true,
           });
           await loadWorkspace();
+          justActivated = true;
           window.dispatchEvent(new Event('fc-import-activated'));
           return value.message;
         });
@@ -642,6 +752,7 @@ export function mountExperiment() {
             confirmActivation: true,
           });
           await loadWorkspace();
+          justActivated = true;
           window.dispatchEvent(new Event('fc-import-activated'));
           return value.message;
         });
