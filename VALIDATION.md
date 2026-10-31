@@ -362,3 +362,10 @@ Replaced 131 hand-authored inline SVGs and decorative emoji status/timeline icon
 
 - Carrier counters now use shared Metric/MetricGroup and StatMark primitives, matching the dashboard stat typography, surfaces and Bauhaus geometry. Responsive columns adapt to desktop and mobile; labeled Unibox actions retain each work filter, including follow-up eligibility.
 - Follow-up-only rows are excluded on the server and filtered from legacy responses in the UI. Follow-up tasks remain available in Unibox. Strict type, formatting and production build checks passed; focused React/browser and carrier-inbox regression passed 24 tests.
+
+## Shared confirmations and save feedback — 2026-10-31
+
+- Replaced application-native browser confirmations with a shared typed React modal across delete, restore/activation, hard-reset, suppression removal and unsaved-text replacement flows. Profile/template/campaign editing asks before overwriting saved details; shared save/delete/reset actions expose actual pending feedback instead of timed success.
+- Decisions open in the native top layer above existing drawers. Tested safe initial focus, cancel/focus restoration, Escape without closing the editor, retained draft text, duplicate-request rejection, cancellation when a parent closes, bounded desktop/mobile geometry, and pending-save Escape protection. A delayed rejected save returns errors inside the existing editor and retains its inputs. React text rendering avoids HTML injection. Navigation/disposal also cancels unanswered decisions.
+- Full final regression: **226 JavaScript and 12 Python tests passed**, no failures/skips. Typecheck, formatting, production bundles and diff checks passed. Acceptance tests use product dialogs rather than automatically accepting browser-native prompts. Desktop/mobile proof: `outputs/confirmation-modals/confirmation-drawer-{1440,390}.png`.
+- Synthetic local workspaces only for mutation tests; no live provider sending, customer deletions or cloud configuration changes were performed. Specialized reply approvals and server-side send/protection checks remain intact. Documentation: `docs/UI-DX.md`.

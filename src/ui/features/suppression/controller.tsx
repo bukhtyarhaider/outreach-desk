@@ -1,3 +1,4 @@
+import { confirmAction } from '../../shared/confirmation';
 import { Button } from '../../design-system/primitives';
 import { uiScope } from '../../shared/lifecycle';
 import { renderRegion } from '../../shared/regions';
@@ -74,11 +75,11 @@ export function mountSuppression() {
       renderSuppressionList();
     });
   if ($('suppressionList'))
-    uiScope.handler($('suppressionList'), 'onclick', (e) => {
+    uiScope.handler($('suppressionList'), 'onclick', async (e) => {
       const unsuppBtn = eventElement(e).closest<HTMLElement>('[data-unsuppress]');
       if (unsuppBtn) {
         const email = unsuppBtn.dataset.unsuppress;
-        if (!confirm(`Remove ${email} from Do Not Contact list?`)) return;
+        if (!(await confirmAction(`Remove ${email} from Do Not Contact list?`))) return;
         action(unsuppBtn, async () => {
           await api('/api/unsuppress', { email });
           notice(`Removed ${email} from suppression list.`);

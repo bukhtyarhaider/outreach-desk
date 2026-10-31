@@ -48,6 +48,7 @@ test('browser method controls, discovery, saved preferences and status render on
   await page.locator('#accountEmail').fill('sender@example.com');
   await page.locator('#autoReconnect').uncheck();
   await page.locator('#saveProfile').click();
+  await page.locator('.ui-confirmation').getByRole('button', { name: 'Save changes', exact: true }).click();
   await page.waitForFunction(() => document.querySelector('#notice').textContent === 'Profile saved.');
   await page.reload();
   await page.waitForFunction(() => document.querySelector('#connectionMode').value === 'cdp');

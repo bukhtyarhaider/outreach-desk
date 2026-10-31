@@ -150,7 +150,7 @@ test('repair UI saves, reloads, filters and restores experiment revisions with v
   const second = (await (await raw('/api/experiment/imports?campaignId=c1')).json()).activeRevision;
   assert.notEqual(first, second);
   await page.locator('#workspaceRevision').selectOption(first);
-  page.once('dialog', (dialog) => dialog.accept()); await page.locator('#workspaceRestore').click();
+  await page.locator('#workspaceRestore').click(); await page.locator('.ui-confirmation').getByRole('button', { name: /Confirm/ }).click();
   await page.waitForFunction(() => document.querySelector('#reviewStatus').textContent.includes('revision restored'));
   assert.equal((await (await raw('/api/experiment/imports?campaignId=c1')).json()).activeRevision, first);
   await page.reload(); await page.locator('#reviewCampaign').selectOption('c1');

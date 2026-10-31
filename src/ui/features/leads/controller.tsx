@@ -1,3 +1,4 @@
+import { confirmAction } from '../../shared/confirmation';
 import { StatusBadge } from '../../design-system/layout';
 import { Icon, Trash2 } from '../../design-system/icons';
 import { Button, Input } from '../../design-system/primitives';
@@ -145,7 +146,7 @@ export let searchTimer: ReturnType<typeof setTimeout> | undefined;
 
 export function mountLeads() {
   if ($('leadRows')) {
-    uiScope.handler($('leadRows'), 'onclick', (e) => {
+    uiScope.handler($('leadRows'), 'onclick', async (e) => {
       const previewBtn = eventElement(e).closest<HTMLElement>('[data-preview]');
       if (previewBtn) {
         preview(previewBtn.dataset.preview).catch((err) => notice(errorMessage(err)));
@@ -154,7 +155,11 @@ export function mountLeads() {
       const delBtn = eventElement(e).closest<HTMLElement>('[data-delete-lead]');
       if (delBtn) {
         const id = delBtn.dataset.deleteLead;
-        if (!confirm('Are you sure you want to permanently delete this lead from the workbook?'))
+        if (
+          !(await confirmAction(
+            'Are you sure you want to permanently delete this lead from the workbook?',
+          ))
+        )
           return;
         action(delBtn, async () => {
           await api('/api/delete-leads', { ids: [id] });
@@ -183,17 +188,17 @@ export function mountLeads() {
       loadLeads().catch((e) => notice(errorMessage(e)));
     });
   if ($('clearSelection'))
-    uiScope.handler($('clearSelection'), 'onclick', () => {
+    uiScope.handler($('clearSelection'), 'onclick', async () => {
       session.selected.clear();
       loadLeads().catch((e) => notice(errorMessage(e)));
     });
   if ($('deleteSelectedLeads'))
-    uiScope.handler($('deleteSelectedLeads'), 'onclick', () => {
+    uiScope.handler($('deleteSelectedLeads'), 'onclick', async () => {
       if (!session.selected.size) return;
       if (
-        !confirm(
+        !(await confirmAction(
           `Are you sure you want to delete ${session.selected.size} selected lead(s) permanently from the workbook?`,
-        )
+        ))
       )
         return;
       action($('deleteSelectedLeads'), async () => {
@@ -218,12 +223,12 @@ export function mountLeads() {
       }, 250);
     });
   if ($('previous'))
-    uiScope.handler($('previous'), 'onclick', () => {
+    uiScope.handler($('previous'), 'onclick', async () => {
       session.offset = Math.max(0, session.offset - 50);
       loadLeads().catch((e) => notice(errorMessage(e)));
     });
   if ($('next'))
-    uiScope.handler($('next'), 'onclick', () => {
+    uiScope.handler($('next'), 'onclick', async () => {
       session.offset += 50;
       loadLeads().catch((e) => notice(errorMessage(e)));
     });

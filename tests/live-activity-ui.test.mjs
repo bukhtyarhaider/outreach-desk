@@ -212,8 +212,11 @@ test(
     await page.locator('#liveSearchInput').fill('');
 
     const beforeClear = (await api('state')).events;
-    page.once('dialog', (dialog) => dialog.dismiss());
     await page.locator('#liveClearEventsBtn').click();
+    await page
+      .locator('.ui-confirmation')
+      .getByRole('button', { name: 'Cancel', exact: true })
+      .click();
     assert.equal(await page.locator('.event-message').count(), 0);
     await page.waitForResponse((response) => response.url().endsWith('/api/state'));
     assert.equal(
@@ -232,8 +235,11 @@ test(
     });
     await page.waitForFunction(() => document.querySelectorAll('.event-message').length === 1);
     assert.match(await page.locator('.event-message').innerText(), /later-event@example.invalid/);
-    page.once('dialog', (dialog) => dialog.accept());
     await page.locator('#liveClearEventsBtn').click();
+    await page
+      .locator('.ui-confirmation')
+      .getByRole('button', { name: /Confirm/ })
+      .click();
     await page.waitForFunction(() =>
       document.querySelector('.event-message')?.textContent.includes('log cleared by operator'),
     );

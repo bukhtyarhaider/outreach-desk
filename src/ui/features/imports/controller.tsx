@@ -1,3 +1,4 @@
+import { confirmAction } from '../../shared/confirmation';
 import { StatValue } from '../../design-system/StatValue';
 import { Button, Select } from '../../design-system/primitives';
 import { uiScope } from '../../shared/lifecycle';
@@ -451,7 +452,7 @@ export function mountExperiment() {
     uiScope.handler($('workspaceRefresh'), 'onclick', () =>
       run($('workspaceRefresh'), loadWorkspace),
     );
-    uiScope.handler($('workspaceFind'), 'onclick', () => {
+    uiScope.handler($('workspaceFind'), 'onclick', async () => {
       workspaceOffset = 0;
       run($('workspaceFind'), loadWorkspace);
     });
@@ -488,12 +489,12 @@ export function mountExperiment() {
         $('reviewMapping').scrollIntoView({ behavior: 'smooth', block: 'center' });
       }),
     );
-    uiScope.handler($('workspaceRestore'), 'onclick', () => {
+    uiScope.handler($('workspaceRestore'), 'onclick', async () => {
       if (production) {
         if (
-          !confirm(
+          !(await confirmAction(
             'Use this reviewed revision for the campaign? A separate working workbook will be created. Previous workbooks and contact protections are retained. Outreach will stay paused.',
-          )
+          ))
         )
           return;
         return run($('workspaceRestore'), async () => {
@@ -509,9 +510,9 @@ export function mountExperiment() {
         });
       }
       if (
-        !confirm(
+        !(await confirmAction(
           'Restore this saved revision in the experiment workspace? All revisions and contact protections will be retained. Original campaign data will stay unchanged.',
-        )
+        ))
       )
         return;
       run($('workspaceRestore'), async () => {
@@ -524,11 +525,11 @@ export function mountExperiment() {
         await loadWorkspace();
       });
     });
-    uiScope.handler($('workspacePrev'), 'onclick', () => {
+    uiScope.handler($('workspacePrev'), 'onclick', async () => {
       workspaceOffset = Math.max(0, workspaceOffset - 25);
       run($('workspacePrev'), loadWorkspace);
     });
-    uiScope.handler($('workspaceNext'), 'onclick', () => {
+    uiScope.handler($('workspaceNext'), 'onclick', async () => {
       workspaceOffset += 25;
       run($('workspaceNext'), loadWorkspace);
     });
@@ -627,11 +628,11 @@ export function mountExperiment() {
       );
     }
     if (production) {
-      uiScope.handler($('workspaceUndo'), 'onclick', () => {
+      uiScope.handler($('workspaceUndo'), 'onclick', async () => {
         if (
-          !confirm(
+          !(await confirmAction(
             'Restore the previous campaign workbook and pause outreach? Saved revisions, send history and contact protections remain.',
-          )
+          ))
         )
           return;
         run($('workspaceUndo'), async () => {
@@ -661,7 +662,7 @@ export function mountExperiment() {
           $('reviewError').textContent = 'Fix the advanced JSON before changing column selections.';
         }
       });
-      uiScope.handler($('reviewMappingWizard'), 'onclick', (event) => {
+      uiScope.handler($('reviewMappingWizard'), 'onclick', async (event) => {
         const b = eventElement(event).closest<HTMLElement>('[data-status-sheet]');
         if (!b) return;
         try {

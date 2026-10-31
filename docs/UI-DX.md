@@ -74,3 +74,11 @@ Email Tracking uses `features/tracking/workspace.css` for overview/record densit
 `useStickyHeaders` measures the active page header, workspace context and Tracking section navigation. The section links pin beneath the page header; the scroll container's anchor inset includes the entire measured stack, including wrapped mobile links. Other routes receive zero Tracking navigation height. Keep these elements observed when changing their responsive layout.
 
 `FirebaseSyncStatus` is a read-only workspace-store subscriber. Native feature controllers own sync actions and API failure handling; the status component does not create another polling or mutation path. Firebase diagnostics expose optional retry/phase fields for compatibility with existing fixtures.
+
+### Confirmation and save overlays
+
+Use `confirmAction(message, options)` from `shared/confirmation` for destructive changes and replacing unsaved text. Always await its boolean result before mutating anything. It renders shared Button/Dialog primitives in the native top layer above the active drawer. Cancel receives initial focus; Escape cancels only the confirmation, focus returns to the opener, and a closed/removed parent, navigation or UI disposal cancels an unanswered decision. Concurrent decisions are rejected rather than queued against stale state. Messages render as React text, never HTML.
+
+The shared `action` adapter asks before saving edited profiles, templates and campaign details, and wraps identified save/delete/reset operations with `withSaveFeedback`. The pending overlay cannot be dismissed as if a write had been canceled: it closes when the actual operation settles. Errors return through existing in-drawer feedback and retain inputs. Existing specialized mailbox/reply workflows keep their inline progress and exact approval safeguards. Do not add redundant success acknowledgements to ordinary saves or replace provider-native security prompts.
+
+Native confirmation call sites were migrated across campaigns, leads, profiles, templates, suppression, import activation/restore, activity-log clearing, reset overrides and reply-wording replacement. Drawer fields remain mounted; overlay decisions never authorize sending emails or clear existing backend protections.

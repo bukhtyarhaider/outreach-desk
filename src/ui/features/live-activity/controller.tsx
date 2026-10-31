@@ -1,3 +1,4 @@
+import { confirmAction } from '../../shared/confirmation';
 import { Check, Icon } from '../../design-system/icons';
 import { captureContent } from '../../shared/regions';
 import { uiScope } from '../../shared/lifecycle';
@@ -340,7 +341,7 @@ export function mountLiveActivity() {
         session.liveClearedEvents.add(eventIdentity(event));
       session.liveEventsList = [];
       if (
-        window.confirm(
+        await confirmAction(
           'Clear server activity event history as well? Click OK to reset server log, or Cancel to clear current screen view only.',
         )
       ) {

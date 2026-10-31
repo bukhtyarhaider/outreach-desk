@@ -907,3 +907,66 @@ html body .ui-button--item {
   letter-spacing: 0;
   color: var(--text-secondary);
 }
+
+.ui-confirmation {
+  box-sizing: border-box;
+  width: min(460px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  padding: 28px;
+  margin: auto;
+  border: 1px solid var(--border-medium);
+  border-radius: 6px;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  box-shadow: 8px 8px 0 rgba(24, 24, 22, 0.12);
+  overflow: auto;
+}
+.ui-confirmation::backdrop {
+  background: rgba(24, 24, 22, 0.42);
+}
+.ui-confirmation h2 {
+  margin: 8px 0 12px;
+  font-size: 23px;
+  letter-spacing: -0.6px;
+}
+.ui-confirmation > p:not(.page-eyebrow) {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+.ui-confirmation-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-subtle);
+}
+.ui-save-mark {
+  width: 24px;
+  height: 24px;
+  background: var(--accent-blue);
+  border-radius: 0 0 0 100%;
+  animation: saving-turn 1.5s linear infinite;
+}
+@keyframes saving-turn {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-save-mark {
+    animation: none;
+  }
+}
+@media (max-width: 480px) {
+  .ui-confirmation {
+    padding: 20px;
+  }
+  .ui-confirmation-actions .ui-button {
+    flex: 1;
+  }
+}

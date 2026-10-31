@@ -1,3 +1,4 @@
+import { confirmAction } from '../../shared/confirmation';
 import type { StartThreadResponse } from '../../shared/types/api';
 import { Metric, MetricGroup } from '../../design-system/layout';
 import { StatMark, type StatTone } from '../../design-system/StatMark';
@@ -430,8 +431,11 @@ export function mountConversationAssistant() {
         return 'Edited draft saved. Earlier approval no longer applies.';
       }),
     );
-    uiScope.handler($('assistantNewDraft'), 'onclick', () => {
-      if (local?.dirty && !confirm('Discard the current unsaved text and start a new draft?'))
+    uiScope.handler($('assistantNewDraft'), 'onclick', async () => {
+      if (
+        local?.dirty &&
+        !(await confirmAction('Discard the current unsaved text and start a new draft?'))
+      )
         return;
       local = { body: '', id: null, requestId: crypto.randomUUID(), dirty: true, templateId: '' };
       unsaved.set(detail!.root.id, local);
@@ -479,7 +483,7 @@ export function mountConversationAssistant() {
         return 'Approved text copied. Open the original carrier thread and paste above your signature; send manually.';
       }),
     );
-    uiScope.handler($('assistantMailbox'), 'onclick', (event) => {
+    uiScope.handler($('assistantMailbox'), 'onclick', async (event) => {
       if (busy || local?.dirty || !detail?.assistant?.draftCurrent) {
         event.preventDefault();
         error('Review and approve the current draft before opening its mailbox.');
@@ -643,8 +647,9 @@ export function mountConversationAssistant() {
         return 'Preview ready. Insert or replace text when you want; your draft is unchanged.';
       });
     }
-    function applyWording(replace: boolean) {
+    async function applyWording(replace: boolean) {
       if (busy || !wording) return;
+      const preview = wording;
       if (
         wording.rootId !== detail!.root.id ||
         wording.contextVersion !== detail!.assistant.version
@@ -656,9 +661,20 @@ export function mountConversationAssistant() {
       if (
         replace &&
         editor.value.trim() &&
-        !confirm('Replace the current reply text? The saved draft history is retained.')
+        !(await confirmAction(
+          'Replace the current reply text? The saved draft history is retained.',
+        ))
       )
         return;
+      if (
+        busy ||
+        wording !== preview ||
+        preview.rootId !== detail?.root.id ||
+        preview.contextVersion !== detail?.assistant.version
+      ) {
+        error('Conversation changed. Preview the wording again.');
+        return;
+      }
       if (replace) editor.value = wording.body;
       else {
         const start = Math.min(caret.start, editor.value.length),
@@ -678,7 +694,7 @@ export function mountConversationAssistant() {
         'Wording inserted. Edit freely, then save and review the exact reply.';
     }
     uiScope.handler($('assistantSavedSearch'), 'oninput', renderSavedReplies);
-    uiScope.handler($('assistantSavedCards'), 'onclick', (event) => {
+    uiScope.handler($('assistantSavedCards'), 'onclick', async (event) => {
       const b = eventElement(event).closest<HTMLElement>('[data-saved-reply]');
       if (b) {
         $('assistantSavedReplies').open = false;
@@ -687,7 +703,7 @@ export function mountConversationAssistant() {
     });
     uiScope.handler($('assistantInsertWording'), 'onclick', () => applyWording(false));
     uiScope.handler($('assistantReplaceWording'), 'onclick', () => applyWording(true));
-    uiScope.handler($('assistantDismissWording'), 'onclick', () => {
+    uiScope.handler($('assistantDismissWording'), 'onclick', async () => {
       wording = null;
       showWording();
     });
@@ -730,7 +746,7 @@ export function mountConversationAssistant() {
         return 'Check the exact text and recipient, then approve when ready.';
       }),
     );
-    uiScope.handler($('assistantSaveAsWording'), 'onclick', () => {
+    uiScope.handler($('assistantSaveAsWording'), 'onclick', async () => {
       const body = $('assistantBody').value;
       if (!body.trim()) {
         error('Write a reply first.');
@@ -741,7 +757,7 @@ export function mountConversationAssistant() {
       if (
         pending?.body &&
         pending.body !== body &&
-        !confirm('Replace the unsaved new wording in the library?')
+        !(await confirmAction('Replace the unsaved new wording in the library?'))
       )
         return;
       libraryDrafts.set('new', {
@@ -879,7 +895,7 @@ export function mountConversationAssistant() {
       rememberLibrary();
       chooseLibrary(next);
     });
-    uiScope.handler($('replyLibraryCards'), 'onclick', (event) => {
+    uiScope.handler($('replyLibraryCards'), 'onclick', async (event) => {
       const b = eventElement(event).closest<HTMLElement>('[data-library-reply]');
       if (b) {
         rememberLibrary();
@@ -887,12 +903,12 @@ export function mountConversationAssistant() {
       }
     });
     uiScope.handler($('replyLibrarySearch'), 'oninput', renderLibrary);
-    uiScope.handler($('replyLibraryNew'), 'onclick', () => {
+    uiScope.handler($('replyLibraryNew'), 'onclick', async () => {
       rememberLibrary();
       chooseLibrary('');
       $('replyLibraryName').focus();
     });
-    uiScope.handler($('replyLibraryFields'), 'onclick', (event) => {
+    uiScope.handler($('replyLibraryFields'), 'onclick', async (event) => {
       const b = eventElement(event).closest<HTMLElement>('[data-template-field]');
       if (!b) return;
       const editor = $('replyLibraryBody');
@@ -1154,7 +1170,7 @@ export function mountConversationAssistant() {
         controls();
       }
     }
-    uiScope.handler($('carrierAttentionRows'), 'onclick', (event) => {
+    uiScope.handler($('carrierAttentionRows'), 'onclick', async (event) => {
       const read = eventElement(event).closest<HTMLElement>('[data-carrier-read]');
       if (read) {
         void dashboardRead(read);

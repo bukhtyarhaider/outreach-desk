@@ -366,14 +366,73 @@ test(
     await page.locator('#templateEditor').waitFor({ state: 'visible' });
     await page.locator('#subject').fill(draft);
     await page.locator('#body').fill(draft);
-    await page.route('**/api/template', (route) =>
-      route.fulfill({
+    let releaseSave;
+    const saveGate = new Promise((resolve) => {
+      releaseSave = resolve;
+    });
+    await page.route('**/api/template', async (route) => {
+      await saveGate;
+      return route.fulfill({
         status: 400,
         contentType: 'application/json',
         body: JSON.stringify({ error: 'Synthetic template validation error' }),
-      }),
+      });
+    });
+    // A confirmation is a new top-layer modal, not a replacement for the editor.
+    for (const width of [1440, 390]) {
+      await page.setViewportSize({ width, height: 1000 });
+      await page.locator('#deleteTemplate').click();
+      await page.locator('.ui-confirmation').waitFor({ state: 'visible' });
+      assert(await page.locator('#templateEditor').isVisible());
+      const modalFits = await page.locator('.ui-confirmation').evaluate((el) => {
+        const r = el.getBoundingClientRect();
+        return (
+          r.x >= 0 &&
+          r.right <= innerWidth &&
+          r.y >= 0 &&
+          r.bottom <= innerHeight &&
+          el.scrollWidth <= el.clientWidth + 1
+        );
+      });
+      assert(modalFits, `Nested confirmation fits at ${width}px`);
+      if (process.env.FC_UI_SCREENSHOT_DIR) {
+        await fs.mkdir(process.env.FC_UI_SCREENSHOT_DIR, { recursive: true });
+        await page.screenshot({
+          path: path.join(process.env.FC_UI_SCREENSHOT_DIR, `confirmation-drawer-${width}.png`),
+        });
+      }
+      await page
+        .locator('.ui-confirmation')
+        .getByRole('button', { name: 'Cancel', exact: true })
+        .click();
+      assert.equal(await page.locator('#body').inputValue(), draft);
+      assert(await page.locator('#deleteTemplate').evaluate((el) => el === document.activeElement));
+    }
+    await page.locator('#deleteTemplate').click();
+    await page.locator('.ui-confirmation').press('Escape');
+    await page.locator('.ui-confirmation').waitFor({ state: 'detached' });
+    assert(await page.locator('#templateEditor').isVisible());
+    await page.locator('#deleteTemplate').click();
+    await page.locator('#deleteTemplate').evaluate((el) => el.click());
+    assert.equal(
+      await page.locator('.ui-confirmation').count(),
+      1,
+      'Duplicate requests do not queue stale decisions',
     );
+    await page.locator('#templateEditor').evaluate((el) => el.close());
+    await page.locator('.ui-confirmation').waitFor({ state: 'detached' });
+    await page.locator('[data-edit-template]').first().click();
+    await page.locator('#subject').fill(draft);
+    await page.locator('#body').fill(draft);
     await page.locator('#saveTemplate').click();
+    await page
+      .locator('.ui-confirmation')
+      .getByRole('button', { name: 'Save changes', exact: true })
+      .click();
+    await page.getByRole('dialog', { name: 'Saving changes', exact: true }).waitFor();
+    await page.getByRole('dialog', { name: 'Saving changes', exact: true }).press('Escape');
+    assert(await page.getByRole('dialog', { name: 'Saving changes', exact: true }).isVisible());
+    releaseSave();
     await page.waitForFunction(() =>
       document
         .querySelector('#templateEditor [data-drawer-notice]')

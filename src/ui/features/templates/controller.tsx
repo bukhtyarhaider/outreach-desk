@@ -1,3 +1,4 @@
+import { confirmAction } from '../../shared/confirmation';
 import { StatusBadge } from '../../design-system/layout';
 import { openDrawer } from '../../design-system/overlays';
 import { Icon, Trash2 } from '../../design-system/icons';
@@ -253,7 +254,7 @@ export function mountTemplates() {
   }
   // Token chip click helper
   document.querySelectorAll<HTMLElement>('.token-chip').forEach((chip) => {
-    uiScope.handler(chip, 'onclick', () => {
+    uiScope.handler(chip, 'onclick', async () => {
       const token = chip.dataset.token;
       if (!token) return;
       const targetEl =
@@ -269,7 +270,7 @@ export function mountTemplates() {
     });
   });
   if ($('newTemplate'))
-    uiScope.handler($('newTemplate'), 'onclick', () => {
+    uiScope.handler($('newTemplate'), 'onclick', async () => {
       openDrawer('templateEditor');
       const tmplSelect = $('template');
       if (tmplSelect) {
@@ -280,10 +281,14 @@ export function mountTemplates() {
       if ($('templateName')) $('templateName').focus();
     });
   if ($('deleteTemplate'))
-    uiScope.handler($('deleteTemplate'), 'onclick', () => {
+    uiScope.handler($('deleteTemplate'), 'onclick', async () => {
       const key = $('template')?.value;
       const t = session.state.templates[key];
-      if (!confirm(`Are you sure you want to delete template variant "${t?.name || 'variant'}"?`))
+      if (
+        !(await confirmAction(
+          `Are you sure you want to delete template variant "${t?.name || 'variant'}"?`,
+        ))
+      )
         return;
       action($('deleteTemplate'), async () => {
         await api('/api/delete-template', { key });
@@ -294,7 +299,7 @@ export function mountTemplates() {
       });
     });
   if ($('exportTemplatesBtn'))
-    uiScope.handler($('exportTemplatesBtn'), 'onclick', () => {
+    uiScope.handler($('exportTemplatesBtn'), 'onclick', async () => {
       downloadJson(
         {
           exportedAt: new Date().toISOString(),
@@ -328,7 +333,7 @@ export function mountTemplates() {
       renderTemplatesTable();
     });
   if ($('templatesTableBody')) {
-    uiScope.handler($('templatesTableBody'), 'onclick', (e) => {
+    uiScope.handler($('templatesTableBody'), 'onclick', async (e) => {
       const editBtn = eventElement(e).closest<HTMLElement>('[data-edit-template]');
       if (editBtn) {
         const key = editBtn.dataset.editTemplate;
@@ -353,7 +358,11 @@ export function mountTemplates() {
       if (delBtn) {
         const key = delBtn.dataset.deleteTemplate!;
         const t = session.state.templates[key];
-        if (!confirm(`Are you sure you want to delete template variant "${t?.name || 'variant'}"?`))
+        if (
+          !(await confirmAction(
+            `Are you sure you want to delete template variant "${t?.name || 'variant'}"?`,
+          ))
+        )
           return;
         action(delBtn, async () => {
           await api('/api/delete-template', { key });

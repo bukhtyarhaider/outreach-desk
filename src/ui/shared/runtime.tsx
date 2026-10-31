@@ -1,3 +1,4 @@
+import { confirmAction, withSaveFeedback } from './confirmation';
 import { uiScope } from './lifecycle';
 import { renderRegion } from './regions';
 import { displayText } from './utils';
@@ -60,13 +61,35 @@ export function notice(text: string | null | undefined, _tone?: string) {
 export async function action(button: EventTarget | null, fn: () => unknown | Promise<unknown>) {
   if (!(button instanceof HTMLButtonElement)) return;
   if (session.pending) return;
+  const editing =
+    (button.id === 'saveProfile' && session.profileEditId) ||
+    (button.id === 'saveTemplate' && $('template')?.value) ||
+    (button.id === 'saveCampaign' && session.state.activeCampaign);
+  if (
+    editing &&
+    !(await confirmAction(
+      'Save these edits? Existing values will be updated. Cancel to keep reviewing your changes.',
+      { title: 'Save edited details?', confirmLabel: 'Save changes' },
+    ))
+  )
+    return;
+  if (session.pending) return;
   session.pending = true;
   const original = [...button.childNodes];
   button.disabled = true;
   button.textContent = 'Working…';
   notice('');
   try {
-    await fn();
+    if (/save|delete|remove|restore|reset|update/i.test(button.id))
+      await withSaveFeedback(
+        fn,
+        /delete|remove/i.test(button.id)
+          ? 'Deleting item'
+          : /reset|restore/i.test(button.id)
+            ? 'Applying changes'
+            : 'Saving changes',
+      );
+    else await fn();
     await refresh();
     await loadLeads();
     await loadHistory();

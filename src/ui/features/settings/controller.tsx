@@ -1,3 +1,4 @@
+import { confirmAction } from '../../shared/confirmation';
 import { StatusBadge } from '../../design-system/layout';
 import { openDrawer, closeDrawer } from '../../design-system/overlays';
 import { Icon, Trash2 } from '../../design-system/icons';
@@ -485,7 +486,7 @@ export function mountSettings() {
       }),
     );
   if ($('newProfile'))
-    uiScope.handler($('newProfile'), 'onclick', () => {
+    uiScope.handler($('newProfile'), 'onclick', async () => {
       openDrawer('profileEditor');
       session.profileEditId = null;
       if ($('accountName')) {
@@ -499,7 +500,7 @@ export function mountSettings() {
       notice('Enter the new profile details, then save.');
     });
   if ($('newProfileBtn'))
-    uiScope.handler($('newProfileBtn'), 'onclick', () => {
+    uiScope.handler($('newProfileBtn'), 'onclick', async () => {
       if ($('newProfile')) $('newProfile').click();
       $('profileSetupTitle')?.scrollIntoView({
         behavior: 'smooth',
@@ -507,10 +508,14 @@ export function mountSettings() {
       });
     });
   if ($('deleteCurrentProfile'))
-    uiScope.handler($('deleteCurrentProfile'), 'onclick', () => {
+    uiScope.handler($('deleteCurrentProfile'), 'onclick', async () => {
       if (!session.profileEditId) return;
       const p = session.state.profiles.find((p) => p.id === session.profileEditId);
-      if (!confirm(`Are you sure you want to delete mailbox profile "${p?.name || p?.email}"?`))
+      if (
+        !(await confirmAction(
+          `Are you sure you want to delete mailbox profile "${p?.name || p?.email}"?`,
+        ))
+      )
         return;
       action($('deleteCurrentProfile'), async () => {
         await api('/api/delete-profile', { id: session.profileEditId });
@@ -521,7 +526,7 @@ export function mountSettings() {
       });
     });
   if ($('profilesTableBody')) {
-    uiScope.handler($('profilesTableBody'), 'onclick', (e) => {
+    uiScope.handler($('profilesTableBody'), 'onclick', async (e) => {
       const selBtn = eventElement(e).closest<HTMLElement>('[data-select-profile]');
       if (selBtn) {
         action(selBtn, async () => {
@@ -549,7 +554,11 @@ export function mountSettings() {
       const delBtn = eventElement(e).closest<HTMLElement>('[data-delete-profile]');
       if (delBtn) {
         const p = session.state.profiles.find((x) => x.id === delBtn.dataset.deleteProfile);
-        if (!confirm(`Are you sure you want to delete mailbox profile "${p?.name || p?.email}"?`))
+        if (
+          !(await confirmAction(
+            `Are you sure you want to delete mailbox profile "${p?.name || p?.email}"?`,
+          ))
+        )
           return;
         action(delBtn, async () => {
           await api('/api/delete-profile', { id: delBtn.dataset.deleteProfile });
@@ -610,17 +619,17 @@ export function mountSettings() {
       }),
     );
   if ($('resetWait'))
-    uiScope.handler($('resetWait'), 'onclick', () => {
+    uiScope.handler($('resetWait'), 'onclick', async () => {
       const shared = session.state.settings.team.enabled
         ? '\nShared mailbox counters will also reset on the team server for all PCs using this mailbox.'
         : '';
       if (
-        !confirm(
+        !(await confirmAction(
           'Hard reset this mailbox’s wait and quota counters?\n\n' +
             'This overrides the current countdown, minimum send interval, hourly/24-hour app quotas, and rest counter. An active queue may send immediately. New sends will count toward the configured limits again.' +
             shared +
             '\n\nProvider-enforced limits still apply. Send history, uncertain outcomes, duplicate protection, and Do Not Contact records are kept.\n\nContinue with hard reset?',
-        )
+        ))
       )
         return;
       action($('resetWait'), async () => {
@@ -664,7 +673,7 @@ export function mountSettings() {
   // Pacing presets click and input listeners
   const presetsGrid = $('pacingPresetsGrid');
   if (presetsGrid) {
-    uiScope.handler(presetsGrid, 'onclick', (e) => {
+    uiScope.handler(presetsGrid, 'onclick', async (e) => {
       const card = eventElement(e).closest<HTMLElement>('.pacing-preset-card');
       if (card && card.dataset.preset) {
         applyPacingPreset(card.dataset.preset, true);
