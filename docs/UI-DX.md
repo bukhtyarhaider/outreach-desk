@@ -74,9 +74,3 @@ Email Tracking uses `features/tracking/workspace.css` for overview/record densit
 `useStickyHeaders` measures the active page header, workspace context and Tracking section navigation. The section links pin beneath the page header; the scroll container's anchor inset includes the entire measured stack, including wrapped mobile links. Other routes receive zero Tracking navigation height. Keep these elements observed when changing their responsive layout.
 
 `FirebaseSyncStatus` is a read-only workspace-store subscriber. Native feature controllers own sync actions and API failure handling; the status component does not create another polling or mutation path. Firebase diagnostics expose optional retry/phase fields for compatibility with existing fixtures.
-
-### Queue motion
-
-`RunnerMotion` is decorative and reads the same published server job on both the dashboard and header. Its negative delay derives from a shared wall-clock phase; active work rolls the brand shapes into a dock, scheduled waits use gentle motion, and disabled jobs stay still. It never records sends, changes pacing or estimates delivery. Reduced-motion media preferences disable animation. The header-only preference is browser-local and preserves the static header pattern when off.
-
-`RunnerProcess` owns only a cleaned-up countdown interval. Processed totals, rest counters, active-campaign readiness and PC-wide confirmed sends keep their own explicit scopes; continuous job totals must not be presented as a finite campaign backlog.

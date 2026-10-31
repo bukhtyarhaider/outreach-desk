@@ -1,13 +1,11 @@
 import { useSyncExternalStore } from 'react';
 
 export interface UIPreferences {
-  headerRunnerAnimation: boolean;
   workspaceContextEnabled: boolean;
   workspaceContextCollapsed: boolean;
 }
 export const uiPreferencesKey = 'outreach-desk.ui-preferences.v1';
 const defaults: Readonly<UIPreferences> = {
-  headerRunnerAnimation: true,
   workspaceContextEnabled: true,
   workspaceContextCollapsed: false,
 };
@@ -18,10 +16,6 @@ export function parseUIPreferences(value: string | null): Readonly<UIPreferences
     const parsed: unknown = JSON.parse(value ?? 'null');
     if (!parsed || typeof parsed !== 'object') return defaults;
     return {
-      headerRunnerAnimation:
-        'headerRunnerAnimation' in parsed && typeof parsed.headerRunnerAnimation === 'boolean'
-          ? parsed.headerRunnerAnimation
-          : defaults.headerRunnerAnimation,
       workspaceContextEnabled:
         'workspaceContextEnabled' in parsed && typeof parsed.workspaceContextEnabled === 'boolean'
           ? parsed.workspaceContextEnabled

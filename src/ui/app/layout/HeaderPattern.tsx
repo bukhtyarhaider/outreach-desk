@@ -1,16 +1,5 @@
-import { RunnerMotion } from '../../shared/RunnerMotion';
-import { useUIPreferences } from '../../shared/ui-preferences';
-import { useWorkspace } from '../../shared/workspace-store';
 /** Build 1's original proportions, anchored to the top-right edge of the shell. */
 export function HeaderPattern() {
-  const { preferences } = useUIPreferences();
-  const { state } = useWorkspace();
-  if (preferences.headerRunnerAnimation && state?.job.enabled)
-    return (
-      <div className="header-pattern">
-        <RunnerMotion compact />
-      </div>
-    );
   return (
     <svg
       className="header-pattern"

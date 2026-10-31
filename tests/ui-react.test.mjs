@@ -95,11 +95,7 @@ test('stat accents handle empty and partial audiences without inventing a send c
 });
 
 test('appearance preferences recover safely from corrupt, missing and incorrectly typed storage', () => {
-  const defaults = {
-    headerRunnerAnimation: true,
-    workspaceContextEnabled: true,
-    workspaceContextCollapsed: false,
-  };
+  const defaults = { workspaceContextEnabled: true, workspaceContextCollapsed: false };
   for (const value of [null, '', '{', 'null', 'false', '42', '[]']) {
     assert.deepEqual(ui.parseUIPreferences(value), defaults);
   }
@@ -109,11 +105,7 @@ test('appearance preferences recover safely from corrupt, missing and incorrectl
   );
   assert.deepEqual(
     ui.parseUIPreferences('{"workspaceContextEnabled":false,"workspaceContextCollapsed":true}'),
-    {
-      headerRunnerAnimation: true,
-      workspaceContextEnabled: false,
-      workspaceContextCollapsed: true,
-    },
+    { workspaceContextEnabled: false, workspaceContextCollapsed: true },
   );
   assert.deepEqual(ui.parseUIPreferences('{"workspaceContextCollapsed":true}'), {
     ...defaults,
@@ -358,10 +350,6 @@ test(
     };
 
     await page.goto(`${url}/#settings`);
-    await page.locator('#headerRunnerAnimation').uncheck();
-    await page.reload();
-    assert.equal(await page.locator('#headerRunnerAnimation').isChecked(), false);
-    await page.locator('#headerRunnerAnimation').check();
     await page.waitForFunction(
       (version) => document.getElementById('appVersion').textContent.includes(`v${version}`),
       version,
