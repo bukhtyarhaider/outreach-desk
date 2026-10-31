@@ -1,4 +1,6 @@
 import type { StartThreadResponse } from '../../shared/types/api';
+import { Metric, MetricGroup } from '../../design-system/layout';
+import { StatMark } from '../../design-system/StatMark';
 import { Button, Select } from '../../design-system/primitives';
 import { uiScope } from '../../shared/lifecycle';
 import { contentOr } from '../../shared/regions';
@@ -991,94 +993,108 @@ export function mountConversationAssistant() {
         ];
         renderRegion(
           $('carrierAttentionMetrics'),
-          metrics.map(([label, key, work]) => (
-            <>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="dashboard-inbox-counter"
-                data-carrier-work={work}
-              >
-                <strong>{r.summary[key]}</strong>
-                <span>{label}</span>
-              </Button>
-            </>
-          )),
+          <MetricGroup>
+            {metrics.map(([label, key, work]) => (
+              <Metric
+                key={key}
+                label={label}
+                value={r.summary[key] ?? 0}
+                visual={<StatMark kind="signal" value={Number(r.summary[key] ?? 0)} total={0} />}
+                detail={
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    data-carrier-work={work}
+                    aria-label={`View ${label.toLowerCase()} in Unibox`}
+                  >
+                    View in Unibox →
+                  </Button>
+                }
+              />
+            ))}
+          </MetricGroup>,
         );
         renderRegion(
           $('carrierAttentionRows'),
           contentOr(
-            r.highlights.map((item) => {
-              const readAction =
-                item.carrierInboxId && item.latestInboundId ? (
-                  <>
-                    <Button
-                      size="sm"
-                      className={'secondary'}
-                      data-carrier-read={esc(item.carrierInboxId)}
-                      data-read-version={esc(item.statusVersion)}
-                      data-read-message={esc(item.latestInboundId)}
-                      data-unread={!item.unread}
-                      title={'Update this carrier’s read status in Outreach Desk'}
-                      aria-label={
-                        (item.unread ? 'Mark as read' : 'Mark as unread') +
-                        ' for ' +
-                        esc(item.recipient)
-                      }
-                    >
-                      {item.unread ? 'Mark as read' : 'Mark as unread'}
-                    </Button>
-                  </>
-                ) : (
-                  ''
-                );
-              return (
-                <>
-                  <article className={'carrier-highlight ' + (item.unread ? 'unread' : '')}>
-                    <div>
-                      <div className="carrier-highlight-heading">
-                        <strong>{esc(item.recipient)}</strong>
-                        <span
-                          className={
-                            item.unread ? 'dashboard-unread-label' : 'dashboard-read-label'
-                          }
-                        >
-                          {item.unread ? 'New/unread' : item.latestInboundId ? 'Read' : 'Follow-up'}
-                        </span>
-                      </div>
-                      <p className="carrier-highlight-subject">
-                        {esc(item.subject || 'Carrier conversation')}
-                        <span className="carrier-highlight-intent">
-                          {' '}
-                          · {esc((item.intent?.intent || item.category || '').replaceAll('_', ' '))}
-                        </span>
-                      </p>
-                      <p className="carrier-highlight-excerpt">
-                        {esc(
-                          item.excerpt ||
-                            'No captured human response. Check capture coverage before a follow-up.',
-                        )}
-                      </p>
-                    </div>
-                    <div className={'carrier-highlight-actions'}>
+            r.highlights
+              .filter((item) => item.unread === true)
+              .map((item) => {
+                const readAction =
+                  item.carrierInboxId && item.latestInboundId ? (
+                    <>
                       <Button
                         size="sm"
                         className={'secondary'}
-                        data-carrier-open={item.id}
-                        data-carrier-type={item.type}
+                        data-carrier-read={esc(item.carrierInboxId)}
+                        data-read-version={esc(item.statusVersion)}
+                        data-read-message={esc(item.latestInboundId)}
+                        data-unread={!item.unread}
+                        title={'Update this carrier’s read status in Outreach Desk'}
+                        aria-label={
+                          (item.unread ? 'Mark as read' : 'Mark as unread') +
+                          ' for ' +
+                          esc(item.recipient)
+                        }
                       >
-                        {'Review'}
+                        {item.unread ? 'Mark as read' : 'Mark as unread'}
                       </Button>
-                      {readAction}
-                    </div>
-                  </article>
-                </>
-              );
-            }),
+                    </>
+                  ) : (
+                    ''
+                  );
+                return (
+                  <>
+                    <article className={'carrier-highlight ' + (item.unread ? 'unread' : '')}>
+                      <div>
+                        <div className="carrier-highlight-heading">
+                          <strong>{esc(item.recipient)}</strong>
+                          <span
+                            className={
+                              item.unread ? 'dashboard-unread-label' : 'dashboard-read-label'
+                            }
+                          >
+                            {item.unread
+                              ? 'New/unread'
+                              : item.latestInboundId
+                                ? 'Read'
+                                : 'Follow-up'}
+                          </span>
+                        </div>
+                        <p className="carrier-highlight-subject">
+                          {esc(item.subject || 'Carrier conversation')}
+                          <span className="carrier-highlight-intent">
+                            {' '}
+                            ·{' '}
+                            {esc((item.intent?.intent || item.category || '').replaceAll('_', ' '))}
+                          </span>
+                        </p>
+                        <p className="carrier-highlight-excerpt">
+                          {esc(
+                            item.excerpt ||
+                              'No captured human response. Check capture coverage before a follow-up.',
+                          )}
+                        </p>
+                      </div>
+                      <div className={'carrier-highlight-actions'}>
+                        <Button
+                          size="sm"
+                          className={'secondary'}
+                          data-carrier-open={item.id}
+                          data-carrier-type={item.type}
+                        >
+                          {'Review'}
+                        </Button>
+                        {readAction}
+                      </div>
+                    </article>
+                  </>
+                );
+              }),
             <>
               <p className={'hint'}>
                 {
-                  'No captured carrier work needs attention. This does not establish complete mailbox coverage.'
+                  'No unread carrier messages. Follow-up tasks remain in Unibox. This does not establish complete mailbox coverage.'
                 }
               </p>
             </>,

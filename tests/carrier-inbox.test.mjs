@@ -65,10 +65,10 @@ test('a later captured incoming reply with the same header second as an outgoing
  await f.ops.replies.ingest(eml({id:'<same-second-in@example.com>',text:'Can you help with Texas lanes?'}),account);
  assert.equal((await list(f)).rows[0].needsReply,true);
 });
-test('dashboard finds attention across the entire carrier backlog rather than the first page',async(t)=>{
+test('dashboard excludes follow-up-only carriers while Unibox retains their follow-up work',async(t)=>{
  const f=await workspace(t);f.ops.assistant.clock=()=>Date.parse('2026-11-02T12:00:00Z');
  await f.ops.replies.transaction(s=>{const original=Object.values(s.roots)[0];original.sentAt='2026-10-01T12:00:00Z';for(let i=0;i<30;i++){const id=String(i+1).padStart(64,'0');s.roots[id]={...original,id,recipient:`recent-${i}@example.com`,sentAt:'2026-11-01T12:00:00Z',messageIds:[]};}});
- const first=await list(f);assert.equal(first.rows.some(r=>r.recipient===recipient),false);const dashboard=await f.ops.assistant.dashboard();assert.equal(dashboard.summary.followUpReady,1);assert(dashboard.highlights.some(r=>r.recipient===recipient));
+ const first=await list(f);assert.equal(first.rows.some(r=>r.recipient===recipient),false);const dashboard=await f.ops.assistant.dashboard();assert.equal(dashboard.summary.followUpReady,1);assert(!dashboard.highlights.some(r=>r.recipient===recipient));assert.equal((await list(f,{work:'follow_up'})).rows.some(r=>r.recipient===recipient),true);
 });
 test('recent native outgoing contact history postpones follow-up even without thread references',async(t)=>{
  const f=await workspace(t);f.ops.assistant.clock=()=>Date.parse('2026-10-31T13:00:00Z');await f.ops.replies.transaction(s=>{Object.values(s.roots)[0].sentAt='2026-10-01T12:00:00Z';});

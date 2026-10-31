@@ -8,7 +8,7 @@ export function CarrierAttentionPanel() {
       <DashboardPanelHeader
         icon={Inbox}
         title="Carrier inbox"
-        description="Unread messages, reply tasks and approvals."
+        description="Unread carrier messages. Follow-up review stays in Unibox."
         actions={
           <ActionLink size="sm" href="#conversations">
             Open Unibox

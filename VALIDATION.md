@@ -357,3 +357,8 @@ Replaced 131 hand-authored inline SVGs and decorative emoji status/timeline icon
 - Extracted a reusable read-only Firebase audit. The report separates signal buckets from newly opened messages and exposes manual polling, identity mismatches, database availability and exact recovery coverage. It never persists local state or acknowledges cloud events.
 - Focused Firebase suite: **24 tests passed**, including an audit with recoverable/mismatched/unmatched evidence, multiple buckets for one message, paused polling and a failed database. Assertions verify original state and both cloud write logs remain unchanged. CLI/module syntax and diff checks passed.
 - A live read-only audit and local server diagnostics were inspected. No customer configuration, local messages or cloud acknowledgements were changed; the operator requested leaving the uncertain PC identity unchanged. Live repair and installed-worker restart were not performed.
+
+## Dashboard carrier inbox stats — 2026-10-31
+
+- Carrier counters now use shared Metric/MetricGroup and StatMark primitives, matching the dashboard stat typography, surfaces and Bauhaus geometry. Responsive columns adapt to desktop and mobile; labeled Unibox actions retain each work filter, including follow-up eligibility.
+- Follow-up-only rows are excluded on the server and filtered from legacy responses in the UI. Follow-up tasks remain available in Unibox. Strict type, formatting and production build checks passed; focused React/browser and carrier-inbox regression passed 24 tests.
