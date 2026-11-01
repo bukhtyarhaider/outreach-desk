@@ -986,7 +986,12 @@ export function renderTrackingDetail(r: TrackingRecord) {
           {bounceBadge}
         </div>
       </div>
-      <div id={'trackingSecOverview'} className={'drawer-tab-pane active'}>
+      <div
+        id={'trackingSecOverview'}
+        role="tabpanel"
+        aria-labelledby="tabTrackingOverview"
+        className={'drawer-tab-pane active'}
+      >
         <div className={'lead-details-card'}>
           <h4 className={'lead-details-title'}>
             <Icon icon={Clock} size={14} />
@@ -1089,7 +1094,13 @@ export function renderTrackingDetail(r: TrackingRecord) {
           </div>
         </div>
       </div>
-      <div id={'trackingSecSpecs'} className={'drawer-tab-pane'} style={{ display: 'none' }}>
+      <div
+        id={'trackingSecSpecs'}
+        role="tabpanel"
+        aria-labelledby="tabTrackingSpecs"
+        className={'drawer-tab-pane'}
+        style={{ display: 'none' }}
+      >
         <div className={'lead-details-card'}>
           <h4 className={'lead-details-title'}>
             <Icon icon={FileText} size={14} />
@@ -1308,7 +1319,13 @@ export function renderTrackingDetail(r: TrackingRecord) {
           ''
         )}
       </div>
-      <div id={'trackingSecRaw'} className={'drawer-tab-pane'} style={{ display: 'none' }}>
+      <div
+        id={'trackingSecRaw'}
+        role="tabpanel"
+        aria-labelledby="tabTrackingRaw"
+        className={'drawer-tab-pane'}
+        style={{ display: 'none' }}
+      >
         <div className={'lead-details-card'}>
           <div
             style={{

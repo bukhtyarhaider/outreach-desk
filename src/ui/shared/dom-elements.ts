@@ -520,9 +520,9 @@ export interface UIElements {
   navLiveActivity: HTMLElementTagNameMap['a'];
   liveNavDot: HTMLElementTagNameMap['span'];
   profileName: HTMLElementTagNameMap['span'];
-  leadPreviewDrawer: HTMLElementTagNameMap['div'];
+  leadPreviewDrawer: HTMLElementTagNameMap['dialog'];
   leadDrawerEyebrow: HTMLElementTagNameMap['span'];
-  previewTitle: HTMLElementTagNameMap['h3'];
+  previewTitle: HTMLElementTagNameMap['h2'];
   closePreviewDrawer: HTMLElementTagNameMap['button'];
   tabLeadDetails: HTMLElementTagNameMap['button'];
   tabEmailDraft: HTMLElementTagNameMap['button'];
@@ -537,9 +537,9 @@ export interface UIElements {
   sendOne: HTMLElementTagNameMap['button'];
   release: HTMLElementTagNameMap['button'];
   closeDrawerBtn: HTMLElementTagNameMap['button'];
-  trackingDrawer: HTMLElementTagNameMap['div'];
+  trackingDrawer: HTMLElementTagNameMap['dialog'];
   trackingDrawerEyebrow: HTMLElementTagNameMap['span'];
-  trackingDrawerTitle: HTMLElementTagNameMap['h3'];
+  trackingDrawerTitle: HTMLElementTagNameMap['h2'];
   closeTrackingDrawer: HTMLElementTagNameMap['button'];
   tabTrackingOverview: HTMLElementTagNameMap['button'];
   tabTrackingSpecs: HTMLElementTagNameMap['button'];

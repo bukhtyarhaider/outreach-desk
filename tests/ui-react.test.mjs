@@ -374,20 +374,38 @@ test(
     const savedPace = (await previewApi('state')).settings.pacing;
     await page.locator('.pace-profiles > summary').click();
     const draftBeforeGuide = await page.locator('#minSeconds').inputValue();
-    for (const [key, name] of [
-      ['warmup', 'Gradual'],
-      ['balanced', 'Balanced'],
-      ['established', 'Higher volume'],
-      ['stealth', 'Background'],
-    ]) {
-      await page.getByRole('button', { name: `About ${name} preset`, exact: true }).click();
-      const guide = page.locator(`#pace-info-${key}`);
-      assert.equal(await guide.isVisible(), true);
-      assert.match(await guide.innerText(), /When to choose it/);
-      assert.match(await guide.innerText(), /How it helps/);
-      await page.keyboard.press('Escape');
-      assert.equal(await guide.isVisible(), false);
+    for (const width of [1440, 390]) {
+      await page.setViewportSize({ width, height: 1000 });
+      for (const [key, name] of [
+        ['warmup', 'Gradual'],
+        ['balanced', 'Balanced'],
+        ['established', 'Higher volume'],
+        ['stealth', 'Background'],
+      ]) {
+        await page.getByRole('button', { name: `About ${name} preset`, exact: true }).click();
+        const guide = page.locator(`#pace-info-${key}`);
+        assert.equal(await guide.isVisible(), true);
+        const centered = await guide.evaluate((el) => {
+          const r = el.getBoundingClientRect();
+          return (
+            Math.abs((r.left + r.right) / 2 - innerWidth / 2) < 2 &&
+            Math.abs((r.top + r.bottom) / 2 - innerHeight / 2) < 2
+          );
+        });
+        assert(centered, `Preset guide is centered at ${width}px`);
+        if (key === 'warmup' && process.env.FC_UI_SCREENSHOT_DIR) {
+          await fs.mkdir(process.env.FC_UI_SCREENSHOT_DIR, { recursive: true });
+          await page.screenshot({
+            path: path.join(process.env.FC_UI_SCREENSHOT_DIR, `pace-info-${width}.png`),
+          });
+        }
+        assert.match(await guide.innerText(), /When to choose it/);
+        assert.match(await guide.innerText(), /How it helps/);
+        await page.keyboard.press('Escape');
+        assert.equal(await guide.isVisible(), false);
+      }
     }
+    await page.setViewportSize({ width: 1440, height: 1000 });
     assert.equal(
       await page.locator('#minSeconds').inputValue(),
       draftBeforeGuide,
@@ -490,6 +508,10 @@ test(
     // A confirmation is a new top-layer modal, not a replacement for the editor.
     for (const width of [1440, 390]) {
       await page.setViewportSize({ width, height: 1000 });
+      if (process.env.FC_UI_SCREENSHOT_DIR)
+        await page.screenshot({
+          path: path.join(process.env.FC_UI_SCREENSHOT_DIR, `drawer-template-${width}.png`),
+        });
       await page.locator('#deleteTemplate').click();
       await page.locator('.ui-confirmation').waitFor({ state: 'visible' });
       assert(await page.locator('#templateEditor').isVisible());
@@ -634,6 +656,10 @@ test(
         `Profile drawer stays inside ${width}px viewport`,
       );
       assert(layout.overflow <= 1 && layout.fieldsFit, `Profile fields fit at ${width}px`);
+      if ([1440, 390].includes(width) && process.env.FC_UI_SCREENSHOT_DIR)
+        await page.screenshot({
+          path: path.join(process.env.FC_UI_SCREENSHOT_DIR, `drawer-profile-${width}.png`),
+        });
     }
     await page.locator('#accountName').fill('Uncommitted account draft');
     await page.keyboard.press('Escape');
@@ -669,6 +695,7 @@ test(
     await page.locator('[data-view="leads"]').click();
     await page.locator('#filter').selectOption('all');
     await page.locator('#leadRows [data-preview]').first().click();
+    await page.locator('#leadPreviewDrawer').waitFor({ state: 'visible' });
     await page.waitForFunction(() => {
       const footer = document.querySelector('#leadPreviewDrawer .drawer-footer');
       const bounds = footer.getBoundingClientRect();
@@ -681,7 +708,24 @@ test(
         )
       );
     });
+    assert.equal(
+      await page.locator('#leadPreviewDrawer').evaluate((el) => el.matches(':modal')),
+      true,
+    );
+    await page.locator('#tabLeadDetails').focus();
+    await page.keyboard.press('End');
+    assert.equal(await page.locator('#tabEmailDraft').getAttribute('aria-selected'), 'true');
+    await page.keyboard.press('Home');
+    for (const width of [1440, 390]) {
+      await page.setViewportSize({ width, height: 1000 });
+      if (process.env.FC_UI_SCREENSHOT_DIR)
+        await page.screenshot({
+          path: path.join(process.env.FC_UI_SCREENSHOT_DIR, `drawer-lead-${width}.png`),
+        });
+    }
     await page.locator('#closeDrawerBtn').click();
+    assert.equal(await page.locator('#leadPreviewDrawer').isVisible(), false);
+    await page.setViewportSize({ width: 390, height: 1000 });
     await page.locator('#leadRows input[type="checkbox"]:not(:disabled)').first().check();
     await page.waitForFunction(() =>
       document.querySelector('.context-selection').textContent.includes('1 selected'),
@@ -733,6 +777,45 @@ test(
     await page.locator('[data-view="tracking"]').click();
     await page.waitForFunction(
       () => document.querySelector('.view-page.active').id === 'view-tracking',
+    );
+
+    await page.locator('[data-track]').first().click();
+    await page.locator('#trackingDrawer').waitFor({ state: 'visible' });
+    assert.equal(
+      await page.locator('#trackingDrawer').evaluate((el) => el.matches(':modal')),
+      true,
+    );
+    for (const width of [1440, 390]) {
+      await page.setViewportSize({ width, height: 1000 });
+      const fits = await page.locator('#trackingDrawer').evaluate((el) => {
+        const r = el.getBoundingClientRect(),
+          body = el.querySelector('.ui-drawer__body'),
+          footer = el.querySelector('.ui-drawer__footer');
+        body.scrollTop = body.scrollHeight;
+        return (
+          r.left >= 0 &&
+          r.right <= innerWidth + 1 &&
+          el.scrollWidth <= el.clientWidth + 1 &&
+          footer.getBoundingClientRect().bottom <= innerHeight + 1
+        );
+      });
+      assert(fits, `Tracking drawer fits and actions remain visible at ${width}px`);
+      if (process.env.FC_UI_SCREENSHOT_DIR)
+        await page.screenshot({
+          path: path.join(process.env.FC_UI_SCREENSHOT_DIR, `drawer-tracking-${width}.png`),
+        });
+    }
+    await page.locator('#tabTrackingOverview').focus();
+    await page.keyboard.press('End');
+    assert.equal(await page.locator('#tabTrackingRaw').getAttribute('aria-selected'), 'true');
+    await page.keyboard.press('Escape');
+    assert.equal(await page.locator('#trackingDrawer').isVisible(), false);
+    assert.equal(
+      await page
+        .locator('[data-track]')
+        .first()
+        .evaluate((el) => el === document.activeElement),
+      true,
     );
 
     await page.locator('[data-pill-status="seeds"]').click();

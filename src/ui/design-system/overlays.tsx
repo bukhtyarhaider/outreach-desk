@@ -23,6 +23,12 @@ export function Drawer({
   footer,
   titleId,
   wide = false,
+  eyebrow = 'Workspace editor',
+  eyebrowId,
+  closeButtonId,
+  tabs,
+  bodyId,
+  dismissOnBackdrop = false,
 }: {
   id: string;
   title: string;
@@ -31,6 +37,12 @@ export function Drawer({
   footer?: ReactNode;
   titleId?: string;
   wide?: boolean;
+  eyebrow?: string;
+  eyebrowId?: string;
+  closeButtonId?: string;
+  tabs?: ReactNode;
+  bodyId?: string;
+  dismissOnBackdrop?: boolean;
 }) {
   useEffect(() => {
     const closeOnNavigation = () => closeDrawer(id);
@@ -42,6 +54,18 @@ export function Drawer({
       id={id}
       className={`ui-drawer${wide ? ' ui-drawer--wide' : ''}`}
       aria-labelledby={titleId ?? `${id}Title`}
+      aria-describedby={description ? `${id}Description` : undefined}
+      onClick={(event) => {
+        if (!dismissOnBackdrop || event.target !== event.currentTarget) return;
+        const bounds = event.currentTarget.getBoundingClientRect();
+        if (
+          event.clientX < bounds.left ||
+          event.clientX > bounds.right ||
+          event.clientY < bounds.top ||
+          event.clientY > bounds.bottom
+        )
+          closeDrawer(id);
+      }}
       onKeyDown={(event) => {
         if (event.key !== 'Tab' || event.altKey || event.ctrlKey || event.metaKey) return;
         const controls = [
@@ -62,12 +86,15 @@ export function Drawer({
     >
       <header className="ui-drawer__header">
         <div>
-          <p className="ui-eyebrow">Workspace editor</p>
+          <span className="ui-eyebrow" id={eyebrowId}>
+            {eyebrow}
+          </span>
           <h2 id={titleId ?? `${id}Title`}>{title}</h2>
-          {description && <p>{description}</p>}
+          {description && <p id={`${id}Description`}>{description}</p>}
         </div>
         <Button
           type="button"
+          id={closeButtonId}
           variant="ghost"
           size="icon"
           aria-label={`Close ${title}`}
@@ -77,8 +104,35 @@ export function Drawer({
         </Button>
       </header>
       <p className="ui-drawer__feedback" data-drawer-notice role="status" hidden />
-      <div className="ui-drawer__body">{children}</div>
-      {footer && <footer className="ui-drawer__footer">{footer}</footer>}
+      {tabs && (
+        <div
+          className="ui-drawer__tabs"
+          onKeyDown={(event) => {
+            if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+            const buttons = Array.from(
+              event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]'),
+            );
+            const index = buttons.indexOf(event.target as HTMLButtonElement);
+            if (index < 0) return;
+            event.preventDefault();
+            const next =
+              event.key === 'Home'
+                ? 0
+                : event.key === 'End'
+                  ? buttons.length - 1
+                  : (index + (event.key === 'ArrowRight' ? 1 : -1) + buttons.length) %
+                    buttons.length;
+            buttons[next]?.focus();
+            buttons[next]?.click();
+          }}
+        >
+          {tabs}
+        </div>
+      )}
+      <div className="ui-drawer__body drawer-body" id={bodyId}>
+        {children}
+      </div>
+      {footer && <footer className="ui-drawer__footer drawer-footer">{footer}</footer>}
     </Dialog>
   );
 }

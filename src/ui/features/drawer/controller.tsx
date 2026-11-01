@@ -1,3 +1,4 @@
+import { openDrawer, closeDrawer } from '../../design-system/overlays';
 import { StatusBadge } from '../../design-system/layout';
 import {
   Check,
@@ -16,21 +17,33 @@ import { displayText } from '../../shared/utils';
 import type { TrackingRecord } from '../../shared/types/domain';
 import type { PreviewResponse } from '../../shared/types/api';
 import type { Lead, Message } from '../../shared/types/domain';
-import { eventElement } from '../../shared/dom';
 import { session } from '../../shared/session';
 import { $, copyToClipboard, notice, action, api } from '../../shared/runtime';
 import { renderTrackingDetail } from '../tracking/controller';
 export function openPreviewDrawer() {
-  const drawer = $('leadPreviewDrawer');
-  if (drawer) drawer.classList.add('open');
+  openDrawer('leadPreviewDrawer');
 }
 
 export function closePreviewDrawer() {
-  const drawer = $('leadPreviewDrawer');
-  if (drawer) drawer.classList.remove('open');
+  closeDrawer('leadPreviewDrawer');
+}
+
+function updateInspectorTabs(drawerId: string, selectedId: string) {
+  document
+    .getElementById(drawerId)
+    ?.querySelectorAll<HTMLButtonElement>('[role="tab"]')
+    .forEach((tab) => {
+      const selected = tab.id === selectedId;
+      tab.setAttribute('aria-selected', String(selected));
+      tab.tabIndex = selected ? 0 : -1;
+    });
 }
 
 export function switchDrawerTab(tabName: string) {
+  updateInspectorTabs(
+    'leadPreviewDrawer',
+    tabName === 'email' ? 'tabEmailDraft' : 'tabLeadDetails',
+  );
   const tabDetails = $('tabLeadDetails');
   const tabEmail = $('tabEmailDraft');
   const sectionDetails = $('leadDetailsSection');
@@ -49,17 +62,23 @@ export function switchDrawerTab(tabName: string) {
 }
 
 export function openTrackingDrawer(r: TrackingRecord) {
-  const drawer = $('trackingDrawer');
-  if (drawer) drawer.classList.add('open');
   if (r) renderTrackingDetail(r);
+  openDrawer('trackingDrawer');
 }
 
 export function closeTrackingDrawer() {
-  const drawer = $('trackingDrawer');
-  if (drawer) drawer.classList.remove('open');
+  closeDrawer('trackingDrawer');
 }
 
 export function switchTrackingDrawerTab(tabName: string) {
+  updateInspectorTabs(
+    'trackingDrawer',
+    tabName === 'specs'
+      ? 'tabTrackingSpecs'
+      : tabName === 'raw'
+        ? 'tabTrackingRaw'
+        : 'tabTrackingOverview',
+  );
   const tabOverview = $('tabTrackingOverview');
   const tabSpecs = $('tabTrackingSpecs');
   const tabRaw = $('tabTrackingRaw');
@@ -565,11 +584,7 @@ export function mountDrawer() {
   if ($('closePreviewDrawer')) {
     uiScope.handler($('closePreviewDrawer'), 'onclick', closePreviewDrawer);
   }
-  if ($('leadPreviewDrawer')) {
-    uiScope.handler($('leadPreviewDrawer'), 'onclick', (e) => {
-      if (eventElement(e) === $('leadPreviewDrawer')) closePreviewDrawer();
-    });
-  }
+
   if ($('tabTrackingOverview')) {
     uiScope.handler($('tabTrackingOverview'), 'onclick', () => switchTrackingDrawerTab('overview'));
   }
@@ -585,15 +600,4 @@ export function mountDrawer() {
   if ($('closeTrackingDrawer')) {
     uiScope.handler($('closeTrackingDrawer'), 'onclick', closeTrackingDrawer);
   }
-  if ($('trackingDrawer')) {
-    uiScope.handler($('trackingDrawer'), 'onclick', (e) => {
-      if (eventElement(e) === $('trackingDrawer')) closeTrackingDrawer();
-    });
-  }
-  uiScope.listen(window, 'keydown', (e) => {
-    if (e.key === 'Escape') {
-      closePreviewDrawer();
-      closeTrackingDrawer();
-    }
-  });
 }
