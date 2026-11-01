@@ -357,6 +357,7 @@ export interface UIElements {
   'view-live-activity': HTMLElementTagNameMap['section'];
   liveStreamStatusBadge: HTMLElementTagNameMap['span'];
   liveStreamStatusText: HTMLElementTagNameMap['span'];
+  liveJumpLatestBtn: HTMLElementTagNameMap['button'];
   livePauseToggleBtn: HTMLElementTagNameMap['button'];
   livePauseBtnText: HTMLElementTagNameMap['span'];
   liveExportJsonBtn: HTMLElementTagNameMap['a'];

@@ -24,6 +24,33 @@ export function eventIdentity(event: ActivityEvent): string {
 
 let pausedEvents: ActivityEvent[] | null = null;
 
+let latestEventKey: string | null = null;
+
+function scrollToLatestActivity() {
+  const page = document.querySelector('#view-live-activity.active');
+  const viewport = document.querySelector<HTMLElement>('.app-viewport');
+  const tools = page?.querySelector('.activity-stream-tools');
+  if (!page || !viewport || !tools) return;
+  const target =
+    session.liveViewMode === 'terminal'
+      ? $('liveTerminalOutput')
+      : $('liveVisualEventsList').firstElementChild;
+  if (!target) return;
+  if (session.liveViewMode === 'terminal') {
+    viewport.scrollTop +=
+      target.getBoundingClientRect().bottom - viewport.getBoundingClientRect().bottom + 16;
+  } else {
+    // Use the measured sticky stack even before the toolbar has reached its sticky position.
+    const style = getComputedStyle(viewport);
+    const top =
+      viewport.getBoundingClientRect().top +
+      parseFloat(style.getPropertyValue('--workspace-sticky-height') || '0') +
+      parseFloat(style.getPropertyValue('--active-page-header-height') || '0') +
+      tools.getBoundingClientRect().height;
+    viewport.scrollTop += target.getBoundingClientRect().top - top - 12;
+  }
+}
+
 // Live System Activity Logic
 export function classifyEvent(event: ActivityEvent): 'error' | 'pause' | 'send' | 'system' {
   const kind = event.kind?.toLowerCase();
@@ -143,6 +170,9 @@ export function renderLiveActivityView() {
     dayFill.style.background =
       dayPct < 20 ? 'var(--brand-red)' : dayPct < 50 ? 'var(--brand-yellow)' : 'var(--accent-blue)';
   }
+  const summary = document.getElementById('liveStatusSummary');
+  if (summary)
+    summary.textContent = `${runnerStatus} · Mailbox ${session.state.connected ? 'connected' : 'disconnected'} · ${hourRemaining}/hr · ${dayRemaining}/day left`;
   // 5. Telemetry Card 4: Metrics Breakdown
   let countSent = 0,
     countPacing = 0,
@@ -281,21 +311,22 @@ export function renderLiveActivityView() {
       termOutput.textContent = termLines;
     }
   }
-  // 10. Auto-scroll
-  if (session.liveAutoScroll && !session.livePaused) {
-    const feedWrap = $('liveVisualFeedContainer');
-    if (feedWrap && session.liveViewMode === 'visual') {
-      feedWrap.scrollTop = 0;
-    }
-    const termWrap = $('liveTerminalContainer');
-    if (termWrap && session.liveViewMode === 'terminal') {
-      const termPre = $('liveTerminalOutput');
-      if (termPre) termPre.scrollTop = termPre.scrollHeight;
-    }
-  }
+  // Follow only newly collected events; polling must not pull someone away from older rows.
+  const newest = visibleEvents.at(-1);
+  const key = newest ? eventIdentity(newest) : '';
+  const changed = latestEventKey !== null && latestEventKey !== key;
+  latestEventKey = key;
+  if (
+    changed &&
+    session.liveAutoScroll &&
+    !session.livePaused &&
+    filtered.some((event) => eventIdentity(event) === key)
+  )
+    scrollToLatestActivity();
 }
 
 export function mountLiveActivity() {
+  latestEventKey = null;
   pausedEvents = session.livePaused ? session.liveEventsList.slice() : null;
   // Live Countdown Ticker Loop (500ms for smooth ticking)
   uiScope.interval(() => {
@@ -331,6 +362,28 @@ export function mountLiveActivity() {
       if (wrap) wrap.hidden = true;
     }
   }, 500);
+  const logMenu = document.querySelector<HTMLDetailsElement>('.activity-log-menu');
+  if (logMenu) {
+    uiScope.listen(window, 'hashchange', () => {
+      logMenu.open = false;
+    });
+    uiScope.listen(logMenu, 'click', (event) => {
+      if (eventElement(event).closest('a[download]')) {
+        logMenu.open = false;
+        logMenu.querySelector('summary')?.focus();
+      }
+    });
+    uiScope.listen(logMenu, 'keydown', (event) => {
+      if ((event as KeyboardEvent).key !== 'Escape') return;
+      event.preventDefault();
+      logMenu.open = false;
+      logMenu.querySelector('summary')?.focus();
+    });
+    uiScope.listen(document, 'pointerdown', (event) => {
+      if (!document.querySelector('dialog[open]') && !logMenu.contains(eventElement(event)))
+        logMenu.open = false;
+    });
+  }
   // Live System Activity setup listeners
   if ($('liveCategoryTabs')) {
     uiScope.listen($('liveCategoryTabs'), 'click', (e) => {
@@ -372,8 +425,10 @@ export function mountLiveActivity() {
   if ($('liveAutoScrollCheck')) {
     uiScope.listen($('liveAutoScrollCheck'), 'change', (e) => {
       session.liveAutoScroll = !!(eventElement(e) as HTMLInputElement).checked;
+      if (session.liveAutoScroll) scrollToLatestActivity();
     });
   }
+  uiScope.listen($('liveJumpLatestBtn'), 'click', scrollToLatestActivity);
   if ($('livePauseToggleBtn')) {
     uiScope.listen($('livePauseToggleBtn'), 'click', () => {
       session.livePaused = !session.livePaused;
@@ -384,6 +439,7 @@ export function mountLiveActivity() {
       $('livePauseToggleBtn').classList.toggle('danger', session.livePaused);
       $('livePauseToggleBtn').classList.toggle('secondary', !session.livePaused);
       renderLiveActivityView();
+      if (!session.livePaused && session.liveAutoScroll) scrollToLatestActivity();
     });
   }
   if ($('liveClearEventsBtn')) {
@@ -405,6 +461,10 @@ export function mountLiveActivity() {
         }
       } else {
         notice('Screen event view cleared.');
+      }
+      if (logMenu) {
+        logMenu.open = false;
+        logMenu.querySelector('summary')?.focus();
       }
       renderLiveActivityView();
     });

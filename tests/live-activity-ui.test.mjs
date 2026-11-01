@@ -119,11 +119,15 @@ test(
         .reverse()
         .map((event) => event.message),
     );
+    assert.equal(await page.locator('.activity-status-details').evaluate((el) => el.open), false);
+    assert.match(await page.locator('#liveStatusSummary').innerText(), /Mailbox disconnected/);
+    await page.locator('.activity-status-details > summary').click();
     assert.equal(
       await page.locator('#liveRunnerStateText').innerText(),
       (await api('state')).job.status,
     );
     assert.match(await page.locator('#liveRunnerBadge').getAttribute('class'), /active/);
+    await page.locator('.activity-status-details > summary').click();
     assert.match(await page.locator('#events').textContent(), /Mailbox settings saved/);
     assert(!/\[object Object\]/.test(await page.locator('#events').textContent()));
     assert.equal(
@@ -244,6 +248,8 @@ test(
     await page.locator('#liveSearchInput').fill('');
 
     const beforeClear = (await api('state')).events;
+    if (!(await page.locator('.activity-log-menu').evaluate((el) => el.open)))
+      await page.locator('.activity-log-menu > summary').click();
     await page.locator('#liveClearEventsBtn').click();
     await page
       .locator('.ui-confirmation')
@@ -267,6 +273,8 @@ test(
     });
     await page.waitForFunction(() => document.querySelectorAll('.event-message').length === 1);
     assert.match(await page.locator('.event-message').innerText(), /later-event@example.invalid/);
+    if (!(await page.locator('.activity-log-menu').evaluate((el) => el.open)))
+      await page.locator('.activity-log-menu > summary').click();
     await page.locator('#liveClearEventsBtn').click();
     await page
       .locator('.ui-confirmation')
@@ -276,6 +284,68 @@ test(
       document.querySelector('.event-message')?.textContent.includes('log cleared by operator'),
     );
     assert.equal((await api('state')).events.length, 1);
+    for (let index = 0; index < 18; index++)
+      await api('suppress', {
+        email: `scroll-${index}@example.invalid`,
+        reason: 'Synthetic long-stream layout check',
+      });
+    await page.waitForFunction(() => document.querySelectorAll('.event-message').length === 19);
+    await page.locator('#liveAutoScrollCheck').uncheck();
+    for (const width of [1440, 390]) {
+      await page.setViewportSize({ width, height: 1000 });
+      await page.evaluate(() => {
+        document.querySelector('.app-viewport').scrollTop = 999999;
+      });
+      await page.waitForTimeout(80);
+      const pinned = await page.evaluate(() => {
+        const tools = document.querySelector('.activity-stream-tools').getBoundingClientRect(),
+          header = document
+            .querySelector('#view-live-activity .page-header')
+            .getBoundingClientRect();
+        const actions = [
+          '#liveSearchInput',
+          '#liveJumpLatestBtn',
+          '#btnModeTerminal',
+          '.activity-log-menu > summary',
+          '#livePauseToggleBtn',
+        ].map((selector) => document.querySelector(selector).getBoundingClientRect());
+        return (
+          tools.top >= header.bottom - 2 &&
+          tools.bottom < innerHeight &&
+          actions.every((r) => r.top >= 0 && r.bottom <= innerHeight)
+        );
+      });
+      assert(
+        pinned,
+        `Important activity controls remain accessible after page scrolling at ${width}px`,
+      );
+      const scrollBefore = await page.locator('.app-viewport').evaluate((el) => el.scrollTop);
+      await page.waitForResponse((response) => response.url().endsWith('/api/state'));
+      assert(
+        Math.abs(
+          (await page.locator('.app-viewport').evaluate((el) => el.scrollTop)) - scrollBefore,
+        ) < 2,
+        'Polling preserves reading position',
+      );
+      if (process.env.FC_UI_SCREENSHOT_DIR)
+        await page.screenshot({
+          path: path.join(process.env.FC_UI_SCREENSHOT_DIR, `activity-sticky-${width}.png`),
+        });
+      await page.locator('#liveJumpLatestBtn').click();
+      const latestVisible = await page
+        .locator('.live-event-card')
+        .first()
+        .evaluate((el) => {
+          const r = el.getBoundingClientRect(),
+            tools = document.querySelector('.activity-stream-tools').getBoundingClientRect();
+          return r.top >= tools.bottom - 2 && r.top < innerHeight;
+        });
+      assert(latestVisible, 'Latest reveals the newest matching event below the sticky toolbar');
+      if (process.env.FC_UI_SCREENSHOT_DIR)
+        await page.screenshot({
+          path: path.join(process.env.FC_UI_SCREENSHOT_DIR, `activity-latest-${width}.png`),
+        });
+    }
     assert.deepEqual(errors, []);
   },
 );

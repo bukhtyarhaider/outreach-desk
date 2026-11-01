@@ -8,7 +8,9 @@ export function useStickyHeaders() {
     if (!viewport) return;
     const context = viewport.querySelector<HTMLElement>('.workspace-context-shell');
     const headers = viewport.querySelectorAll<HTMLElement>('.view-page > .page-header');
-    const sectionNav = viewport.querySelector<HTMLElement>('.tracking-section-nav');
+    const sectionNavs = viewport.querySelectorAll<HTMLElement>(
+      '.tracking-section-nav, .activity-stream-tools',
+    );
     const measure = () => {
       const contextHeight =
         context && getComputedStyle(context).position === 'sticky'
@@ -22,13 +24,13 @@ export function useStickyHeaders() {
       );
       viewport.style.setProperty(
         '--sticky-section-nav-height',
-        `${sectionNav?.getBoundingClientRect().height ?? 0}px`,
+        `${viewport.querySelector<HTMLElement>('.view-page.active .tracking-section-nav, .view-page.active .activity-stream-tools')?.getBoundingClientRect().height ?? 0}px`,
       );
     };
     const observer = new ResizeObserver(measure);
     observer.observe(viewport);
     if (context) observer.observe(context);
-    if (sectionNav) observer.observe(sectionNav);
+    sectionNavs.forEach((nav) => observer.observe(nav));
     headers.forEach((header) => observer.observe(header));
     measure();
     return () => {

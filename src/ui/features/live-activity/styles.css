@@ -1270,3 +1270,251 @@
     white-space: nowrap;
   }
 }
+
+/* Stream first: compact context, a persistent command surface, one page scroller. */
+#view-live-activity > .page-header {
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+}
+#view-live-activity .page-title {
+  font-size: 34px;
+  line-height: 1.15;
+}
+#view-live-activity .page-subtitle {
+  margin-top: 8px;
+}
+#view-live-activity .activity-status-details {
+  margin-bottom: 16px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  background: var(--bg-surface);
+}
+#view-live-activity .activity-status-details > summary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  padding: 12px 16px;
+  cursor: pointer;
+  font-size: 12px;
+  list-style: none;
+}
+#view-live-activity .activity-status-details > summary::before {
+  content: '+';
+  color: var(--accent-blue);
+  font-size: 18px;
+  line-height: 1;
+}
+#view-live-activity .activity-status-details[open] > summary::before {
+  content: '−';
+}
+#view-live-activity .activity-status-details > summary > span:first-of-type {
+  font-weight: 650;
+}
+#view-live-activity .activity-status-details > summary > strong {
+  color: var(--text-secondary);
+  font-weight: 400;
+  flex: 1;
+  font-size: 12px;
+  line-height: 1.6;
+}
+#view-live-activity .activity-status-hint {
+  font-size: 11px;
+  color: var(--accent-blue);
+}
+#view-live-activity .activity-status-details[open] .activity-status-hint {
+  display: none;
+}
+#view-live-activity .activity-status-details .live-telemetry-grid {
+  padding: 0 16px 16px;
+  margin: 0;
+  gap: 12px;
+}
+#view-live-activity .activity-status-details .live-card {
+  padding: 16px;
+  min-height: 0;
+}
+#view-live-activity .activity-status-details .live-card-value {
+  font-size: 20px;
+}
+#view-live-activity .activity-status-details .live-card-counts {
+  padding: 12px 16px;
+}
+#view-live-activity .live-activity-panel {
+  padding: 0 20px 16px;
+  overflow: visible;
+}
+#view-live-activity .activity-stream-tools {
+  position: sticky;
+  top: calc(var(--workspace-sticky-height, 0px) + var(--active-page-header-height, 0px));
+  z-index: 25;
+  background: var(--bg-surface);
+  padding: 14px 0 12px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+#view-live-activity .activity-stream-tools > .panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 0 0 12px !important;
+  padding: 0;
+  border: 0;
+}
+#view-live-activity .activity-stream-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+#view-live-activity .activity-stream-tools .panel-title {
+  font-size: 17px;
+}
+#view-live-activity .stream-view-toggle-group {
+  padding: 2px;
+}
+#view-live-activity .view-mode-btn {
+  padding: 5px 9px !important;
+  min-height: 30px;
+}
+#view-live-activity .live-stream-toolbar {
+  margin: 0;
+  gap: 10px;
+}
+#view-live-activity .live-category-tabs {
+  border: 0;
+  padding: 0;
+}
+#view-live-activity .cat-tab {
+  padding: 6px 10px !important;
+}
+#view-live-activity .activity-log-menu > summary {
+  list-style: none;
+  cursor: pointer;
+}
+#view-live-activity .activity-log-menu > summary::after {
+  content: '⌄';
+  margin-left: 6px;
+}
+#view-live-activity .activity-log-menu[open] > summary {
+  color: var(--accent-blue);
+  border-color: var(--accent-blue);
+}
+#view-live-activity .activity-log-actions {
+  position: absolute;
+  top: 54px;
+  right: 0;
+  z-index: 2;
+  width: min(340px, 100%);
+  padding: 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-medium);
+  border-radius: 4px;
+  box-shadow: 0 8px 24px #0002;
+}
+#view-live-activity .activity-log-actions > p {
+  flex: auto;
+  font-size: 11px;
+}
+#view-live-activity .activity-log-actions > div {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+}
+#view-live-activity .activity-log-actions .ui-button {
+  width: 100%;
+  justify-content: flex-start;
+}
+#view-live-activity .live-visual-feed-wrap {
+  max-height: none;
+  min-height: 180px;
+  overflow: visible;
+}
+#view-live-activity .live-terminal-wrap,
+#view-live-activity .terminal-output {
+  max-height: none;
+  overflow: visible;
+}
+#view-live-activity .terminal-titlebar {
+  position: sticky;
+  top: calc(
+    var(--workspace-sticky-height, 0px) + var(--active-page-header-height, 0px) +
+      var(--sticky-section-nav-height, 0px)
+  );
+  z-index: 20;
+}
+#view-live-activity .event-time {
+  scroll-margin-top: 260px;
+}
+#view-live-activity .live-category-tabs:focus-within {
+  scroll-behavior: smooth;
+}
+@media (max-width: 680px) {
+  #view-live-activity .page-title {
+    font-size: 27px;
+  }
+  #view-live-activity > .page-header {
+    gap: 10px;
+    padding-bottom: 12px;
+  }
+  #view-live-activity .page-subtitle {
+    display: none;
+  }
+  #view-live-activity .header-actions {
+    gap: 8px;
+  }
+  #view-live-activity .activity-status-details > summary {
+    padding: 10px 12px;
+    gap: 6px 10px;
+  }
+  #view-live-activity .activity-status-details > summary > strong {
+    flex-basis: 100%;
+    font-size: 11px;
+  }
+  #view-live-activity .activity-status-hint {
+    display: none;
+  }
+  #view-live-activity .live-activity-panel {
+    padding: 0 12px 12px;
+  }
+  #view-live-activity .activity-stream-tools {
+    padding-top: 10px;
+  }
+  #view-live-activity .activity-stream-actions {
+    gap: 6px;
+  }
+  #view-live-activity .activity-stream-tools > .panel-head {
+    gap: 8px;
+  }
+  #view-live-activity .activity-stream-tools .live-toolbar-right {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  #view-live-activity .live-search-box {
+    width: 100%;
+  }
+  #view-live-activity .activity-log-actions {
+    top: 90px;
+  }
+  #view-live-activity .activity-stream-context > span:last-child {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #view-live-activity .live-category-tabs:focus-within {
+    scroll-behavior: auto;
+  }
+}
+@media (max-width: 680px) {
+  #view-live-activity .activity-mode-label {
+    display: none;
+  }
+  #view-live-activity .view-mode-btn {
+    min-width: 32px;
+    width: 32px;
+    padding: 6px !important;
+  }
+}
