@@ -1119,3 +1119,59 @@
   min-width: 0;
   overflow-wrap: anywhere;
 }
+
+.pace-profile-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+#view-settings .pace-info-button {
+  padding: 6px;
+  min-width: 30px;
+  min-height: 30px;
+  color: var(--accent-blue);
+}
+.pace-info-popover {
+  width: min(460px, calc(100vw - 32px));
+  max-height: calc(100dvh - 48px);
+  overflow: auto;
+  padding: 24px;
+  border: 1px solid var(--border-subtle);
+  border-top: 3px solid var(--accent-blue);
+  border-radius: 8px;
+  background: var(--bg-surface, #fffdf9);
+  color: var(--text-primary);
+  box-shadow: 0 12px 48px #0003;
+}
+.pace-info-popover::backdrop {
+  background: rgb(0 0 0 / 12%);
+}
+.pace-info-popover header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 16px;
+}
+.pace-info-popover h2 {
+  font-size: 22px;
+  margin: 6px 0 16px;
+}
+.pace-info-popover h3 {
+  font-size: 13px;
+  margin: 18px 0 6px;
+}
+.pace-profile-list .pace-info-popover p {
+  font-size: 13px;
+  line-height: 1.65;
+}
+.pace-info-values {
+  padding: 14px;
+  margin-top: 18px;
+  background: var(--bg-base, #f8f6f0);
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+}
+.pace-profile-list .pace-info-popover .pace-info-note {
+  margin-top: 18px;
+  font-size: 12px;
+}

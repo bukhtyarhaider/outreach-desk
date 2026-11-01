@@ -1,5 +1,5 @@
 import { Button, Input, Panel } from '../../design-system/primitives';
-import { Clock, Icon, Mail, RefreshCw, Shield } from '../../design-system/icons';
+import { Clock, Icon, Info, Mail, RefreshCw, Shield, X } from '../../design-system/icons';
 import type { Pacing } from '../../shared/types/domain';
 function PaceField({
   id,
@@ -31,24 +31,36 @@ const profiles = [
     name: 'Gradual',
     detail: '4–8 min gaps · 10/hour · 40/day',
     action: 'Apply Warmup',
+    when: 'Choose this for a small initial workload or when you want to resume with more time between sends. It does not warm up a mailbox automatically.',
+    why: 'Longer gaps and a lower daily cap spread the workload out. Resting for 15–30 minutes after 5–8 sends adds recovery time.',
+    rest: 'Rest 15–30 min after 5–8 sends · empty queue checked every 60 sec',
   },
   {
     key: 'balanced',
     name: 'Balanced',
     detail: '2.5–5 min gaps · 18/hour · 80/day',
     action: 'Apply Balanced',
+    when: 'Choose this for a regular, moderate workload when your mailbox’s permitted limits and recent sending results support these volumes.',
+    why: 'Moderate gaps balance progress with pauses. Resting for 10–20 minutes after 8–14 sends breaks the work into smaller batches.',
+    rest: 'Rest 10–20 min after 8–14 sends · empty queue checked every 60 sec',
   },
   {
     key: 'established',
     name: 'Higher volume',
     detail: '1.5–3 min gaps · 25/hour · 120/day',
     action: 'Apply Higher volume',
+    when: 'Choose this only when you need more throughput and your provider limits and observed mailbox performance support it. Mailbox age alone is not enough.',
+    why: 'Shorter gaps and larger caps allow more work before a limit pauses the runner. Resting for 8–15 minutes after 12–20 sends still interrupts continuous sending.',
+    rest: 'Rest 8–15 min after 12–20 sends · empty queue checked every 45 sec',
   },
   {
     key: 'stealth',
     name: 'Background',
     detail: '5–10 min gaps · 8/hour · 50/day',
     action: 'Apply background pace',
+    when: 'Choose this when completion speed is less important and you prefer a slow background workload. It does not hide automation from a provider.',
+    why: 'The longest gaps and lowest hourly cap keep activity spread out. Resting for 15–25 minutes after 6–10 sends adds longer breaks.',
+    rest: 'Rest 15–25 min after 6–10 sends · empty queue checked every 60 sec',
   },
 ];
 export function SendingSettings() {
@@ -90,7 +102,53 @@ export function SendingSettings() {
           {profiles.map((profile) => (
             <div key={profile.key} className="pacing-preset-card" data-preset={profile.key}>
               <div>
-                <strong>{profile.name}</strong>
+                <div className="pace-profile-heading">
+                  <strong>{profile.name}</strong>
+                  <Button
+                    size="sm"
+                    className="pace-info-button"
+                    popoverTarget={`pace-info-${profile.key}`}
+                    aria-label={`About ${profile.name} preset`}
+                    aria-haspopup="dialog"
+                  >
+                    <Icon icon={Info} size={16} />
+                  </Button>
+                </div>
+                <div
+                  id={`pace-info-${profile.key}`}
+                  popover="auto"
+                  role="dialog"
+                  aria-labelledby={`pace-info-title-${profile.key}`}
+                  className="pace-info-popover"
+                >
+                  <header>
+                    <div>
+                      <p className="page-eyebrow">Pace guide</p>
+                      <h2 id={`pace-info-title-${profile.key}`}>{profile.name}</h2>
+                    </div>
+                    <Button
+                      size="sm"
+                      popoverTarget={`pace-info-${profile.key}`}
+                      popoverTargetAction="hide"
+                      aria-label="Close preset guide"
+                    >
+                      <Icon icon={X} size={16} />
+                    </Button>
+                  </header>
+                  <h3>When to choose it</h3>
+                  <p>{profile.when}</p>
+                  <h3>How it helps</h3>
+                  <p>{profile.why}</p>
+                  <div className="pace-info-values">
+                    <strong>{profile.detail}</strong>
+                    <p>{profile.rest}</p>
+                  </div>
+                  <p className="pace-info-note">
+                    These are application limits, not a delivery guarantee. Actual speed can be
+                    lower because of rests, eligibility and provider restrictions. Check sending
+                    results and adjust as needed. Apply fills the draft; Save changes activates it.
+                  </p>
+                </div>
                 <p>{profile.detail}</p>
               </div>
               <Button className="preset-apply-btn" size="sm">

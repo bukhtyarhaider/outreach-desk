@@ -373,6 +373,26 @@ test(
     assert(paceAccents.every((accent) => accent.width === '3px'));
     const savedPace = (await previewApi('state')).settings.pacing;
     await page.locator('.pace-profiles > summary').click();
+    const draftBeforeGuide = await page.locator('#minSeconds').inputValue();
+    for (const [key, name] of [
+      ['warmup', 'Gradual'],
+      ['balanced', 'Balanced'],
+      ['established', 'Higher volume'],
+      ['stealth', 'Background'],
+    ]) {
+      await page.getByRole('button', { name: `About ${name} preset`, exact: true }).click();
+      const guide = page.locator(`#pace-info-${key}`);
+      assert.equal(await guide.isVisible(), true);
+      assert.match(await guide.innerText(), /When to choose it/);
+      assert.match(await guide.innerText(), /How it helps/);
+      await page.keyboard.press('Escape');
+      assert.equal(await guide.isVisible(), false);
+    }
+    assert.equal(
+      await page.locator('#minSeconds').inputValue(),
+      draftBeforeGuide,
+      'Reading preset guidance preserves the draft',
+    );
     await page.locator('[data-preset=warmup] .preset-apply-btn').click();
     assert.equal(await page.locator('#minSeconds').inputValue(), '240');
     assert.equal(await page.locator('#dailyCap').inputValue(), '40');
