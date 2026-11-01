@@ -1,14 +1,30 @@
-import { SectionHeader } from '../../design-system/layout';
 import { Input, Panel } from '../../design-system/primitives';
 import { updateUIPreferences, useUIPreferences } from '../../shared/ui-preferences';
 
 export function AppearanceSettings() {
   const { preferences, persisted } = useUIPreferences();
   return (
-    <section className="settings-section" id="settingsAppearance">
-      <SectionHeader title="Appearance" description="Make the workspace work for you." />
+    <section className="settings-appearance-content">
       <div className="settings-grid">
-        <Panel as="div">
+        <Panel as="div" className="settings-card">
+          <p className="page-eyebrow">Workspace visibility</p>
+          <h2>Your context, when you need it</h2>
+          <div
+            className="settings-context-preview"
+            aria-hidden="true"
+            data-visible={preferences.workspaceContextEnabled}
+          >
+            <span className="settings-preview-brand" />
+            <div className="settings-preview-context">
+              <i />
+              <i />
+              <i />
+            </div>
+            <div className="settings-preview-content">
+              <i />
+              <i />
+            </div>
+          </div>
           <label className="appearance-option" htmlFor="showWorkspaceContext">
             <span>
               <strong id="workspaceContextPreferenceLabel">Show workspace context</strong>

@@ -1,4 +1,4 @@
-import { resolveView, isTrackingSection, navigationParent } from './routes';
+import { resolveView, isTrackingSection, isSettingsSection, navigationParent } from './routes';
 import { uiScope } from '../shared/lifecycle';
 import { errorMessage } from '../shared/utils';
 import { session } from '../shared/session';
@@ -17,6 +17,8 @@ export function revealTrackingSection(value: string) {
 // Navigation View Routing
 export function navigate(viewName: string) {
   const target = resolveView(viewName);
+  if (isSettingsSection(viewName) || viewName === 'settings')
+    document.querySelector<HTMLElement>('.app-viewport')?.scrollTo(0, 0);
   if (document.querySelector('.view-page.active')?.id !== `view-${target}`) {
     document.querySelector<HTMLElement>('.app-viewport')?.scrollTo(0, 0);
   }

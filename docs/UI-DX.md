@@ -98,3 +98,11 @@ User navigation validates prerequisites and restores focus to the live stepper b
 Source inspection retains its original report when a proposed mapping is previewed. `ImportPreviewSummary` alone presents proposed column and parsing changes. Source evidence, mapping decisions, preview evaluation, provenance capture, and activation each have their own screen and instructions. The activation view separates its primary selection/action from collapsible download/edit/recovery tools and saved-record inspection. Its leads shortcut uses the shared campaign-selection function so the correct campaign is opened.
 
 All original IDs, request/validation paths, separate save/activation semantics, revision downloads, undo, original workbook retention and contact protections remain intact. Standalone experiment layouts continue using their existing flow. No server-issued preview or activation tokens are inferred by the stepper.
+
+### Settings tabs and save scope
+
+Settings now has six mounted concerns: Sending pace, Eligibility & checks, Firebase sync, Team coordination, Appearance and About. Each concern has a feature component; pacing presets, timing/limit fields and recovery are further separated into cards. `SettingsTabs` supports deep links, history, roving keyboard selection and a resize-aware scroll rail. Hidden panels retain uncontrolled native fields and their controller-owned guards.
+
+The existing configuration save remains atomic across sending, eligibility/checks, Firebase and team fields. The header states that scope and keeps the action available in those four tabs. Appearance persists browser preferences immediately and About has no write action; both hide the global save button. Tab switches never save configuration automatically. Firebase diagnostics retain effective PC/source, database, credentials-source-only information, data paths, counters and warnings; team configuration stays separate from open-event sync.
+
+`save-feedback` exposes save status outside hidden panels. Recognized validation failures reveal the relevant tab and mark the affected field while preserving edits. The coordinator token clears only after the settings request succeeds. Accounts/profile business settings remain owned by their separate editor.

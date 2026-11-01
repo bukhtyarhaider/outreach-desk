@@ -126,7 +126,7 @@ test('template check controls save, reload and retain disabled choices in the de
   t.after(() => browser.close());
   const page = await browser.newPage({ viewport: { width: 1440, height: 1100 } });
   const errors = []; page.on('pageerror', (e) => errors.push(e.message));
-  await page.goto('http://127.0.0.1:14638/#settings');
+  await page.goto('http://127.0.0.1:14638/#settingsChecks');
   await page.waitForFunction(() => document.querySelector('#accountUrl').value.includes('privateemail.com'));
   assert.equal(await page.locator('#templateChecksEnabled').isChecked(), true);
   assert.equal(await page.locator('#promotionalClaimsCheck').inputValue(), 'warn');
@@ -135,7 +135,7 @@ test('template check controls save, reload and retain disabled choices in the de
   await page.locator('#templateChecksEnabled').uncheck();
   assert.equal(await page.locator('#promotionalClaimsCheck').isDisabled(), true);
   await page.locator('#saveSettings').click();
-  await page.waitForFunction(() => document.querySelector('#notice').textContent === 'Sending settings saved.');
+  await page.waitForFunction(() => document.querySelector('#notice').textContent === 'Settings saved.');
   await page.reload();
   await page.waitForFunction(() => document.querySelector('#accountUrl').value.includes('privateemail.com'));
   assert.equal(await page.locator('#templateChecksEnabled').isChecked(), false);
@@ -143,7 +143,7 @@ test('template check controls save, reload and retain disabled choices in the de
   assert.equal(await page.locator('#promotionalClaimsCheck').inputValue(), 'block');
   assert.equal(await page.locator('#messageLengthCheck').inputValue(), 'off');
   await page.locator('#saveSettings').click();
-  await page.waitForFunction(() => document.querySelector('#notice').textContent === 'Sending settings saved.');
+  await page.waitForFunction(() => document.querySelector('#notice').textContent === 'Settings saved.');
   assert.deepEqual((await api('state')).settings.templateChecks, { enabled: true, promotionalClaims: 'block', messageLength: 'off' });
   for (const width of [1440]) {
     await page.setViewportSize({ width, height: 1000 });

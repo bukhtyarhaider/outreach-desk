@@ -1,3 +1,4 @@
+import { clearSettingsFeedback, settingsSaveFeedback, revealSettingsError } from './save-feedback';
 import { confirmAction } from '../../shared/confirmation';
 import { StatusBadge } from '../../design-system/layout';
 import { openDrawer, closeDrawer } from '../../design-system/overlays';
@@ -208,7 +209,7 @@ export function applyPacingPreset(presetKey: string, showNotice = true) {
   }
   highlightPacingPreset(presetKey);
   if (showNotice) {
-    notice(`Applied "${preset.name}" preset. Click "Save sending settings" to persist.`);
+    notice(`Applied "${preset.name}" preset. Click "Save changes" to apply these values.`);
   }
 }
 
@@ -403,6 +404,13 @@ export function renderFirebaseDiagnostics() {
 }
 
 export function mountSettings() {
+  if ($('view-settings')) {
+    for (const event of ['input', 'change'])
+      uiScope.listen($('view-settings'), event, clearSettingsFeedback);
+    uiScope.listen($('view-settings'), 'click', (event) => {
+      if (eventElement(event).closest('[data-preset]')) clearSettingsFeedback();
+    });
+  }
   if ($('connect'))
     uiScope.handler($('connect'), 'onclick', () =>
       action($('connect'), async () => {
@@ -583,6 +591,7 @@ export function mountSettings() {
   if ($('saveSettings'))
     uiScope.handler($('saveSettings'), 'onclick', () =>
       action($('saveSettings'), async () => {
+        clearSettingsFeedback();
         const s = structuredClone(session.state.settings);
         s.templateChecks = {
           enabled: $('templateChecksEnabled').checked,
@@ -612,10 +621,16 @@ export function mountSettings() {
           firebaseBackend: $('firebaseBackend')?.value || 'both',
         };
         const token = $('teamToken').value;
-        $('teamToken').value = '';
-        await api('/api/settings', { settings: s, teamToken: token });
-        await refresh();
-        notice('Sending settings saved.');
+        try {
+          await api('/api/settings', { settings: s, teamToken: token });
+          $('teamToken').value = '';
+          await refresh();
+          settingsSaveFeedback('Settings saved.');
+          notice('Settings saved.');
+        } catch (error) {
+          revealSettingsError(errorMessage(error), pacingFields);
+          throw error;
+        }
       }),
     );
   if ($('resetWait'))

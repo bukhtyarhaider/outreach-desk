@@ -43,10 +43,22 @@ export type TrackingSection = (typeof trackingSections)[number];
 export function isTrackingSection(value: string): value is TrackingSection {
   return trackingSections.some((section) => section === value);
 }
+export const settingsSections = [
+  'settingsSending',
+  'settingsChecks',
+  'settingsConnections',
+  'settingsTeam',
+  'settingsAppearance',
+  'settingsAbout',
+] as const;
+export function isSettingsSection(value: string) {
+  return settingsSections.some((section) => section === value);
+}
 export function resolveView(value: string): ViewName {
   if (value === 'campaignReview' || value === 'campaignSource') return 'campaign-edit';
   if (value === 'outreachRunner') return 'dashboard';
   if (isTrackingSection(value)) return 'tracking';
+  if (isSettingsSection(value)) return 'settings';
   return viewNames.find((view) => view === value) ?? 'dashboard';
 }
 /** Creation and editing belong to Campaigns, without impersonating the library route. */

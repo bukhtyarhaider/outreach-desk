@@ -11,7 +11,7 @@ export function FirebaseSyncStatus() {
         <strong>{sync.running ? 'Syncing opens' : `Firebase · ${sync.status}`}</strong>
         <p>{sync.message}</p>
       </div>
-      <ActionLink href="#settings" variant="ghost" size="sm">
+      <ActionLink href="#settingsConnections" variant="ghost" size="sm">
         Sync settings
       </ActionLink>
     </aside>

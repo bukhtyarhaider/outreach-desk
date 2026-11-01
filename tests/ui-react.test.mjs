@@ -360,7 +360,46 @@ test(
       'A queue with no included campaign stays disabled after initial rendering',
     );
     const draft = 'Unsent React migration draft <&> "preserve"';
+    await page.getByRole('tab', { name: 'Firebase sync', exact: true }).click();
     await page.locator('#trackingPcId').fill('4');
+    const settingsPanels = [
+      ['Sending pace', 'settingsSending'],
+      ['Eligibility & checks', 'settingsChecks'],
+      ['Firebase sync', 'settingsConnections'],
+      ['Team coordination', 'settingsTeam'],
+      ['Appearance', 'settingsAppearance'],
+      ['About', 'settingsAbout'],
+    ];
+    for (const width of [1440, 390]) {
+      await page.setViewportSize({ width, height: 1000 });
+      for (const [label, id] of settingsPanels) {
+        await page.getByRole('tab', { name: label, exact: true }).click();
+        await page.locator(`#${id}`).waitFor({ state: 'visible' });
+        assert.equal(await page.locator('#view-settings [role=tabpanel]:visible').count(), 1);
+        assert.equal(
+          await page.locator('#saveSettings').isVisible(),
+          !['Appearance', 'About'].includes(label),
+        );
+        assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+        if (process.env.FC_UI_SCREENSHOT_DIR) {
+          await fs.mkdir(process.env.FC_UI_SCREENSHOT_DIR, { recursive: true });
+          await page.screenshot({
+            path: path.join(process.env.FC_UI_SCREENSHOT_DIR, `settings-${id}-${width}.png`),
+          });
+        }
+      }
+    }
+    await page.getByRole('tab', { name: 'About', exact: true }).press('Home');
+    await page.locator('#settingsSending').waitFor({ state: 'visible' });
+    await page.getByRole('tab', { name: 'Sending pace', exact: true }).press('End');
+    await page.locator('#settingsAbout').waitFor({ state: 'visible' });
+    assert.equal(
+      await page.locator('#trackingPcId').inputValue(),
+      '4',
+      'Tab navigation preserves unsaved sync configuration',
+    );
+    await page.setViewportSize({ width: 1440, height: 1000 });
+
     await page.locator('[data-view=templates]').click();
     await page.locator('[data-edit-template]').first().click();
     await page.locator('#templateEditor').waitFor({ state: 'visible' });
@@ -539,7 +578,7 @@ test(
     for (const width of [1440, 1280, 1024, 820, 768, 480, 390, 320]) {
       await page.setViewportSize({ width, height: 1000 });
       const layout = await page.locator('#view-settings').evaluate((view) => {
-        const panels = [...view.querySelectorAll('.settings-grid>.panel')];
+        const panels = [...view.querySelectorAll('.settings-tab-panel .panel')];
         const fits = panels.every((panel) => panel.scrollWidth <= panel.clientWidth + 1);
         const viewport = document.querySelector('.app-viewport');
         return {
@@ -550,8 +589,8 @@ test(
       });
       assert.equal(
         layout.panels,
-        8,
-        'Appearance, sending, integration and app settings panels remain available',
+        11,
+        'All concern-specific settings cards remain mounted across tabs',
       );
       assert(layout.fits && layout.paneFit, `Settings sections fit at ${width}px`);
     }
@@ -801,6 +840,7 @@ test(
     assert(await page.locator('.context-summary').isVisible());
     assert(await campaignControl.evaluate((element) => element.isConnected));
     await openView('settings');
+    await page.getByRole('tab', { name: 'Appearance', exact: true }).click();
     await page.getByLabel('Show workspace context', { exact: true }).uncheck();
     assert.equal(await page.locator('.workspace-context-shell').isVisible(), false);
     assert.equal(await page.locator('#campaignSelect').count(), 1);
@@ -815,6 +855,7 @@ test(
       false,
     );
     assert.equal(await page.locator('.workspace-context-shell').isVisible(), false);
+    await page.getByRole('tab', { name: 'Appearance', exact: true }).click();
     await page.getByLabel('Show workspace context', { exact: true }).check();
     assert(await page.getByRole('button', { name: 'Expand workspace context' }).isVisible());
     await page.getByRole('button', { name: 'Expand workspace context' }).press('Enter');
@@ -873,8 +914,10 @@ test(
         if (mode === 'collapsed') {
           await page.getByRole('button', { name: 'Collapse workspace context' }).click();
         } else if (mode === 'hidden') {
+          await page.getByRole('tab', { name: 'Appearance', exact: true }).click();
           await page.getByLabel('Show workspace context', { exact: true }).uncheck();
         } else {
+          await page.getByRole('tab', { name: 'Appearance', exact: true }).click();
           await page.getByLabel('Show workspace context', { exact: true }).check();
           if (await page.getByRole('button', { name: 'Expand workspace context' }).isVisible()) {
             await page.getByRole('button', { name: 'Expand workspace context' }).click();
@@ -949,7 +992,7 @@ test(
           );
         }
         await openView('settings');
-        await page.getByRole('button', { name: 'Sync & coordination', exact: true }).click();
+        await page.getByRole('tab', { name: 'Firebase sync', exact: true }).click();
         await page.waitForFunction(() => {
           const section = document.querySelector('#settingsConnections').getBoundingClientRect();
           const header = document
@@ -970,6 +1013,7 @@ test(
       }
     }
     await openView('settings');
+    await page.getByRole('tab', { name: 'Appearance', exact: true }).click();
     await page.getByLabel('Show workspace context', { exact: true }).check();
     await page.getByRole('button', { name: 'Expand workspace context' }).click();
 
@@ -979,12 +1023,14 @@ test(
         throw new DOMException('Blocked', 'SecurityError');
       };
     });
+    await page.getByRole('tab', { name: 'Appearance', exact: true }).click();
     await page.getByLabel('Show workspace context', { exact: true }).uncheck();
     assert.equal(await page.locator('.workspace-context-shell').isVisible(), false);
     assert.match(
       await page.locator('#settingsAppearance [role="status"]').innerText(),
       /Browser storage is unavailable/,
     );
+    await page.getByRole('tab', { name: 'Appearance', exact: true }).click();
     await page.getByLabel('Show workspace context', { exact: true }).check();
     assert(await page.locator('#campaignSelect').isVisible());
     assert.deepEqual(scriptErrors, []);
