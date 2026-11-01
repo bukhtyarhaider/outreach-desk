@@ -489,6 +489,100 @@ test(
     await page.setViewportSize({ width: 1440, height: 1000 });
 
     await page.locator('[data-view=templates]').click();
+    const originalSendingTemplate = await page.locator('#template').inputValue();
+    await page.locator('#newTemplate').click();
+    assert.equal(await page.locator('#templateEditorTitle').innerText(), 'New template');
+    assert.equal(
+      await page.locator('#templateEditor #template').count(),
+      0,
+      'Editor does not switch the lead-preview template',
+    );
+    assert.equal(await page.locator('#subject').inputValue(), '');
+    assert.equal(await page.locator('#body').inputValue(), '');
+    assert.equal(await page.locator('#deleteTemplate').isVisible(), false);
+    await page.locator('#templateName').fill('QA flow template');
+    await page.locator('#subject').fill('Hello {{company}}');
+    await page.locator('#body').fill('Hello {{firstName}}, can we discuss dispatch support?');
+    await page.locator('#insertOptOutChip').click();
+    await page.locator('#templateEnabled').uncheck();
+    await page.locator('#subject').focus();
+    await page.locator('#subject').evaluate((el) => el.setSelectionRange(0, 0));
+    await page.locator('.template-personalization > summary').click();
+    await page.locator('[data-token="{{firstName}}"]').click();
+    assert.match(
+      await page.locator('#subject').inputValue(),
+      /^\{\{firstName\}\}Hello/,
+      'Personalization can be inserted at position zero',
+    );
+    await page.locator('#subject').fill('Hello {{company}}');
+    await page.getByRole('button', { name: 'Close Email template', exact: true }).click();
+    await page.locator('[data-edit-template]').first().click();
+    await page
+      .getByRole('dialog', { name: 'Discard unsaved template changes?', exact: true })
+      .getByRole('button', { name: 'Cancel', exact: true })
+      .click();
+    await page.locator('#newTemplate').click();
+    assert.equal(
+      await page.locator('#templateName').inputValue(),
+      'QA flow template',
+      'Closing and reopening keeps the new draft',
+    );
+    await page.locator('#saveTemplate').click();
+    await page.waitForFunction(
+      () => document.querySelector('#templateEditorTitle').textContent === 'Edit template',
+    );
+    const createdTemplates = (await previewApi('state')).templates;
+    const qaKey = Object.keys(createdTemplates).find(
+      (key) => createdTemplates[key].name === 'QA flow template',
+    );
+    assert(qaKey, 'Creating a template saves a new key');
+    assert.equal(
+      await page.locator('#template').inputValue(),
+      originalSendingTemplate,
+      'Saving a library template preserves lead-preview selection',
+    );
+    await page.locator('#body').fill('Updated draft. Reply remove to opt out.');
+    await page.locator('#saveTemplate').click();
+    await page
+      .getByRole('dialog', { name: 'Save edited details?', exact: true })
+      .getByRole('button', { name: 'Save changes', exact: true })
+      .click();
+    await page.waitForFunction(
+      () =>
+        document.querySelector('#notice').textContent === 'Template saved.' &&
+        !document.querySelector('.ui-save-feedback'),
+    );
+    assert.equal(
+      (await previewApi('state')).templates[qaKey].body,
+      'Updated draft. Reply remove to opt out.',
+    );
+    await page.getByRole('button', { name: 'Close Email template', exact: true }).click();
+    await page.locator('#templateStatusFilter').selectOption('disabled');
+    assert.equal(await page.locator(`[data-edit-template="${qaKey}"]`).count(), 1);
+    await page.locator('#templateSearch').fill('no such template');
+    assert.match(await page.locator('#templatesTableBody').innerText(), /No matching templates/);
+    await page.locator('[data-template-empty-action=reset]').click();
+    for (const width of [1440, 390]) {
+      await page.setViewportSize({ width, height: 1000 });
+      if (process.env.FC_UI_SCREENSHOT_DIR)
+        await page.screenshot({
+          path: path.join(process.env.FC_UI_SCREENSHOT_DIR, `template-library-${width}.png`),
+        });
+      await page.locator('.template-library-table').scrollIntoViewIfNeeded();
+      if (process.env.FC_UI_SCREENSHOT_DIR)
+        await page.screenshot({
+          path: path.join(process.env.FC_UI_SCREENSHOT_DIR, `template-library-rows-${width}.png`),
+        });
+    }
+    await page.locator(`[data-edit-template="${qaKey}"]`).click();
+    await page.locator('#deleteTemplate').click();
+    await page
+      .getByRole('dialog', { name: 'Delete template?', exact: true })
+      .getByRole('button', { name: 'Confirm deletion', exact: true })
+      .click();
+    await page.locator('#templateEditor').waitFor({ state: 'hidden' });
+    assert.equal((await previewApi('state')).templates[qaKey], undefined);
+    await page.setViewportSize({ width: 1440, height: 1000 });
     await page.locator('[data-edit-template]').first().click();
     await page.locator('#templateEditor').waitFor({ state: 'visible' });
     await page
@@ -515,6 +609,21 @@ test(
       });
     await page.locator('#subject').fill(draft);
     await page.locator('#body').fill(draft);
+    const extraTemplate = await previewApi('template', {
+      name: 'QA concurrent library update',
+      subject: 'Hello',
+      body: 'A separate message.',
+      enabled: true,
+      weight: 1,
+      requiredFields: [],
+    });
+    await page.waitForResponse((response) => response.url().endsWith('/api/state'));
+    assert.equal(
+      await page.locator('#body').inputValue(),
+      draft,
+      'Option-list changes never replace editor drafts',
+    );
+    await previewApi('delete-template', { key: extraTemplate.key });
     let releaseSave;
     const saveGate = new Promise((resolve) => {
       releaseSave = resolve;
@@ -737,6 +846,19 @@ test(
     await page.locator('#tabLeadDetails').focus();
     await page.keyboard.press('End');
     assert.equal(await page.locator('#tabEmailDraft').getAttribute('aria-selected'), 'true');
+    const anotherPreviewKey = await page.locator('#template option').nth(1).getAttribute('value');
+    await page.locator('#template').selectOption(anotherPreviewKey);
+    await page.waitForResponse((response) => response.url().includes('/api/preview?'));
+    assert.equal(
+      await page.locator('#tabEmailDraft').getAttribute('aria-selected'),
+      'true',
+      'Selecting a lead-preview template keeps the Email Preview tab open',
+    );
+    assert.equal(
+      await page.locator('#body').inputValue(),
+      draft,
+      'Lead-preview selection does not switch the editor draft',
+    );
     await page.keyboard.press('Home');
     for (const width of [1440, 390]) {
       await page.setViewportSize({ width, height: 1000 });

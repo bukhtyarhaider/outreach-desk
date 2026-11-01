@@ -105,10 +105,9 @@ export async function loadLeads() {
   updateControls();
 }
 
-export async function preview(id: string | null | undefined) {
+export async function preview(id: string | null | undefined, tab: 'details' | 'email' = 'details') {
   session.previewId = id ?? null;
-  // Always default to Lead Details tab when opening preview
-  switchDrawerTab('details');
+  switchDrawerTab(tab);
   const localLead = session.rows.find((x) => x.id === id);
   if (localLead && $('previewTitle')) {
     $('previewTitle').textContent = localLead.company || 'Lead Details';

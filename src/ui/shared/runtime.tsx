@@ -63,7 +63,7 @@ export async function action(button: EventTarget | null, fn: () => unknown | Pro
   if (session.pending) return;
   const editing =
     (button.id === 'saveProfile' && session.profileEditId) ||
-    (button.id === 'saveTemplate' && $('template')?.value) ||
+    (button.id === 'saveTemplate' && session.templateEditKey) ||
     (button.id === 'saveCampaign' && session.state.activeCampaign);
   if (
     editing &&

@@ -287,6 +287,7 @@ export interface UIElements {
   templateComplianceStatus: HTMLElementTagNameMap['span'];
   templateLivePreview: HTMLElementTagNameMap['div'];
   templateCountBadge: HTMLElementTagNameMap['span'];
+  templateStatusFilter: HTMLElementTagNameMap['select'];
   templateSearch: HTMLElementTagNameMap['input'];
   templatesTableBody: HTMLElementTagNameMap['tbody'];
   'view-settings': HTMLElementTagNameMap['section'];

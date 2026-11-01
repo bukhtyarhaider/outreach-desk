@@ -1,5 +1,5 @@
 import { Icon, Mail, Send, SquarePen, UserRound } from '../../design-system/icons';
-import { Button } from '../../design-system/primitives';
+import { Button, Select } from '../../design-system/primitives';
 import { Drawer } from '../../design-system/overlays';
 export function LeadDrawer() {
   return (
@@ -91,6 +91,13 @@ export function LeadDrawer() {
         className={'drawer-tab-pane'}
         style={{ display: 'none' }}
       >
+        <div className="form-group">
+          <label htmlFor="template">Template for this preview</label>
+          <Select id="template" />
+          <p className="hint">
+            Automatic selection may choose a different eligible template when preparing a message.
+          </p>
+        </div>
         <p
           id={'previewTo'}
           style={{

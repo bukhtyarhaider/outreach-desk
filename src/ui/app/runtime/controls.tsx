@@ -133,6 +133,9 @@ export function updateControls() {
   const delTmpl = $('deleteTemplate');
   if (delTmpl) {
     delTmpl.disabled =
-      session.pending || session.state.busy || !session.state.templates[$('template')?.value];
+      session.pending ||
+      session.state.busy ||
+      !session.templateEditKey ||
+      !session.state.templates[session.templateEditKey];
   }
 }

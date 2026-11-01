@@ -1,16 +1,6 @@
 import { StatusBadge } from '../../design-system/layout';
 import { Drawer } from '../../design-system/overlays';
-import {
-  Check,
-  Download,
-  Eye,
-  Icon,
-  PanelsTopLeft,
-  Plus,
-  Search,
-  Shield,
-  Upload,
-} from '../../design-system/icons';
+import { Download, Eye, Icon, Plus, Search, Shield, Upload } from '../../design-system/icons';
 import {
   Button,
   ButtonLabel,
@@ -19,83 +9,96 @@ import {
   Select,
   Textarea,
 } from '../../design-system/primitives';
+const tokens = [
+  'firstName',
+  'company',
+  'city',
+  'state',
+  'locationPhrase',
+  'senderName',
+  'businessName',
+  'services',
+  'legalName',
+  'address',
+];
 export function TemplatesPage() {
   return (
     <>
-      <section className={'view-page'} id={'view-templates'}>
-        <div className={'page-header'}>
+      <section className="view-page" id="view-templates">
+        <div className="page-header">
           <div>
-            <p className={'page-eyebrow'}>{'MESSAGE PERSONALIZATION'}</p>
-            <h1 className={'page-title'}>{'Template library'}</h1>
-            <p className={'page-subtitle'}>
-              {'Create and maintain reusable message templates for outreach across campaigns.'}
+            <p className="page-eyebrow">Message library</p>
+            <h1 className="page-title">Template library</h1>
+            <p className="page-subtitle">
+              Write reusable messages, preview personalization, and control when each template can
+              be selected.
             </p>
           </div>
-          <div className={'header-actions'}>
-            <Button variant="primary" id={'newTemplate'} className={'secondary'}>
+          <div className="header-actions">
+            <Button variant="primary" id="newTemplate">
               <Icon icon={Plus} size={14} />
-              {'\n                  New variant\n                '}
+              New template
             </Button>
-            <Button
-              id={'exportTemplatesBtn'}
-              className={'secondary'}
-              title={'Export all templates as JSON'}
-            >
+            <Button id="exportTemplatesBtn" title="Export all templates as JSON">
               <Icon icon={Download} size={14} />
-              {'\n                  Export templates\n                '}
+              Export library
             </Button>
-            <ButtonLabel
-              className={'button secondary'}
-              htmlFor={'importTemplatesFile'}
-              style={{ cursor: 'pointer' }}
-              title={'Import templates from JSON'}
-            >
+            <ButtonLabel htmlFor="importTemplatesFile" title="Import templates from JSON">
               <Icon icon={Upload} size={14} />
-              {'\n                  Import templates\n                '}
+              Import templates
             </ButtonLabel>
-            <Input id={'importTemplatesFile'} type={'file'} accept={'.json'} hidden={true} />
+            <Input id="importTemplatesFile" type="file" accept=".json" hidden />
           </div>
         </div>
-        <p className="hint">
-          Create a variant or choose Edit in the library to open its message editor.
-        </p>
-
-        <Panel as="div" className={'panel'} style={{ marginTop: '20px' }}>
-          <div className={'panel-head'}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <h2 className={'panel-title'}>
-                <Icon icon={PanelsTopLeft} size={16} />
-                {'\n                    Template Variants Library\n                  '}
+        <Panel className="template-library-panel">
+          <div className="template-library-toolbar">
+            <div>
+              <h2>
+                Your templates <StatusBadge id="templateCountBadge">0 templates</StatusBadge>
               </h2>
-              <StatusBadge className={'status-pill ready'} id={'templateCountBadge'}>
-                {'0 Variants'}
-              </StatusBadge>
+              <p id="templateLibrarySummary" role="status">
+                Choose a template to edit its message and selection rules.
+              </p>
             </div>
-            <div className={'toolbar-search'} style={{ minWidth: '220px', maxWidth: '320px' }}>
-              <Icon icon={Search} />
-              <Input
-                id={'templateSearch'}
-                type={'search'}
-                placeholder={'Search template variants…'}
-              />
+            <div className="template-library-filters">
+              <label className="template-library-search">
+                <span>Search templates</span>
+                <div className="toolbar-search">
+                  <Icon icon={Search} />
+                  <Input
+                    id="templateSearch"
+                    type="search"
+                    placeholder="Name, subject, message or required field…"
+                  />
+                </div>
+              </label>
+              <label>
+                <span>Availability</span>
+                <Select id="templateStatusFilter">
+                  <option value="all">All templates</option>
+                  <option value="enabled">Enabled</option>
+                  <option value="disabled">Disabled</option>
+                </Select>
+              </label>
             </div>
           </div>
-          <div className={'table-container'} style={{ border: 'none', boxShadow: 'none' }}>
-            <div className={'table-wrap'} style={{ maxHeight: '400px', minHeight: '200px' }}>
-              <table>
-                <thead>
-                  <tr>
-                    <th>{'Variant Name'}</th>
-                    <th>{'Subject Line'}</th>
-                    <th style={{ width: '80px', textAlign: 'center' }}>{'Weight'}</th>
-                    <th style={{ width: '100px', textAlign: 'center' }}>{'Status'}</th>
-                    <th>{'Required Fields'}</th>
-                    <th style={{ width: '170px', textAlign: 'right' }}>{'Actions'}</th>
-                  </tr>
-                </thead>
-                <tbody id={'templatesTableBody'}></tbody>
-              </table>
-            </div>
+          <div className="template-library-note">
+            <span className="template-note-mark" aria-hidden="true" />
+            Enabled templates participate in automatic selection. Required fields and weight
+            determine which eligible message is chosen.
+          </div>
+          <div className="table-wrap template-library-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Message</th>
+                  <th>Selection rules</th>
+                  <th>Availability</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="templatesTableBody" />
+            </table>
           </div>
         </Panel>
       </section>
@@ -103,165 +106,169 @@ export function TemplatesPage() {
         id="templateEditor"
         title="Email template"
         wide
+        eyebrow="Message editor"
         description="Write and preview a reusable message. Changes apply only when you save."
         footer={
           <div className="ui-editor-actions">
-            {' '}
-            <Button id={'deleteTemplate'} className={'danger'}>
-              {'Delete template'}
+            <Button id="deleteTemplate" variant="danger" hidden disabled>
+              Delete template
             </Button>
-            <Button variant="primary" id={'saveTemplate'}>
-              {'Save template'}
+            <Button
+              className="template-preview-jump"
+              onClick={() =>
+                document
+                  .querySelector('#templateEditor .template-preview-panel')
+                  ?.scrollIntoView({ block: 'start', behavior: 'auto' })
+              }
+            >
+              <Icon icon={Eye} size={14} />
+              Preview
+            </Button>
+            <Button variant="primary" id="saveTemplate">
+              Save template
             </Button>
           </div>
         }
       >
-        <div className={'dashboard-grid'}>
-          <Panel as="div" className={'panel'}>
-            <div className={'form-group'}>
-              <label htmlFor={'template'}>{'Select Template Variant'}</label>
-              <Select id={'template'}></Select>
-            </div>
-            <div className={'form-grid-2'}>
-              <div className={'form-group'}>
-                <label htmlFor={'templateName'}>{'Template Variant Name'}</label>
-                <Input id={'templateName'} />
+        <div className="template-editor-grid">
+          <div className="template-editor-fields">
+            <Panel className="template-compose-panel">
+              <div className="template-section-heading">
+                <p className="page-eyebrow">01 · Message</p>
+                <h3>Compose your template</h3>
+                <p>
+                  Use a descriptive name to find it later. Personalization is filled in for each
+                  lead.
+                </p>
               </div>
-              <div className={'form-group'}>
-                <label htmlFor={'templateWeight'}>{'Selection Weight'}</label>
+              <div className="form-group">
+                <label htmlFor="templateName">Template name</label>
                 <Input
-                  id={'templateWeight'}
-                  type={'number'}
-                  min={'1'}
-                  max={'100'}
-                  defaultValue={'1'}
+                  id="templateName"
+                  placeholder="e.g. First introduction"
+                  maxLength={100}
+                  required
                 />
               </div>
-            </div>
-            <div className={'form-group'}>
-              <label className={'check'}>
-                <Input id={'templateEnabled'} type={'checkbox'} defaultChecked={true} />
-                {'\n                    Enabled for random weighted selection\n                  '}
+              <div className="form-group">
+                <label htmlFor="subject">Subject</label>
+                <Input id="subject" placeholder="e.g. A quick question for {{company}}" required />
+              </div>
+              <details className="template-personalization">
+                <summary>
+                  Personalization fields <span>Insert into the subject or message</span>
+                </summary>
+                <div className="token-bar">
+                  {tokens.map((token) => (
+                    <Button
+                      key={token}
+                      type="button"
+                      size="sm"
+                      className="token-chip"
+                      data-token={`{{${token}}}`}
+                    >{`{{${token}}}`}</Button>
+                  ))}
+                </div>
+              </details>
+              <div className="form-group">
+                <div className="template-message-label">
+                  <label htmlFor="body">Message</label>
+                  <Button
+                    type="button"
+                    id="insertOptOutChip"
+                    size="sm"
+                    title="Add opt-out wording to the message"
+                  >
+                    <Icon icon={Shield} size={12} />
+                    Add opt-out line
+                  </Button>
+                </div>
+                <Textarea
+                  id="body"
+                  rows={12}
+                  placeholder="Write your message. Use personalization fields to adapt it to each lead."
+                  required
+                />
+                <p className="hint">
+                  Your existing mailbox signature is added in webmail. Review the message and
+                  opt-out wording before sending.
+                </p>
+              </div>
+            </Panel>
+            <Panel className="template-selection-panel">
+              <div className="template-section-heading">
+                <p className="page-eyebrow">02 · Selection rules</p>
+                <h3>When this template is used</h3>
+                <p>These rules affect automatic template selection, not the sample preview.</p>
+              </div>
+              <label className="template-enabled-field">
+                <Input id="templateEnabled" type="checkbox" defaultChecked />
+                <span>
+                  <strong>Enable automatic selection</strong>
+                  <small>
+                    Turn off to keep the template in your library without including it in automatic
+                    selection.
+                  </small>
+                </span>
               </label>
-            </div>
-            <div className={'form-group'}>
-              <label htmlFor={'requiredFields'}>{'Required Lead Fields (comma separated)'}</label>
-              <Input id={'requiredFields'} placeholder={'e.g. city, state'} />
-              <p className={'hint'}>
-                {'Variants will be skipped if the lead is missing any required field.'}
-              </p>
-            </div>
-            <div className={'form-group'}>
-              <label htmlFor={'subject'}>{'Email Subject Line'}</label>
-              <Input id={'subject'} placeholder={'e.g. Quick question regarding {{company}}'} />
-            </div>
-            <div className={'form-group'}>
-              <div
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  marginBottom: '6px',
-                }}
-              >
-                <label style={{ marginBottom: '0' }}>
-                  {'Insert Personalization Tokens (Click to insert)'}
-                </label>
-                <Button
-                  type={'button'}
-                  id={'insertOptOutChip'}
-                  className={'secondary'}
-                  style={{
-                    fontSize: '11px',
-                    padding: '3px 8px',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                  }}
-                  title={'Insert compliant opt-out instruction into message body'}
-                >
-                  <Icon icon={Shield} size={12} />
-                  {'\n                      + Insert Opt-Out Line\n                    '}
-                </Button>
+              <div className="form-grid-2">
+                <div className="form-group">
+                  <label htmlFor="templateWeight">Selection weight</label>
+                  <Input
+                    id="templateWeight"
+                    type="number"
+                    min="1"
+                    max="100"
+                    step="1"
+                    defaultValue="1"
+                    required
+                  />
+                  <p className="hint">
+                    A weight of 2 is twice as likely as 1 among otherwise eligible templates.
+                  </p>
+                </div>
+                <div className="form-group">
+                  <label htmlFor="requiredFields">Required lead fields</label>
+                  <Input id="requiredFields" placeholder="e.g. city, state" />
+                  <p className="hint">
+                    Separate field names with commas. Leads missing these fields skip this template.
+                  </p>
+                </div>
               </div>
-              <div className={'token-bar'}>
-                <Button type={'button'} className={'token-chip'} data-token={'{{firstName}}'}>
-                  {'{{firstName}}'}
-                </Button>
-                <Button type={'button'} className={'token-chip'} data-token={'{{company}}'}>
-                  {'{{company}}'}
-                </Button>
-                <Button type={'button'} className={'token-chip'} data-token={'{{city}}'}>
-                  {'{{city}}'}
-                </Button>
-                <Button type={'button'} className={'token-chip'} data-token={'{{state}}'}>
-                  {'{{state}}'}
-                </Button>
-                <Button type={'button'} className={'token-chip'} data-token={'{{locationPhrase}}'}>
-                  {'{{locationPhrase}}'}
-                </Button>
-                <Button type={'button'} className={'token-chip'} data-token={'{{senderName}}'}>
-                  {'{{senderName}}'}
-                </Button>
-                <Button type={'button'} className={'token-chip'} data-token={'{{businessName}}'}>
-                  {'{{businessName}}'}
-                </Button>
-                <Button type={'button'} className={'token-chip'} data-token={'{{services}}'}>
-                  {'{{services}}'}
-                </Button>
-                <Button type={'button'} className={'token-chip'} data-token={'{{legalName}}'}>
-                  {'{{legalName}}'}
-                </Button>
-                <Button type={'button'} className={'token-chip'} data-token={'{{address}}'}>
-                  {'{{address}}'}
-                </Button>
-              </div>
-            </div>
-            <div className={'form-group'}>
-              <label htmlFor={'body'}>{'Message Body'}</label>
-              <Textarea
-                id={'body'}
-                rows={11}
-                style={{ fontFamily: 'var(--font-sans)', lineHeight: '1.6' }}
-              />
-              <p className={'hint'}>
-                {'The existing webmail signature is preserved automatically by Private Email.'}
-              </p>
-            </div>
-          </Panel>
-
-          <Panel as="div" className={'panel'}>
-            <div className={'panel-head'}>
-              <h2 className={'panel-title'}>
+            </Panel>
+          </div>
+          <Panel className="template-preview-panel">
+            <div className="panel-head">
+              <h2 className="panel-title">
                 <Icon icon={Eye} size={16} />
-                {'\n                    Live Template Preview\n                  '}
+                Live preview
               </h2>
-              <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                <StatusBadge id={'templateComplianceStatus'} className={'status-pill ready'}>
-                  <Icon icon={Check} size={12} />
-                  {'Compliant'}
-                </StatusBadge>
-                <StatusBadge className={'status-pill ready'}>{'Simulated Lead'}</StatusBadge>
-              </div>
+              <StatusBadge id="templateComplianceStatus">Draft</StatusBadge>
             </div>
-            <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
-              <strong>{'Recipient:'}</strong>
-              {
-                ' Alex Example <contact@example.com> · Example Carrier LLC, Dallas, TX\n                '
-              }
+            <p className="template-preview-recipient">
+              <span className="page-eyebrow">Sample recipient</span>
+              <strong>Alex Example</strong>
+              <span>
+                contact@example.com · Example Carrier LLC
+                <br />
+                Dallas, TX
+              </span>
+            </p>
+            <div className="message-preview-box" id="templateLivePreview">
+              Write a subject and message to see the sample preview.
             </div>
-            <div className={'message-preview-box'} id={'templateLivePreview'}>
-              {'\n                  Select a template to view the live preview.\n                '}
-            </div>
-            <div className={'signature-box'}>
-              <strong>{'Mailbox signature'}</strong>
+            <div className="signature-box">
+              <strong>Mailbox signature</strong>
               <br />
               <span>
-                {
-                  'Your mailbox’s existing signature is added in webmail. It is not included in this sample preview.'
-                }
+                Your mailbox’s existing signature is added in webmail. It is not included in this
+                sample preview.
               </span>
             </div>
+            <p className="hint">
+              Sample data helps you check wording and layout. Actual messages use the selected lead
+              and mailbox profile; saving does not send a message.
+            </p>
           </Panel>
         </div>
       </Drawer>

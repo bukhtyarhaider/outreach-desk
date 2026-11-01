@@ -5,7 +5,7 @@ import { displayText } from '../../shared/utils';
 import type { AppState } from '../../shared/types/api';
 import { session } from '../../shared/session';
 import { api, $, syncOptions, waitDuration } from '../../shared/runtime';
-import { fillTemplate, renderTemplatesTable } from '../../features/templates/controller';
+import { renderTemplatesTable } from '../../features/templates/controller';
 import {
   fillSettings,
   fillProfile,
@@ -73,7 +73,6 @@ export async function refresh() {
     );
     if (session.state.templates[v]) tempSelect.value = v;
     tempSelect.dataset.options = templateOptions;
-    fillTemplate();
   }
   const quotaEl = $('quota');
   if (quotaEl) {
