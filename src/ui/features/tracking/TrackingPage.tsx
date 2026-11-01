@@ -620,7 +620,7 @@ export function TrackingPage() {
                 <Input
                   id={'healthDomain'}
                   required={true}
-                  placeholder={'fclogistics.us'}
+                  placeholder={'example.com'}
                   style={{ width: '100%' }}
                 />
               </div>

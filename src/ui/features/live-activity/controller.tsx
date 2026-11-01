@@ -269,7 +269,7 @@ export function renderLiveActivityView() {
   const termOutput = $('liveTerminalOutput');
   if (termOutput && session.liveViewMode === 'terminal') {
     if (filtered.length === 0) {
-      termOutput.textContent = '# [fc-telemetry] No events matching current criteria.';
+      termOutput.textContent = '# [Outreach Desk] No events matching current criteria.';
     } else {
       const termLines = filtered
         .map((e) => {

@@ -491,6 +491,28 @@ test(
     await page.locator('[data-view=templates]').click();
     await page.locator('[data-edit-template]').first().click();
     await page.locator('#templateEditor').waitFor({ state: 'visible' });
+    await page
+      .locator('#body')
+      .fill(
+        '{{firstName}} at {{company}} — {{senderName}} / {{businessName}} / {{legalName}} / {{address}}',
+      );
+    await page.waitForFunction(() =>
+      document
+        .querySelector('#templateLivePreview')
+        .textContent.includes('Alex at Example Carrier LLC'),
+    );
+    assert.doesNotMatch(
+      await page.locator('#templateEditor').innerText(),
+      /Mark Anthony|Fleet Core Logistics|FC Logistics|132 French Creek/i,
+    );
+    assert.match(
+      await page.locator('#templateEditor .signature-box').innerText(),
+      /not included in this sample preview/,
+    );
+    if (process.env.FC_UI_SCREENSHOT_DIR)
+      await page.screenshot({
+        path: path.join(process.env.FC_UI_SCREENSHOT_DIR, 'neutral-template-preview.png'),
+      });
     await page.locator('#subject').fill(draft);
     await page.locator('#body').fill(draft);
     let releaseSave;

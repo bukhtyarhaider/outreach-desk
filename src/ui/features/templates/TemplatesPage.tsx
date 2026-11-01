@@ -247,16 +247,20 @@ export function TemplatesPage() {
             <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginBottom: '8px' }}>
               <strong>{'Recipient:'}</strong>
               {
-                ' John Doe <johndoe@sampletrucking.com> · Sample Trucking LLC, Dallas, TX\n                '
+                ' Alex Example <contact@example.com> · Example Carrier LLC, Dallas, TX\n                '
               }
             </div>
             <div className={'message-preview-box'} id={'templateLivePreview'}>
               {'\n                  Select a template to view the live preview.\n                '}
             </div>
             <div className={'signature-box'}>
-              <strong>{'Attached Signature (from Webmail):'}</strong>
+              <strong>{'Mailbox signature'}</strong>
               <br />
-              <span>{'Mark Anthony | Fleet Core Logistics LLC | Dispatch & Carrier Services'}</span>
+              <span>
+                {
+                  'Your mailbox’s existing signature is added in webmail. It is not included in this sample preview.'
+                }
+              </span>
             </div>
           </Panel>
         </div>

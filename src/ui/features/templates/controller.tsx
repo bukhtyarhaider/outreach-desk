@@ -168,15 +168,15 @@ export function updateTemplateLivePreview() {
   const p = session.state?.profiles?.find((p) => p.id === session.state.activeProfile);
   const b = p?.business || session.state?.settings?.business || {};
   const sampleData = {
-    firstName: 'John',
-    company: 'Apex Freight Express',
+    firstName: 'Alex',
+    company: 'Example Carrier LLC',
     city: 'Dallas',
     state: 'TX',
     locationPhrase: ' in Dallas, TX',
-    senderName: b.senderName || $('senderName')?.value || 'Mark',
-    businessName: b.company || $('businessName')?.value || 'FC Logistics',
-    legalName: b.legalName || $('legalName')?.value || 'Fleet Core Logistics LLC',
-    address: b.address || $('address')?.value || '132 French Creek Dr, Rochester, NY 14618',
+    senderName: b.senderName || $('senderName')?.value || 'Your name',
+    businessName: b.company || $('businessName')?.value || 'Your company',
+    legalName: b.legalName || $('legalName')?.value || 'Your legal business name',
+    address: b.address || $('address')?.value || 'Your business address',
     services:
       b.services ||
       $('services')?.value ||

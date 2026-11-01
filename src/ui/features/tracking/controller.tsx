@@ -1578,9 +1578,8 @@ export function renderDomainReport(result: DomainReport) {
     }
   }
   const activeProfileEmail =
-    session.state.profiles.find((p) => p.id === session.state.activeProfile)?.email ||
-    `markanthony@${result.domain || 'fclogistics.us'}`;
-  const recommendedDmarcVal = `v=DMARC1; p=none; sp=none; rua=mailto:${activeProfileEmail}`;
+    session.state.profiles.find((p) => p.id === session.state.activeProfile)?.email || '';
+  const recommendedDmarcVal = `v=DMARC1; p=none; sp=none${activeProfileEmail ? `; rua=mailto:${activeProfileEmail}` : ''}`;
   const spfCard = (
     <>
       <div className={'domain-health-card ' + (spfFound ? 'status-pass' : 'status-fail')}>

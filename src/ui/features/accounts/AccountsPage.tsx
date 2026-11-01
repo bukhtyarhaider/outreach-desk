@@ -73,7 +73,7 @@ export function AccountsPage() {
         <div className={'form-grid-2'}>
           <div className={'form-group'}>
             <label htmlFor={'accountName'}>{'Profile Label'}</label>
-            <Input id={'accountName'} placeholder={'e.g. Mark Anthony'} />
+            <Input id={'accountName'} placeholder={'e.g. Primary mailbox'} />
           </div>
           <div className={'form-group'}>
             <label htmlFor={'accountEmail'}>{'Email Address'}</label>
@@ -96,7 +96,7 @@ export function AccountsPage() {
           </div>
           <div className={'form-group'}>
             <label htmlFor={'senderName'}>{'Sender First Name'}</label>
-            <Input id={'senderName'} placeholder={'Mark'} />
+            <Input id={'senderName'} placeholder={'Your first name'} />
           </div>
         </div>
         <div className={'form-group'}>
@@ -147,16 +147,16 @@ export function AccountsPage() {
         <div className={'form-grid-2'}>
           <div className={'form-group'}>
             <label htmlFor={'businessName'}>{'Display Brand Name'}</label>
-            <Input id={'businessName'} placeholder={'FC Logistics'} />
+            <Input id={'businessName'} placeholder={'Your company name'} />
           </div>
           <div className={'form-group'}>
             <label htmlFor={'legalName'}>{'Legal Registered Entity'}</label>
-            <Input id={'legalName'} placeholder={'Fleet Core Logistics LLC'} />
+            <Input id={'legalName'} placeholder={'Your legal business name'} />
           </div>
         </div>
         <div className={'form-group'}>
           <label htmlFor={'address'}>{'Postal Business Address'}</label>
-          <Input id={'address'} placeholder={'132 French Creek Dr, Rochester, NY 14618'} />
+          <Input id={'address'} placeholder={'Street address, city, state and postal code'} />
         </div>
         <div className={'form-group'}>
           <label htmlFor={'services'}>{'Services Offered (used in templates)'}</label>

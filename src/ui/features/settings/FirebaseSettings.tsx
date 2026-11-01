@@ -47,7 +47,7 @@ export function FirebaseSettings() {
             <Input
               id={'trackingPublicUrl'}
               type={'url'}
-              placeholder={'https://www.fclogistics.us/t/1'}
+              placeholder={'https://tracking.example.com/t/1'}
             />
             <p className={'hint'}>
               {

@@ -316,9 +316,7 @@ export function LiveActivityPage() {
                 <span></span>
                 <span></span>
               </div>
-              <span className={'terminal-title'}>
-                {'fc-logistics telemetry terminal · live output'}
-              </span>
+              <span className={'terminal-title'}>{'Outreach Desk · activity terminal'}</span>
               <Button
                 id={'liveTerminalCopyBtn'}
                 className={'terminal-copy-btn'}
