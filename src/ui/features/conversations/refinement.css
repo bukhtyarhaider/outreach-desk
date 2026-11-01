@@ -441,3 +441,385 @@
   padding: 12px 0;
   border-top: 1px solid var(--border-subtle);
 }
+
+/* Mailbox tools: three focused views, persistent navigation and explicit setup steps. */
+#mailroomToolsDialog {
+  width: min(960px, calc(100vw - 32px));
+  max-height: calc(100dvh - 40px);
+  padding: 0;
+  overflow: hidden;
+  border-top: 3px solid var(--brand-red);
+}
+#mailroomToolsDialog[open] {
+  display: flex;
+  flex-direction: column;
+}
+#mailroomToolsDialog .mailroom-dialog-heading {
+  position: static;
+  flex-shrink: 0;
+  align-items: flex-start;
+  margin: 0;
+  padding: 22px 24px;
+  gap: 16px;
+}
+#mailroomToolsDialog .mailroom-dialog-heading > div {
+  min-width: 0;
+}
+#mailroomToolsDialog .mailroom-dialog-heading h2 {
+  margin: 6px 0;
+}
+#mailboxToolsDescription {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 8px 0 0;
+}
+#mailroomToolsDialog .mailroom-settings-nav {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 12px 24px;
+  gap: 8px;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  background: var(--bg-app);
+}
+#mailroomToolsDialog .mailroom-settings-nav .ui-button {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+#mailroomToolsDialog .mailroom-settings-nav [aria-selected='true'] {
+  color: var(--accent-blue) !important;
+  background: #edf1fd !important;
+  border-color: var(--accent-blue) !important;
+}
+#mailroomToolsDialog .mailbox-tools-status {
+  margin: 0;
+  padding: 8px 24px;
+  font-size: 11px;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+  line-height: 1.5;
+  border-bottom: 1px solid var(--border-subtle);
+  max-height: 80px;
+  overflow: auto;
+}
+.mailbox-tools-body {
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 24px;
+}
+#mailroomToolsDialog .mailbox-tools-panel {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+.mailbox-tools-next {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding: 20px;
+  background: var(--bg-app);
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid var(--accent-blue);
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+.mailbox-tools-next > div {
+  flex: 1 1 300px;
+}
+.mailbox-tools-next h3,
+.mailbox-tools-card h3 {
+  font-size: 17px;
+  letter-spacing: -0.02em;
+  margin: 0 0 8px;
+}
+.mailbox-tools-next h3 {
+  margin-top: 8px;
+}
+.mailbox-tools-next p:last-child,
+.mailbox-tools-step p {
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--text-secondary);
+  margin: 0;
+}
+.mailbox-tools-card {
+  padding: 22px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  margin-bottom: 20px;
+  background: var(--bg-surface);
+}
+.mailbox-tools-step {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin-bottom: 22px;
+}
+.mailbox-tools-step > span {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-blue);
+  color: white;
+  font-size: 12px;
+  flex-shrink: 0;
+  border-radius: 4px;
+}
+.mailbox-tools-choice {
+  display: flex !important;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 0;
+  font-size: 12px;
+  font-weight: 400;
+}
+.mailbox-tools-choice input {
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+.mailbox-tools-choice strong {
+  display: block;
+  color: var(--text-primary);
+  font-size: 12px;
+}
+.mailbox-tools-choice small {
+  display: block;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.mailbox-tools-advanced,
+.mailbox-tools-diagnostics {
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  background: var(--bg-app);
+}
+.mailbox-tools-advanced > summary,
+.mailbox-tools-diagnostics > summary {
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.6;
+}
+#mailroomToolsDialog .reply-config-reuse {
+  padding: 16px;
+  background: var(--bg-app);
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+#mailroomToolsDialog .reply-config-mailbox {
+  padding: 18px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  background: var(--bg-surface);
+  margin: 0 0 16px;
+}
+.mailbox-config-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.mailbox-config-heading h3 {
+  margin: 6px 0 0;
+  overflow-wrap: anywhere;
+}
+#mailroomToolsDialog .reply-config-grid label {
+  line-height: 1.6;
+}
+#mailroomToolsDialog .reply-config-grid .hint {
+  display: block;
+  font-weight: 400;
+  margin: 6px 0 0;
+  font-size: 11px;
+}
+.reply-config-mailbox[data-auth-mode='oauth'] [data-config-auth='password'],
+.reply-config-mailbox:not([data-auth-mode='oauth']) [data-config-auth='oauth'] {
+  display: none;
+}
+.mailbox-tools-boundary {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px;
+  font-size: 12px;
+  line-height: 1.6;
+  background: var(--bg-app);
+  border-left: 3px solid var(--brand-yellow);
+}
+.mailbox-tools-boundary svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+#mailroomToolsDialog .mailbox-tools-footer {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  border-top: 1px solid var(--border-subtle);
+  padding: 14px 24px;
+  background: var(--bg-app);
+}
+.mailbox-tools-footer > div {
+  min-width: 0;
+  max-height: 100px;
+  overflow: auto;
+}
+.mailbox-tools-footer .hint {
+  font-size: 10px;
+  line-height: 1.6;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.mailbox-tools-footer > .ui-button {
+  flex-shrink: 0;
+}
+#mailroomToolsDialog #mailroomConfigFields {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+#mailroomToolsDialog .reply-import-form {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  max-width: 600px;
+}
+.mailbox-tools-import-steps {
+  font-size: 13px;
+  line-height: 1.8;
+  padding: 16px 16px 16px 36px;
+  background: var(--bg-app);
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  margin: 20px 0;
+}
+.mailbox-tools-import-note {
+  font-size: 12px;
+  line-height: 1.7;
+  margin: 20px 0 0;
+  padding: 16px;
+  border-left: 3px solid var(--brand-yellow);
+  background: var(--bg-app);
+}
+@media (max-width: 600px) {
+  #mailroomToolsDialog {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    margin: 0;
+    border-radius: 0;
+  }
+  #mailroomToolsDialog .mailroom-dialog-heading {
+    padding: 16px;
+  }
+  #mailroomToolsDialog .mailroom-settings-nav {
+    padding: 10px 16px;
+  }
+  #mailroomToolsDialog .mailbox-tools-status {
+    padding: 8px 16px;
+  }
+  .mailbox-tools-body {
+    padding: 16px;
+  }
+  .mailbox-tools-card {
+    padding: 16px;
+  }
+  #mailroomToolsDialog .reply-config-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  #mailroomToolsDialog .reply-config-mailbox {
+    padding: 14px;
+  }
+  #mailroomToolsDialog .mailbox-tools-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding: 12px 16px max(12px, env(safe-area-inset-bottom));
+  }
+  .mailbox-tools-footer > div {
+    max-height: 70px;
+  }
+}
+#mailroomToolsDialog .mailroom-dialog-heading {
+  flex-wrap: nowrap;
+}
+#mailroomToolsDialog .mailroom-dialog-heading > div {
+  flex: 1;
+}
+#mailroomToolsDialog .mailroom-dialog-heading > .ui-button {
+  flex-shrink: 0;
+}
+.mailbox-tools-import-heading h3 {
+  font-size: 20px;
+  margin: 8px 0;
+  letter-spacing: -0.03em;
+}
+.mailbox-tools-import-heading > p:last-child {
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--text-secondary);
+}
+#mailroomToolsDialog .mailbox-tools-feedback {
+  flex-shrink: 0;
+  margin: 0;
+  padding: 10px 24px;
+  background: #edf1fd;
+  border-bottom: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  font-size: 12px;
+  line-height: 1.6;
+  max-height: 90px;
+  overflow: auto;
+}
+#mailroomToolsDialog .mailbox-tools-feedback:empty {
+  display: none;
+}
+@media (max-height: 600px) {
+  #mailroomToolsDialog {
+    max-height: calc(100dvh - 16px);
+  }
+  #mailroomToolsDialog .mailroom-dialog-heading {
+    padding: 12px 16px;
+  }
+  #mailroomToolsDialog #mailboxToolsDescription,
+  #mailroomToolsDialog .mailroom-dialog-heading .page-eyebrow {
+    display: none;
+  }
+  #mailroomToolsDialog .mailbox-tools-status {
+    max-height: 38px;
+  }
+  #mailroomToolsDialog .mailbox-tools-feedback {
+    max-height: 50px;
+  }
+  #mailroomToolsDialog .mailbox-tools-footer {
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+}
+#mailroomToolsDialog .mailbox-provider-help {
+  grid-column: 1/-1;
+  font-weight: 400;
+  font-size: 11px;
+  line-height: 1.6;
+  margin: 0;
+  padding: 10px 12px;
+  border-left: 3px solid var(--brand-yellow);
+  background: var(--bg-app);
+}

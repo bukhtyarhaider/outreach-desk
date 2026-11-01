@@ -10,30 +10,45 @@ export function mountMailroom() {
     };
     const revealSection = (section: string) => {
       open('mailroomToolsDialog');
-      const capture = $('replyCaptureTools');
-      capture.open = true;
-      if (section === 'setup') $('replyConfigPanel').open = true;
-      const target =
-        section === 'setup'
-          ? $('replyConfigPanel')
-          : section === 'import'
-            ? document.getElementById('mailroomImportSection')
-            : $('replyStatus');
-      if (section === 'import' && target instanceof HTMLDetailsElement) target.open = true;
-      // Let native dialog autofocus finish before moving to the requested section.
-      uiScope.timeout(() => {
-        if (!$<HTMLDialogElement>('mailroomToolsDialog').open) return;
-        target?.querySelector<HTMLElement>('summary')?.focus({ preventScroll: true });
-        const dialog = $<HTMLDialogElement>('mailroomToolsDialog');
-        const heading = dialog.querySelector<HTMLElement>('.mailroom-dialog-heading');
-        if (target)
-          dialog.scrollTop +=
-            target.getBoundingClientRect().top -
-            dialog.getBoundingClientRect().top -
-            (heading?.getBoundingClientRect().height ?? 64) -
-            16;
-      }, 0);
+      const panels = {
+        status: 'replyCaptureTools',
+        setup: 'replyConfigPanel',
+        import: 'mailroomImportSection',
+      };
+      const selected = section in panels ? (section as keyof typeof panels) : 'status';
+      Object.entries(panels).forEach(([key, id]) => {
+        document.getElementById(id)!.hidden = key !== selected;
+      });
+      document
+        .querySelectorAll<HTMLButtonElement>('#mailroomToolsDialog [role="tab"]')
+        .forEach((tab) => {
+          const active = tab.dataset.mailroomSection === selected;
+          tab.setAttribute('aria-selected', String(active));
+          tab.tabIndex = active ? 0 : -1;
+        });
+      const footer = document.querySelector<HTMLElement>('[data-mailbox-setup-footer]');
+      if (footer) footer.hidden = selected !== 'setup';
+      const body = document.querySelector<HTMLElement>('.mailbox-tools-body');
+      if (body) body.scrollTop = 0;
     };
+    const toolTabs = document.querySelector<HTMLElement>('#mailroomToolsDialog [role="tablist"]');
+    if (toolTabs)
+      uiScope.listen(toolTabs, 'keydown', (event) => {
+        const key = (event as KeyboardEvent).key;
+        if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(key)) return;
+        const tabs = Array.from(toolTabs.querySelectorAll<HTMLButtonElement>('[role="tab"]'));
+        const index = tabs.indexOf(event.target as HTMLButtonElement);
+        if (index < 0) return;
+        event.preventDefault();
+        const next =
+          key === 'Home'
+            ? 0
+            : key === 'End'
+              ? tabs.length - 1
+              : (index + (key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+        tabs[next]?.click();
+        tabs[next]?.focus();
+      });
     document.querySelectorAll<HTMLElement>('[data-mailroom-section]').forEach((button) => {
       uiScope.handler(button, 'onclick', () => revealSection(button.dataset.mailroomSection!));
     });
@@ -65,7 +80,7 @@ export function mountMailroom() {
               );
       rows[next]?.focus();
     });
-    uiScope.handler($('mailroomToolsOpen'), 'onclick', () => open('mailroomToolsDialog'));
+    uiScope.handler($('mailroomToolsOpen'), 'onclick', () => revealSection('status'));
     uiScope.handler($('mailroomEmptyTools'), 'onclick', () => {
       revealSection('setup');
     });

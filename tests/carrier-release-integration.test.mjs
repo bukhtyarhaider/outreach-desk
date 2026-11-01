@@ -75,33 +75,56 @@ test('integrated release UI supports guided mapping, activation, lead provenance
  assert.match(await page.locator('#workspaceNote').innerText(),/Active copy:/);
  await page.locator('#importInspectLeads').click();await page.waitForFunction(()=>document.querySelector('#leadRows').textContent.includes('second@example.com'));await page.locator('#leadRows tr').filter({hasText:'second@example.com'}).locator('[data-preview]').click();await page.locator('section.carrier-evidence').waitFor();assert.match(await page.locator('section.carrier-evidence').innerText(),/Browser-reviewed export/);
  await page.locator('[data-conversation-email]').click();await page.locator('#view-conversations.active').waitFor();await page.locator('#replySearch').fill('');await page.locator('#mailroomFiltersOpen').click();await page.locator('#replyRefresh').click();await page.waitForFunction(()=>!document.querySelector('#replyRefresh').disabled);await page.locator('[data-close-mailroom=mailroomFiltersDialog]').click();
- await page.locator('#mailroomToolsOpen').click();await page.getByText('Import one exported reply (.eml)',{exact:true}).click();await page.locator('#replyImportAccount').selectOption(account);await page.locator('#replyEml').setInputFiles({name:'reply.eml',mimeType:'message/rfc822',buffer:eml({text:'Please remove me from your list. <script>window.pwned=true</script>'})});await page.locator('#replyImport').click();await page.waitForFunction(()=>!document.querySelector('#replyImport').disabled);assert.match(await page.locator('#replyProtection').innerText(),/block outreach/);await page.locator('[data-close-mailroom=mailroomToolsDialog]').click();await page.locator('[data-mailroom-work=all]').click();await page.locator('#mailroomList button').waitFor();await page.locator('#mailroomList button').click();await page.locator('#mailroomDetailsOpen').click();await page.locator('#replyReviewPanel').waitFor();assert.match(await page.locator('#replyProtection').innerText(),/block outreach/);assert.match(await page.locator('#replyProtectionDelivery').innerText(),/Independent PC/);assert.equal(await page.evaluate(()=>window.pwned),undefined);
+ await page.locator('#mailroomToolsOpen').click();await page.getByRole('tab',{name:'Import a reply',exact:true}).click();await page.locator('#replyImportAccount').selectOption(account);await page.locator('#replyEml').setInputFiles({name:'reply.eml',mimeType:'message/rfc822',buffer:eml({text:'Please remove me from your list. <script>window.pwned=true</script>'})});await page.locator('#replyImport').click();await page.waitForFunction(()=>!document.querySelector('#replyImport').disabled);assert.match(await page.locator('#replyProtection').innerText(),/block outreach/);await page.locator('[data-close-mailroom=mailroomToolsDialog]').click();await page.locator('[data-mailroom-work=all]').click();await page.locator('#mailroomList button').waitFor();await page.locator('#mailroomList button').click();await page.locator('#mailroomDetailsOpen').click();await page.locator('#replyReviewPanel').waitFor();assert.match(await page.locator('#replyProtection').innerText(),/block outreach/);assert.match(await page.locator('#replyProtectionDelivery').innerText(),/Independent PC/);assert.equal(await page.evaluate(()=>window.pwned),undefined);
  await page.locator('#replyReviewNote').fill('Draft remains when navigating inside the app');await page.locator('[data-close-mailroom=mailroomDetailsDialog]').click();await page.locator('[data-view="campaigns"]').click();await page.locator('[data-view="conversations"]').click();assert.equal(await page.locator('#replyReviewNote').inputValue(),'Draft remains when navigating inside the app');
- await page.locator('#mailroomToolsOpen').click();if(!await page.locator('#replyConfigPanel summary').isVisible())await page.locator('#replyCaptureSummary').click();await page.locator('#replyConfigPanel summary').click();await page.locator('#replyConfigAdd').click();await page.locator('[data-config-field="email"]').fill(account);await page.locator('[data-config-field="host"]').fill('mail.example.com');await page.locator('[data-config-field="passwordEnv"]').fill('REP_IMAP_PASSWORD');await page.locator('#replyConfigSave').click();await page.waitForFunction(()=>document.querySelector('#notice').textContent.includes('configuration saved'));assert.equal((await f.api('conversations')).capture.enabled,false);
+ await page.locator('#mailroomToolsOpen').click();await page.getByRole('tab',{name:'Set up capture',exact:true}).click();await page.locator('#replyConfigAdd').click();await page.locator('[data-config-field="email"]').fill(account);await page.locator('[data-config-field="host"]').fill('mail.example.com');await page.locator('[data-config-field="passwordEnv"]').fill('REP_IMAP_PASSWORD');await page.locator('#replyConfigSave').click();await page.waitForFunction(()=>document.querySelector('#notice').textContent.includes('configuration saved'));assert.equal((await f.api('conversations')).capture.enabled,false);
  for(const width of [1440,390]){await page.setViewportSize({width,height:1100});assert(await page.evaluate(()=>Math.max(document.documentElement.scrollWidth,document.body.scrollWidth)<=innerWidth+1));if(process.env.FC_UI_SCREENSHOT_DIR){await fs.mkdir(process.env.FC_UI_SCREENSHOT_DIR,{recursive:true});await page.screenshot({path:path.join(process.env.FC_UI_SCREENSHOT_DIR,`carrier-release-${width}.png`)});}}
  await page.locator('[data-close-mailroom=mailroomToolsDialog]').click();await page.reload();await page.locator('[data-mailroom-work=all]').click();await page.locator('#mailroomList button').waitFor();assert.equal(await page.locator('#replyCaptureTools').getAttribute('open'),null);assert.match(await page.locator('#replyProtectionDelivery').innerText(),/Independent PC/);
 
  // Unibox shortcuts expose setup directly, retain failed drafts, and acknowledge in-flight saves.
  await page.setViewportSize({width:1440,height:1000});
  await page.getByRole('button',{name:'Capture settings',exact:true}).click();
- assert.equal(await page.locator('#replyConfigPanel').getAttribute('open'),'');
- await page.waitForFunction(()=>{const panel=document.querySelector('#replyConfigPanel').getBoundingClientRect(),heading=document.querySelector('#mailroomToolsDialog .mailroom-dialog-heading').getBoundingClientRect();return panel.top>=heading.bottom&&panel.top<=heading.bottom+140;});
+ assert.equal(await page.locator('#replyConfigPanel').isVisible(),true);
+ await page.waitForFunction(()=>{const panel=document.querySelector('#replyConfigPanel').getBoundingClientRect(),body=document.querySelector('.mailbox-tools-body').getBoundingClientRect();return panel.top>=body.top&&panel.top<=body.top+25;});
+ await page.locator('#replyConfigPanel details:has(#replyConfigPages) > summary').click();
  await page.locator('#replyConfigPages').fill('7');
- let releaseSave;const saveGate=new Promise(resolve=>{releaseSave=resolve;});
- await page.route('**/api/conversations/config',async route=>{await saveGate;await route.fulfill({status:400,contentType:'application/json',body:JSON.stringify({error:'Synthetic configuration failure'})});});
+ await page.locator('[data-config-field=authMode]').selectOption('oauth');await page.locator('[data-config-field=accessTokenEnv]').fill('REP_OAUTH_TOKEN');
+ let capturedConfig;let releaseSave;const saveGate=new Promise(resolve=>{releaseSave=resolve;});
+ await page.route('**/api/conversations/config',async route=>{capturedConfig=route.request().postDataJSON();await saveGate;await route.fulfill({status:400,contentType:'application/json',body:JSON.stringify({error:'Synthetic configuration failure'})});});
  await page.locator('#replyConfigSave').click();
  await page.waitForFunction(()=>document.querySelector('#mailroomConfigFields').disabled);
  assert(await page.locator('#replyConfigPages').isDisabled());
  releaseSave();await page.waitForFunction(()=>!document.querySelector('#mailroomConfigFields').disabled);
  assert.match(await page.locator('#mailroomConfigFeedback').innerText(),/Synthetic configuration failure.*draft is retained/);
  assert.equal(await page.locator('#replyConfigPages').inputValue(),'7');
+ assert.equal(capturedConfig.mailboxes[0].passwordEnv,undefined);assert.equal(capturedConfig.mailboxes[0].accessTokenEnv,'REP_OAUTH_TOKEN','Only the selected sign-in credential reference is submitted');
  await page.unroute('**/api/conversations/config');
  for(const width of [1440,768,390,320]){
    await page.setViewportSize({width,height:1000});
-   await page.getByRole('button',{name:'Mailbox setup',exact:true}).click();
-   await page.waitForFunction(()=>{const panel=document.querySelector('#replyConfigPanel').getBoundingClientRect(),heading=document.querySelector('#mailroomToolsDialog .mailroom-dialog-heading').getBoundingClientRect();return panel.top>=heading.bottom&&panel.top<=heading.bottom+140;});
+   await page.getByRole('tab',{name:'Set up capture',exact:true}).click();
+   await page.waitForFunction(()=>{const panel=document.querySelector('#replyConfigPanel').getBoundingClientRect(),body=document.querySelector('.mailbox-tools-body').getBoundingClientRect();return panel.top>=body.top&&panel.top<=body.top+25;});
    assert(await page.locator('#mailroomToolsDialog').evaluate(dialog=>dialog.scrollWidth<=dialog.clientWidth+1),`Mailbox setup fits at ${width}px`);
+   for(const [tab,panel] of [['Overview','replyCaptureTools'],['Set up capture','replyConfigPanel'],['Import a reply','mailroomImportSection']]){
+     await page.getByRole('tab',{name:tab,exact:true}).click();
+     assert.equal(await page.locator('#mailroomToolsDialog [role=tabpanel]:visible').count(),1);
+     assert(await page.locator('#'+panel).isVisible());
+     if(process.env.FC_UI_SCREENSHOT_DIR){await fs.mkdir(process.env.FC_UI_SCREENSHOT_DIR,{recursive:true});await page.screenshot({path:path.join(process.env.FC_UI_SCREENSHOT_DIR,`mailbox-tools-${panel}-${width}.png`)});}
+   }
+   await page.getByRole('tab',{name:'Set up capture',exact:true}).click();
+   const body=page.locator('.mailbox-tools-body');await body.evaluate(el=>el.scrollTop=el.scrollHeight);
+   assert(await page.locator('#replyConfigSave').evaluate(el=>{const r=el.getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight;}),'Save stays visible while setup scrolls');
  }
+ await page.getByRole('tab',{name:'Set up capture',exact:true}).press('Home');
+ assert.equal(await page.getByRole('tab',{name:'Overview',exact:true}).getAttribute('aria-selected'),'true');
+ await page.getByRole('tab',{name:'Overview',exact:true}).press('End');
+ assert(await page.locator('#mailroomImportSection').isVisible());
+ await page.getByRole('tab',{name:'Set up capture',exact:true}).click();
+ assert.equal(await page.locator('#replyConfigPages').inputValue(),'7','Changing tools views preserves setup drafts');
+ await page.locator('[data-config-field="authMode"]').selectOption('oauth');
+ assert(await page.locator('[data-config-field="accessTokenEnv"]').isVisible());
+ assert.equal(await page.locator('[data-config-field="passwordEnv"]').isVisible(),false);
+ await page.locator('[data-config-field="authMode"]').selectOption('password');
+ assert.equal(await page.locator('[data-config-field="passwordEnv"]').inputValue(),'REP_IMAP_PASSWORD');
  await page.locator('[data-close-mailroom=mailroomToolsDialog]').click();
  await page.locator('#replySearch').fill('no-carrier-matches-this-filter');
  await page.locator('#mailroomResetFilters').waitFor({state:'visible'});

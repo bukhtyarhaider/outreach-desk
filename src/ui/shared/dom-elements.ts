@@ -178,14 +178,14 @@ export interface UIElements {
   replyRefresh: HTMLElementTagNameMap['button'];
   mailroomToolsDialog: HTMLElementTagNameMap['dialog'];
   replyStatus: HTMLElementTagNameMap['p'];
-  replyCaptureTools: HTMLElementTagNameMap['details'];
-  replyCaptureSummary: HTMLElementTagNameMap['summary'];
+  replyCaptureTools: HTMLElementTagNameMap['section'];
+  replyCaptureSummary: HTMLElementTagNameMap['h3'];
   replyHistory: HTMLElementTagNameMap['button'];
   replyDemo: HTMLElementTagNameMap['button'];
   replyCaptureNote: HTMLElementTagNameMap['p'];
   replyCoverage: HTMLElementTagNameMap['p'];
   replyMonitor: HTMLElementTagNameMap['div'];
-  replyConfigPanel: HTMLElementTagNameMap['details'];
+  replyConfigPanel: HTMLElementTagNameMap['section'];
   replyConfigEnabled: HTMLElementTagNameMap['input'];
   replyConfigAuto: HTMLElementTagNameMap['input'];
   replyConfigAll: HTMLElementTagNameMap['input'];
