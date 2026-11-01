@@ -153,6 +153,7 @@ test(
           '#liveSearchInput',
           '.stream-view-toggle-group',
           '.live-stream-toolbar',
+          '.live-category-tabs',
           '.live-event-card',
           '.event-meta-tag',
         ];
@@ -181,6 +182,19 @@ test(
         await page.screenshot({
           path: path.join(process.env.FC_UI_SCREENSHOT_DIR, `live-activity-${width}.png`),
         });
+        for (let pass = 0; pass < 2; pass++) {
+          await page.evaluate(() => {
+            const viewport = document.querySelector('.app-viewport');
+            const panel = document.querySelector('.live-activity-panel').getBoundingClientRect();
+            const header = document
+              .querySelector('#view-live-activity .page-header')
+              .getBoundingClientRect();
+            viewport.scrollTop += panel.top - header.bottom - 16;
+          });
+        }
+        await page.screenshot({
+          path: path.join(process.env.FC_UI_SCREENSHOT_DIR, `live-stream-${width}.png`),
+        });
       }
     }
     await page.setViewportSize({ width: 1440, height: 1000 });
@@ -205,6 +219,24 @@ test(
       5,
       'Paused feed keeps its displayed snapshot',
     );
+    await page.locator('#liveSearchInput').fill('a-very-long-business-contact');
+    assert.equal(
+      await page.locator('.event-message').count(),
+      1,
+      'Search includes contact metadata while paused',
+    );
+    await page.locator('#btnModeTerminal').click();
+    assert.match(await page.locator('#liveTerminalOutput').innerText(), /North & West/);
+    assert.equal(await page.locator('#btnModeTerminal').getAttribute('aria-pressed'), 'true');
+    await page.locator('#btnModeVisual').click();
+    await page.locator('#liveSearchInput').fill('');
+    assert.equal(await page.locator('.event-message').count(), 5);
+    await page.locator('[data-kind="all"]').focus();
+    await page.keyboard.press('End');
+    assert.equal(await page.locator('[data-kind="error"]').getAttribute('aria-selected'), 'true');
+    assert.equal(await page.locator('.event-message').count(), 1);
+    await page.keyboard.press('Home');
+    assert.equal(await page.locator('.event-message').count(), 5);
     await page.locator('#livePauseToggleBtn').click();
     assert.equal(await page.locator('.event-message').count(), 6);
     await page.locator('#liveSearchInput').fill('no-such-event');

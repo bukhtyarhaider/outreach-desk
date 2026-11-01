@@ -16,11 +16,11 @@ export function LiveActivityPage() {
       <section className={'view-page'} id={'view-live-activity'}>
         <div className={'page-header'}>
           <div>
-            <p className={'page-eyebrow'}>{'SYSTEM TELEMETRY & OPERATIONS'}</p>
+            <p className={'page-eyebrow'}>{'OPERATIONS'}</p>
             <h1 className={'page-title'}>{'Live System Activity'}</h1>
             <p className={'page-subtitle'}>
               {
-                'Real-time operational stream, automation telemetry, mailbox pacing logs, and diagnostics.'
+                'Understand what the runner is doing, inspect recent events, and troubleshoot with context.'
               }
             </p>
           </div>
@@ -31,38 +31,12 @@ export function LiveActivityPage() {
             </span>
             <Button
               id={'livePauseToggleBtn'}
+              aria-pressed={false}
               className={'secondary'}
               title={'Freeze or resume incoming event auto-updates'}
             >
               <Icon icon={Pause} size={14} />
               <span id={'livePauseBtnText'}>{'Pause Feed'}</span>
-            </Button>
-            <ActionLink
-              className={'button secondary'}
-              href={'/api/export-events?format=json'}
-              id={'liveExportJsonBtn'}
-              download={'system-activity.json'}
-              title={'Download entire event log as JSON'}
-            >
-              <Icon icon={Download} size={14} />
-              {'\n                  Export Log (JSON)\n                '}
-            </ActionLink>
-            <ActionLink
-              className={'button secondary'}
-              href={'/api/export-events?format=txt'}
-              id={'liveExportTxtBtn'}
-              download={'system-activity.log'}
-              title={'Download text log'}
-            >
-              {'\n                  .TXT\n                '}
-            </ActionLink>
-            <Button
-              id={'liveClearEventsBtn'}
-              className={'secondary'}
-              title={'Clear events console view'}
-            >
-              <Icon icon={Trash2} size={14} />
-              {'\n                  Clear Screen\n                '}
             </Button>
           </div>
         </div>
@@ -70,7 +44,7 @@ export function LiveActivityPage() {
         <div className={'live-telemetry-grid'}>
           <div className={'stat-card live-card live-card-engine'} id={'liveEngineCard'}>
             <div className={'stat-label'}>
-              <span>{'Queue Engine'}</span>
+              <span>{'Runner'}</span>
               <span className={'status-badge'} id={'liveRunnerBadge'}>
                 {'Stopped'}
               </span>
@@ -96,7 +70,7 @@ export function LiveActivityPage() {
 
           <div className={'stat-card live-card live-card-session'}>
             <div className={'stat-label'}>
-              <span>{'Mailbox Session'}</span>
+              <span>{'Mailbox'}</span>
               <span className={'connection-pill'} id={'liveMailboxPill'}>
                 <span className={'connection-dot'}></span>
                 <span id={'liveMailboxStatusText'}>{'Disconnected'}</span>
@@ -114,7 +88,7 @@ export function LiveActivityPage() {
 
           <div className={'stat-card live-card live-card-quota'}>
             <div className={'stat-label'}>
-              <span>{'Pacing Quotas'}</span>
+              <span>{'Sending allowance'}</span>
               <span className={'live-quota-pill'} id={'liveQuotaPill'}>
                 {'Paced'}
               </span>
@@ -153,7 +127,7 @@ export function LiveActivityPage() {
 
           <div className={'stat-card live-card live-card-counts'}>
             <div className={'stat-label'}>
-              <span>{'Activity Metrics'}</span>
+              <span>{'Captured activity'}</span>
               <span id={'liveTotalCountBadge'} className={'count-chip total'}>
                 {'0 events'}
               </span>
@@ -161,25 +135,25 @@ export function LiveActivityPage() {
             <div className={'live-card-body'}>
               <div className={'live-metrics-row'}>
                 <div className={'mini-metric'}>
-                  <span className={'mini-label'}>{'Dispatches'}</span>
+                  <span className={'mini-label'}>{'Send events'}</span>
                   <strong className={'mini-val text-green'} id={'liveMetricSent'}>
                     {'0'}
                   </strong>
                 </div>
                 <div className={'mini-metric'}>
-                  <span className={'mini-label'}>{'Pacing Delays'}</span>
+                  <span className={'mini-label'}>{'Pacing'}</span>
                   <strong className={'mini-val text-blue'} id={'liveMetricPacing'}>
                     {'0'}
                   </strong>
                 </div>
                 <div className={'mini-metric'}>
-                  <span className={'mini-label'}>{'System / Config'}</span>
+                  <span className={'mini-label'}>{'System'}</span>
                   <strong className={'mini-val text-purple'} id={'liveMetricSystem'}>
                     {'0'}
                   </strong>
                 </div>
                 <div className={'mini-metric'}>
-                  <span className={'mini-label'}>{'Alerts / Errors'}</span>
+                  <span className={'mini-label'}>{'Attention'}</span>
                   <strong className={'mini-val text-red'} id={'liveMetricError'}>
                     {'0'}
                   </strong>
@@ -194,17 +168,18 @@ export function LiveActivityPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
               <h2 className={'panel-title'}>
                 <Icon icon={Activity} size={16} />
-                {'\n                    Live Operations Stream\n                  '}
+                {'Event stream'}
               </h2>
               <span className={'live-indicator-chip'} id={'liveStreamCounter'}>
                 {'0 events'}
               </span>
             </div>
-            <div className={'stream-view-toggle-group'}>
+            <div className={'stream-view-toggle-group'} role="group" aria-label="Event display">
               <Button
                 type={'button'}
                 className={'view-mode-btn active'}
                 id={'btnModeVisual'}
+                aria-pressed={true}
                 title={'Formatted Visual Cards'}
               >
                 <Icon icon={LayoutGrid} size={13} />
@@ -214,6 +189,7 @@ export function LiveActivityPage() {
                 type={'button'}
                 className={'view-mode-btn'}
                 id={'btnModeTerminal'}
+                aria-pressed={false}
                 title={'Monospace Terminal Console'}
               >
                 <Icon icon={Terminal} size={13} />
@@ -223,7 +199,12 @@ export function LiveActivityPage() {
           </div>
 
           <div className={'live-stream-toolbar'}>
-            <div className={'live-category-tabs'} id={'liveCategoryTabs'} role={'tablist'}>
+            <div
+              className={'live-category-tabs'}
+              id={'liveCategoryTabs'}
+              role={'tablist'}
+              aria-label="Event category"
+            >
               <Button
                 type={'button'}
                 className={'cat-tab active'}
@@ -242,6 +223,7 @@ export function LiveActivityPage() {
                 data-kind={'send'}
                 role={'tab'}
                 aria-selected={false}
+                tabIndex={-1}
               >
                 {'Sends '}
                 <span className={'tab-chip green'} id={'tabChipSend'}>
@@ -254,6 +236,7 @@ export function LiveActivityPage() {
                 data-kind={'pause'}
                 role={'tab'}
                 aria-selected={false}
+                tabIndex={-1}
               >
                 {'Pacing '}
                 <span className={'tab-chip blue'} id={'tabChipPause'}>
@@ -266,6 +249,7 @@ export function LiveActivityPage() {
                 data-kind={'system'}
                 role={'tab'}
                 aria-selected={false}
+                tabIndex={-1}
               >
                 {'System '}
                 <span className={'tab-chip purple'} id={'tabChipSystem'}>
@@ -278,6 +262,7 @@ export function LiveActivityPage() {
                 data-kind={'error'}
                 role={'tab'}
                 aria-selected={false}
+                tabIndex={-1}
               >
                 {'Errors '}
                 <span className={'tab-chip red'} id={'tabChipError'}>
@@ -291,7 +276,8 @@ export function LiveActivityPage() {
                 <Input
                   id={'liveSearchInput'}
                   type={'search'}
-                  placeholder={'Search live events by keyword or company…'}
+                  placeholder={'Search messages, company or email…'}
+                  aria-label="Search activity events"
                 />
               </div>
               <label
@@ -299,17 +285,27 @@ export function LiveActivityPage() {
                 title={'Automatically keep the stream scrolled to the newest event'}
               >
                 <Input type={'checkbox'} id={'liveAutoScrollCheck'} defaultChecked={true} />
-                <span className={'toggle-slider'}></span>
+                <span className={'toggle-slider'} aria-hidden="true"></span>
                 <span className={'toggle-label'}>{'Auto-scroll'}</span>
               </label>
             </div>
           </div>
 
+          <div className="activity-stream-context">
+            <span id="liveFeedContext" role="status">
+              Newest events first · updates automatically
+            </span>
+            <span>Local activity · not a delivery report</span>
+          </div>
           <div id={'liveVisualFeedContainer'} className={'live-visual-feed-wrap'}>
             <ol id={'liveVisualEventsList'} className={'live-visual-events'}></ol>
             <div id={'liveVisualEmptyState'} className={'live-empty-state'} hidden={true}>
               <Icon icon={CircleAlert} size={32} />
-              <p>{'No activity events match your current filter or search criteria.'}</p>
+              <h3>No events to show</h3>
+              <p>
+                Activity appears here as the system works. If you’re filtering, try another category
+                or search.
+              </p>
             </div>
           </div>
 
@@ -334,6 +330,42 @@ export function LiveActivityPage() {
             <pre className={'terminal-output'} id={'liveTerminalOutput'}></pre>
           </div>
 
+          <div className="activity-log-actions">
+            <p>
+              Export the full saved log for investigation. Clearing the screen can keep saved
+              history intact.
+            </p>
+            <div>
+              {' '}
+              <ActionLink
+                className={'button secondary'}
+                href={'/api/export-events?format=json'}
+                id={'liveExportJsonBtn'}
+                download={'system-activity.json'}
+                title={'Download entire event log as JSON'}
+              >
+                <Icon icon={Download} size={14} />
+                {'\n                  Export JSON\n                '}
+              </ActionLink>
+              <ActionLink
+                className={'button secondary'}
+                href={'/api/export-events?format=txt'}
+                id={'liveExportTxtBtn'}
+                download={'system-activity.log'}
+                title={'Download text log'}
+              >
+                {'Export text'}
+              </ActionLink>
+              <Button
+                id={'liveClearEventsBtn'}
+                className={'secondary'}
+                title={'Clear events console view'}
+              >
+                <Icon icon={Trash2} size={14} />
+                {'\n                  Clear activity\n                '}
+              </Button>
+            </div>
+          </div>
           <div className={'live-console-footer'}>
             <div className={'console-footer-left'}>
               <span className={'pulse-indicator'}></span>

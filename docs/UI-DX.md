@@ -112,3 +112,9 @@ The existing configuration save remains atomic across sending, eligibility/check
 `SendingSettings` groups editable pacing into timing, rolling volume and rest-cycle cards with shared inputs/buttons and semantic brand accents. The static send/wait/repeat/rest diagram explains the schedule; it is not live activity or a delivery forecast. `PaceField` retains existing IDs and seconds-based storage, with visible units and server-aligned bounds.
 
 Presets are optional disclosure content and apply only through their explicit buttons. Their numeric values and controller matching behavior are unchanged; application changes the draft, not saved settings. Empty-queue polling is a separate disclosure, and recovery retains the original wait status and confirmation guard. Settings validation expands any ancestor disclosures before revealing an invalid field.
+
+### Live activity workspace
+
+`LiveActivityPage` separates current runner/mailbox/allowance status from captured event counts and the event stream. Feature-scoped styles reuse product surfaces, shared Button/Input/Panel primitives and semantic red/blue/yellow accents. Export and clear controls sit with the log they affect; exported logs retain the existing server scope.
+
+The controller owns the mounted controls. Pausing captures a feed snapshot while polling continues to update telemetry and collect new events. Search, category selection and visual/terminal views operate on that snapshot; resume reveals collected events. Search includes message, category, company and email metadata. Category tabs support arrows and Home/End; view and pause buttons expose pressed states. Paused viewing does not force-scroll. Clearing retains the existing screen-only/server-history confirmation behavior.

@@ -22,6 +22,8 @@ export function eventIdentity(event: ActivityEvent): string {
   ]);
 }
 
+let pausedEvents: ActivityEvent[] | null = null;
+
 // Live System Activity Logic
 export function classifyEvent(event: ActivityEvent): 'error' | 'pause' | 'send' | 'system' {
   const kind = event.kind?.toLowerCase();
@@ -30,7 +32,7 @@ export function classifyEvent(event: ActivityEvent): 'error' | 'pause' | 'send' 
   if (['sent', 'send', 'start'].includes(kind)) return 'send';
   if (['system', 'template', 'import', 'stop', 'settings', 'profile'].includes(kind))
     return 'system';
-  const message = event.message || '';
+  const message = displayText(event.message);
   if (/\b(fail(?:ed|ure|ing)?|error|uncertain|needs attention|blocked)\b/i.test(message))
     return 'error';
   if (
@@ -68,6 +70,7 @@ export function renderLiveActivityView() {
   const runnerStatus = job.status || (isRunning ? 'Running' : 'Stopped');
   if (runnerBadge) {
     runnerBadge.textContent = runnerStatus;
+    runnerBadge.dataset.attention = String(!!isRunning && !session.state.connected);
     runnerBadge.className = `status-badge ${isRunning ? 'active' : ''}`;
   }
   if (runnerState) {
@@ -127,12 +130,18 @@ export function renderLiveActivityView() {
   if (hourVal) hourVal.textContent = `${hourRemaining} / ${pacing.hourlyCap} left`;
   if (hourFill) {
     hourFill.style.width = `${hourPct}%`;
-    hourFill.style.background = hourPct < 20 ? '#ef4444' : hourPct < 50 ? '#f59e0b' : '#8b5cf6';
+    hourFill.style.background =
+      hourPct < 20
+        ? 'var(--brand-red)'
+        : hourPct < 50
+          ? 'var(--brand-yellow)'
+          : 'var(--accent-blue)';
   }
   if (dayVal) dayVal.textContent = `${dayRemaining} / ${pacing.dailyCap} left`;
   if (dayFill) {
     dayFill.style.width = `${dayPct}%`;
-    dayFill.style.background = dayPct < 20 ? '#ef4444' : dayPct < 50 ? '#f59e0b' : '#3b82f6';
+    dayFill.style.background =
+      dayPct < 20 ? 'var(--brand-red)' : dayPct < 50 ? 'var(--brand-yellow)' : 'var(--accent-blue)';
   }
   // 5. Telemetry Card 4: Metrics Breakdown
   let countSent = 0,
@@ -165,18 +174,30 @@ export function renderLiveActivityView() {
   if (session.livePaused) {
     if (streamBadge) streamBadge.className = 'live-stream-badge paused';
     if (streamText) streamText.textContent = 'FEED PAUSED';
-    return;
   } else {
     if (streamBadge) streamBadge.className = 'live-stream-badge';
     if (streamText) streamText.textContent = 'STREAMING LIVE';
   }
+  const feedContext = document.getElementById('liveFeedContext');
+  if (feedContext)
+    feedContext.textContent = session.livePaused
+      ? `Feed paused · ${Math.max(0, session.liveEventsList.length - (pausedEvents?.length ?? 0))} new events waiting · runner continues independently`
+      : session.liveViewMode === 'terminal'
+        ? 'Oldest events first · newest at the bottom'
+        : 'Newest events first · updates automatically';
+  if ($('liveConsoleStatusText'))
+    $('liveConsoleStatusText').textContent = session.livePaused
+      ? 'Viewing a paused snapshot · resume to see new events'
+      : 'Live activity · polling local state';
   // 7. Filter & Search
   const query = session.liveSearchQuery.trim().toLowerCase();
-  const filtered = session.liveEventsList.filter((e) => {
+  const visibleEvents = session.livePaused ? (pausedEvents ?? []) : session.liveEventsList;
+  const filtered = visibleEvents.filter((e) => {
     const cls = classifyEvent(e);
     if (session.liveFilterKind !== 'all' && cls !== session.liveFilterKind) return false;
     if (query) {
-      const text = `${e.message} ${e.kind || ''} ${cls}`.toLowerCase();
+      const text =
+        `${displayText(e.message)} ${e.kind || ''} ${cls} ${displayText(e.company)} ${displayText(e.email)}`.toLowerCase();
       if (!text.includes(query)) return false;
     }
     return true;
@@ -185,7 +206,7 @@ export function renderLiveActivityView() {
     $('liveFilteredCountText').textContent =
       session.liveFilterKind === 'all' && !query
         ? `Showing all ${filtered.length} events`
-        : `Showing ${filtered.length} of ${session.liveEventsList.length} events (filtered)`;
+        : `Showing ${filtered.length} of ${visibleEvents.length} events (filtered)`;
   }
   // 8. Render Visual Feed
   const visualList = $('liveVisualEventsList');
@@ -203,7 +224,10 @@ export function renderLiveActivityView() {
           .reverse()
           .map((e) => {
             const cls = classifyEvent(e);
-            const time = new Date(e.at).toLocaleTimeString();
+            const date = new Date(e.at);
+            const time = Number.isNaN(date.getTime())
+              ? 'Time unavailable'
+              : date.toLocaleTimeString();
             const badgeText = cls.toUpperCase();
             const metaTags = [];
             if (e.seconds) metaTags.push(`${e.seconds}s delay`);
@@ -216,6 +240,11 @@ export function renderLiveActivityView() {
                   <span className={'event-type-badge'}>{badgeText}</span>
                   <time className={'event-time'} title={displayText(e.at)}>
                     {displayText(time)}
+                    {!Number.isNaN(date.getTime()) && (
+                      <small>
+                        {date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                      </small>
+                    )}
                   </time>
                   <div className={'event-body'}>
                     <span className="event-message">{displayText(e.message)}</span>
@@ -246,14 +275,14 @@ export function renderLiveActivityView() {
         .map((e) => {
           const cls = classifyEvent(e).toUpperCase().padEnd(6);
           const time = new Date(e.at).toLocaleTimeString();
-          return `[${time}] [${cls}] ${e.message}`;
+          return `[${time}] [${cls}] ${displayText(e.message)}`;
         })
         .join('\n');
       termOutput.textContent = termLines;
     }
   }
   // 10. Auto-scroll
-  if (session.liveAutoScroll) {
+  if (session.liveAutoScroll && !session.livePaused) {
     const feedWrap = $('liveVisualFeedContainer');
     if (feedWrap && session.liveViewMode === 'visual') {
       feedWrap.scrollTop = 0;
@@ -267,6 +296,7 @@ export function renderLiveActivityView() {
 }
 
 export function mountLiveActivity() {
+  pausedEvents = session.livePaused ? session.liveEventsList.slice() : null;
   // Live Countdown Ticker Loop (500ms for smooth ticking)
   uiScope.interval(() => {
     if (session.state?.job?.nextAt) {
@@ -309,11 +339,30 @@ export function mountLiveActivity() {
       document.querySelectorAll<HTMLElement>('.cat-tab').forEach((item) => {
         item.classList.toggle('active', item === tab);
         item.setAttribute('aria-selected', String(item === tab));
+        item.tabIndex = item === tab ? 0 : -1;
       });
       session.liveFilterKind = tab.dataset.kind || 'all';
       renderLiveActivityView();
     });
   }
+  uiScope.listen($('liveCategoryTabs'), 'keydown', (event) => {
+    const key = (event as KeyboardEvent).key;
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(key)) return;
+    const tabs = Array.from(
+      $('liveCategoryTabs').querySelectorAll<HTMLButtonElement>('[role="tab"]'),
+    );
+    const current = tabs.indexOf(eventElement(event) as HTMLButtonElement);
+    if (current < 0) return;
+    event.preventDefault();
+    const next =
+      key === 'Home'
+        ? 0
+        : key === 'End'
+          ? tabs.length - 1
+          : (current + (key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+    tabs[next]?.focus();
+    tabs[next]?.click();
+  });
   if ($('liveSearchInput')) {
     uiScope.listen($('liveSearchInput'), 'input', (e) => {
       session.liveSearchQuery = (eventElement(e) as HTMLInputElement).value;
@@ -328,6 +377,8 @@ export function mountLiveActivity() {
   if ($('livePauseToggleBtn')) {
     uiScope.listen($('livePauseToggleBtn'), 'click', () => {
       session.livePaused = !session.livePaused;
+      pausedEvents = session.livePaused ? session.liveEventsList.slice() : null;
+      $('livePauseToggleBtn').setAttribute('aria-pressed', String(session.livePaused));
       const btnText = $('livePauseBtnText');
       if (btnText) btnText.textContent = session.livePaused ? 'Resume Feed' : 'Pause Feed';
       $('livePauseToggleBtn').classList.toggle('danger', session.livePaused);
@@ -340,6 +391,7 @@ export function mountLiveActivity() {
       for (const event of [...session.liveEventsList, ...session.state.events])
         session.liveClearedEvents.add(eventIdentity(event));
       session.liveEventsList = [];
+      if (session.livePaused) pausedEvents = [];
       if (
         await confirmAction(
           'Clear server activity event history as well? Click OK to reset server log, or Cancel to clear current screen view only.',
@@ -361,6 +413,8 @@ export function mountLiveActivity() {
     uiScope.listen($('btnModeVisual'), 'click', () => {
       session.liveViewMode = 'visual';
       $('btnModeVisual').classList.add('active');
+      $('btnModeVisual').setAttribute('aria-pressed', 'true');
+      $('btnModeTerminal').setAttribute('aria-pressed', 'false');
       $('btnModeTerminal').classList.remove('active');
       if ($('liveVisualFeedContainer')) $('liveVisualFeedContainer').hidden = false;
       if ($('liveTerminalContainer')) $('liveTerminalContainer').hidden = true;
@@ -371,6 +425,8 @@ export function mountLiveActivity() {
     uiScope.listen($('btnModeTerminal'), 'click', () => {
       session.liveViewMode = 'terminal';
       $('btnModeTerminal').classList.add('active');
+      $('btnModeTerminal').setAttribute('aria-pressed', 'true');
+      $('btnModeVisual').setAttribute('aria-pressed', 'false');
       $('btnModeVisual').classList.remove('active');
       if ($('liveVisualFeedContainer')) $('liveVisualFeedContainer').hidden = true;
       if ($('liveTerminalContainer')) $('liveTerminalContainer').hidden = false;
