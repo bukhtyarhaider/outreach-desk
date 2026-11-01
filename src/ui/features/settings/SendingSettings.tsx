@@ -1,200 +1,217 @@
 import { Button, Input, Panel } from '../../design-system/primitives';
-import { Icon, Info, Shield } from '../../design-system/icons';
+import { Clock, Icon, Mail, RefreshCw, Shield } from '../../design-system/icons';
+import type { Pacing } from '../../shared/types/domain';
+function PaceField({
+  id,
+  label,
+  unit,
+  min = 1,
+  max,
+}: {
+  id: keyof Pacing;
+  label: string;
+  unit: string;
+  min?: number;
+  max: number;
+}) {
+  return (
+    <label className="pace-field" htmlFor={id}>
+      <span>{label}</span>
+      <div>
+        <Input id={id} type="number" min={min} max={max} />
+        <span aria-hidden="true">{unit}</span>
+      </div>
+      <span className="sr-only">{unit}</span>
+    </label>
+  );
+}
+const profiles = [
+  {
+    key: 'warmup',
+    name: 'Gradual',
+    detail: '4–8 min gaps · 10/hour · 40/day',
+    action: 'Apply Warmup',
+  },
+  {
+    key: 'balanced',
+    name: 'Balanced',
+    detail: '2.5–5 min gaps · 18/hour · 80/day',
+    action: 'Apply Balanced',
+  },
+  {
+    key: 'established',
+    name: 'Higher volume',
+    detail: '1.5–3 min gaps · 25/hour · 120/day',
+    action: 'Apply Higher volume',
+  },
+  {
+    key: 'stealth',
+    name: 'Background',
+    detail: '5–10 min gaps · 8/hour · 50/day',
+    action: 'Apply background pace',
+  },
+];
 export function SendingSettings() {
   return (
-    <>
-      <div className="settings-stacked">
-        <Panel className="settings-card">
-          <div className={'pacing-presets-section'}>
-            <div className={'pacing-presets-header'}>
-              <div className={'pacing-presets-title'}>
-                <Icon icon={Shield} size={14} />
-                {'\n                        Choose a starting pace\n                      '}
-              </div>
-              <span className={'pacing-presets-subtext'}>
-                {'Applying a preset fills the fields. Save changes when ready.'}
-              </span>
-            </div>
-            <div className={'pacing-presets-grid'} id={'pacingPresetsGrid'}>
-              <div className={'pacing-preset-card'} data-preset={'warmup'}>
-                <div className={'preset-card-top'}>
-                  <span className={'preset-badge warmup'}>{'Lower volume'}</span>
-                  <span className={'preset-stat'}>{'40 / day'}</span>
-                </div>
-                <div className={'preset-card-name'}>{'New Mailbox Warmup'}</div>
-                <p className={'preset-card-desc'}>
-                  {'Longer gaps and smaller batches for a more gradual sending pace.'}
-                </p>
-                <div className={'preset-specs'}>
-                  <span>{'4–8m gaps'}</span>
-                  {' • '}
-                  <span>{'10/hr'}</span>
-                  {' • '}
-                  <span>{'15–30m rest'}</span>
-                </div>
-                <Button type={'button'} className={'preset-apply-btn'}>
-                  {'Apply Warmup'}
-                </Button>
-              </div>
-
-              <div className={'pacing-preset-card'} data-preset={'balanced'}>
-                <div className={'preset-card-top'}>
-                  <span className={'preset-badge recommended'}>{'Everyday pace'}</span>
-                  <span className={'preset-stat'}>{'80 / day'}</span>
-                </div>
-                <div className={'preset-card-name'}>{'Balanced Human Pace'}</div>
-                <p className={'preset-card-desc'}>
-                  {'Moderate gaps, daily limits and periodic rest breaks.'}
-                </p>
-                <div className={'preset-specs'}>
-                  <span>{'2.5–5m gaps'}</span>
-                  {' • '}
-                  <span>{'18/hr'}</span>
-                  {' • '}
-                  <span>{'10–20m rest'}</span>
-                </div>
-                <Button type={'button'} className={'preset-apply-btn'}>
-                  {'Apply Balanced'}
-                </Button>
-              </div>
-
-              <div className={'pacing-preset-card'} data-preset={'established'}>
-                <div className={'preset-card-top'}>
-                  <span className={'preset-badge established'}>{'Higher volume'}</span>
-                  <span className={'preset-stat'}>{'120 / day'}</span>
-                </div>
-                <div className={'preset-card-name'}>{'Aged / Established Domain'}</div>
-                <p className={'preset-card-desc'}>
-                  {
-                    'Shorter gaps and higher limits. Review your mailbox provider’s limits before choosing this profile.'
-                  }
-                </p>
-                <div className={'preset-specs'}>
-                  <span>{'1.5–3m gaps'}</span>
-                  {' • '}
-                  <span>{'25/hr'}</span>
-                  {' • '}
-                  <span>{'8–15m rest'}</span>
-                </div>
-                <Button type={'button'} className={'preset-apply-btn'}>
-                  {'Apply Higher volume'}
-                </Button>
-              </div>
-
-              <div className={'pacing-preset-card'} data-preset={'stealth'}>
-                <div className={'preset-card-top'}>
-                  <span className={'preset-badge stealth'}>{'All-Day Trickle'}</span>
-                  <span className={'preset-stat'}>{'50 / day'}</span>
-                </div>
-                <div className={'preset-card-name'}>{'Steady background pace'}</div>
-                <p className={'preset-card-desc'}>
-                  {'Longer gaps with a lower hourly cap for a gradual sending schedule.'}
-                </p>
-                <div className={'preset-specs'}>
-                  <span>{'5–10m gaps'}</span>
-                  {' • '}
-                  <span>{'8/hr'}</span>
-                  {' • '}
-                  <span>{'15–25m rest'}</span>
-                </div>
-                <Button type={'button'} className={'preset-apply-btn'}>
-                  {'Apply background pace'}
-                </Button>
-              </div>
-            </div>
-
-            <div className={'pacing-info-banner'}>
-              <Icon icon={Info} size={15} />
-              <div>
-                <strong>{'How these limits work:'}</strong>
-                {
-                  ' These presets set application pacing limits. They do not guarantee delivery or inbox placement; mailbox provider limits still apply.\n                      '
-                }
-              </div>
-            </div>
-          </div>
-        </Panel>
-        <Panel className="settings-card">
-          <h2>Timing, limits & rest</h2>
-          <div className="settings-pacing-fields">
-            {[
-              {
-                title: 'Time between emails',
-                description:
-                  'Choose a range in seconds. The runner varies the delay within these bounds.',
-                fields: [
-                  ['minSeconds', 'Minimum delay', 1],
-                  ['maxSeconds', 'Maximum delay', 1],
-                ],
-              },
-              {
-                title: 'Rolling sending limits',
-                description: 'Maximum app-tracked sends in the most recent hour and 24 hours.',
-                fields: [
-                  ['hourlyCap', 'Per hour', 1],
-                  ['dailyCap', 'Per 24 hours', 1],
-                ],
-              },
-              {
-                title: 'When to take a rest',
-                description: 'Choose the send-count range between rest breaks.',
-                fields: [
-                  ['pauseEveryMin', 'At least this many sends', 1],
-                  ['pauseEveryMax', 'At most this many sends', 1],
-                ],
-              },
-              {
-                title: 'Rest duration',
-                description: 'Choose the minimum and maximum rest in seconds.',
-                fields: [
-                  ['pauseMinSeconds', 'Minimum rest', 0],
-                  ['pauseMaxSeconds', 'Maximum rest', 0],
-                ],
-              },
-            ].map((group) => (
-              <fieldset key={group.title} className="settings-field-group">
-                <legend>{group.title}</legend>
-                <p>{group.description}</p>
-                <div className="form-grid-2">
-                  {group.fields.map(([id, label, min]) => (
-                    <label key={String(id)} htmlFor={String(id)}>
-                      {label}
-                      <Input id={String(id)} type="number" min={min} />
-                    </label>
-                  ))}
-                </div>
-              </fieldset>
-            ))}
-            <label className="settings-poll-field" htmlFor="pollSeconds">
-              Check an empty queue every (seconds)
-              <Input id="pollSeconds" type="number" min="5" />
-              <small>
-                The runner checks again at this interval when no eligible leads are available.
-              </small>
-            </label>
-          </div>
-        </Panel>
-        <Panel className="settings-card settings-recovery">
-          <h2>Queue recovery</h2>
-          <p className="hint">
-            Review the current wait before overriding the app’s pacing counters.
+    <div className="pace-workspace">
+      <section className="pace-overview" aria-label="How the sending schedule works">
+        <div>
+          <p className="page-eyebrow">Runner schedule</p>
+          <h2>Set the runner’s schedule</h2>
+          <p>
+            Set the gap between emails, limit volume, and build in rest. These controls work
+            together; save changes when you’re ready.
           </p>
-          <div className={'form-group'}>
-            <label>{'Current queue wait'}</label>
-            <p id={'settingsWaitStatus'} className={'hint'} role={'status'}>
-              {'No scheduled wait.'}
-            </p>
-            <p className={'hint'}>
-              {
-                'Override the current wait and restart this mailbox’s app-tracked minimum interval, hourly/24-hour quota counters, and rest counter. The queue can send immediately after confirmation. New sends count toward the configured limits again. A stopped queue stays stopped.'
-              }
-            </p>
-            <Button id={'resetWait'} type={'button'} className={'secondary'} disabled={true}>
-              {'Hard reset wait & quotas'}
-            </Button>
+        </div>
+        <ol className="pace-sequence">
+          <li>
+            <i className="pace-shape pace-shape--send" aria-hidden="true" />
+            <span>Send</span>
+          </li>
+          <li>
+            <i className="pace-shape pace-shape--wait" aria-hidden="true" />
+            <span>Wait</span>
+          </li>
+          <li>
+            <i className="pace-shape pace-shape--repeat" aria-hidden="true" />
+            <span>Repeat</span>
+          </li>
+          <li>
+            <i className="pace-shape pace-shape--rest" aria-hidden="true" />
+            <span>Rest</span>
+          </li>
+        </ol>
+      </section>
+      <details className="pace-profiles">
+        <summary>
+          Start from a preset <span>Optional · fills the controls below</span>
+        </summary>
+        <div id="pacingPresetsGrid" className="pace-profile-list">
+          {profiles.map((profile) => (
+            <div key={profile.key} className="pacing-preset-card" data-preset={profile.key}>
+              <div>
+                <strong>{profile.name}</strong>
+                <p>{profile.detail}</p>
+              </div>
+              <Button className="preset-apply-btn" size="sm">
+                {profile.action}
+              </Button>
+            </div>
+          ))}
+        </div>
+        <p className="hint">
+          A preset changes the draft only. Application limits do not guarantee inbox placement or
+          override your provider’s restrictions.
+        </p>
+      </details>
+      <div className="pace-control-grid">
+        <Panel className="pace-control-card pace-control-card--timing">
+          <header>
+            <span className="pace-card-icon">
+              <Icon icon={Clock} size={18} />
+            </span>
+            <div>
+              <p className="page-eyebrow">01 · Timing</p>
+              <h2>Between emails</h2>
+            </div>
+          </header>
+          <p>Vary each delay within this range. Both values are in seconds.</p>
+          <div className="pace-field-pair">
+            <PaceField id="minSeconds" label="Minimum gap" unit="sec" max={86400} />
+            <PaceField id="maxSeconds" label="Maximum gap" unit="sec" max={86400} />
+          </div>
+          <div className="pace-card-note">Minimum must be no greater than maximum.</div>
+        </Panel>
+        <Panel className="pace-control-card pace-control-card--volume">
+          <header>
+            <span className="pace-card-icon">
+              <Icon icon={Mail} size={18} />
+            </span>
+            <div>
+              <p className="page-eyebrow">02 · Volume</p>
+              <h2>Rolling limits</h2>
+            </div>
+          </header>
+          <p>Cap sends in the most recent hour and 24 hours, rather than a calendar reset.</p>
+          <div className="pace-field-pair">
+            <PaceField id="hourlyCap" label="Per rolling hour" unit="emails" max={10000} />
+            <PaceField id="dailyCap" label="Per rolling 24 hours" unit="emails" max={100000} />
+          </div>
+          <div className="pace-card-note">The runner waits when an allowance is exhausted.</div>
+        </Panel>
+        <Panel className="pace-control-card pace-control-card--rest">
+          <header>
+            <span className="pace-card-icon">
+              <Icon icon={RefreshCw} size={18} />
+            </span>
+            <div>
+              <p className="page-eyebrow">03 · Rest</p>
+              <h2>Breaks in the schedule</h2>
+            </div>
+          </header>
+          <p>After a range of sends, pause for a range of time before continuing.</p>
+          <div className="pace-rest-fields">
+            <fieldset className="pace-rest-group">
+              <legend>Take a break after</legend>
+              <div className="pace-field-pair">
+                <PaceField id="pauseEveryMin" label="At least" unit="sends" max={10000} />
+                <PaceField id="pauseEveryMax" label="At most" unit="sends" max={10000} />
+              </div>
+            </fieldset>
+            <fieldset className="pace-rest-group">
+              <legend>Stay paused for</legend>
+              <div className="pace-field-pair">
+                <PaceField
+                  id="pauseMinSeconds"
+                  label="Minimum rest"
+                  unit="sec"
+                  min={0}
+                  max={604800}
+                />
+                <PaceField
+                  id="pauseMaxSeconds"
+                  label="Maximum rest"
+                  unit="sec"
+                  min={0}
+                  max={604800}
+                />
+              </div>
+            </fieldset>
           </div>
         </Panel>
       </div>
-    </>
+      <details className="pace-empty-queue">
+        <summary>When the queue is empty</summary>
+        <div>
+          <p className="hint">
+            How often the runner looks again when no eligible leads are available. This is separate
+            from the delay between emails.
+          </p>
+          <PaceField id="pollSeconds" label="Check again every" unit="sec" min={5} max={3600} />
+        </div>
+      </details>
+      <Panel className="pace-recovery">
+        <div>
+          <header>
+            <Icon icon={Shield} size={16} />
+            <h2>Current wait & recovery</h2>
+          </header>
+          <p id="settingsWaitStatus" role="status">
+            No scheduled wait.
+          </p>
+          <details>
+            <summary>What does a hard reset change?</summary>
+            <p>
+              Resets this mailbox’s app-tracked minimum interval, hourly/24-hour quotas and rest
+              counter. An active queue may send immediately. A stopped queue stays stopped. Send
+              history, contact protections and provider limits remain in effect.
+            </p>
+          </details>
+        </div>
+        <Button id="resetWait" type="button" variant="danger" disabled>
+          Hard reset wait & quotas
+        </Button>
+      </Panel>
+    </div>
   );
 }

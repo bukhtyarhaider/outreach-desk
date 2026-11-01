@@ -39,6 +39,13 @@ export function revealSettingsError(message: string, pacingFields: readonly stri
   if (!match) return;
   const [hash, id] = match as [string, string];
   const field = document.getElementById(id);
+  for (
+    let parent = field?.parentElement;
+    parent && parent.id !== 'view-settings';
+    parent = parent.parentElement
+  ) {
+    if (parent instanceof HTMLDetailsElement) parent.open = true;
+  }
   field?.setAttribute('aria-invalid', 'true');
   field?.setAttribute('aria-errormessage', 'settingsSaveFeedback');
   location.hash = hash;

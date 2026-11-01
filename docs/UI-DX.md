@@ -106,3 +106,9 @@ Settings now has six mounted concerns: Sending pace, Eligibility & checks, Fireb
 The existing configuration save remains atomic across sending, eligibility/checks, Firebase and team fields. The header states that scope and keeps the action available in those four tabs. Appearance persists browser preferences immediately and About has no write action; both hide the global save button. Tab switches never save configuration automatically. Firebase diagnostics retain effective PC/source, database, credentials-source-only information, data paths, counters and warnings; team configuration stays separate from open-event sync.
 
 `save-feedback` exposes save status outside hidden panels. Recognized validation failures reveal the relevant tab and mark the affected field while preserving edits. The coordinator token clears only after the settings request succeeds. Accounts/profile business settings remain owned by their separate editor.
+
+### Sending pace control board
+
+`SendingSettings` groups editable pacing into timing, rolling volume and rest-cycle cards with shared inputs/buttons and semantic brand accents. The static send/wait/repeat/rest diagram explains the schedule; it is not live activity or a delivery forecast. `PaceField` retains existing IDs and seconds-based storage, with visible units and server-aligned bounds.
+
+Presets are optional disclosure content and apply only through their explicit buttons. Their numeric values and controller matching behavior are unchanged; application changes the draft, not saved settings. Empty-queue polling is a separate disclosure, and recovery retains the original wait status and confirmation guard. Settings validation expands any ancestor disclosures before revealing an invalid field.

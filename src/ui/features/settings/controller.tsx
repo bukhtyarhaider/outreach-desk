@@ -123,7 +123,7 @@ export const pacingFields: Array<keyof Pacing> = [
 
 export const PACING_PRESETS: Record<string, Pacing & { name: string }> = {
   warmup: {
-    name: 'New Mailbox Warmup',
+    name: 'Gradual',
     minSeconds: 240,
     maxSeconds: 480,
     hourlyCap: 10,
@@ -135,7 +135,7 @@ export const PACING_PRESETS: Record<string, Pacing & { name: string }> = {
     pollSeconds: 60,
   },
   balanced: {
-    name: 'Balanced Human Pace',
+    name: 'Balanced',
     minSeconds: 150,
     maxSeconds: 300,
     hourlyCap: 18,
@@ -147,7 +147,7 @@ export const PACING_PRESETS: Record<string, Pacing & { name: string }> = {
     pollSeconds: 60,
   },
   established: {
-    name: 'Aged / Established Domain',
+    name: 'Higher volume',
     minSeconds: 90,
     maxSeconds: 180,
     hourlyCap: 25,
@@ -159,7 +159,7 @@ export const PACING_PRESETS: Record<string, Pacing & { name: string }> = {
     pollSeconds: 45,
   },
   stealth: {
-    name: 'Stealth Background',
+    name: 'Background',
     minSeconds: 300,
     maxSeconds: 600,
     hourlyCap: 8,
@@ -408,7 +408,7 @@ export function mountSettings() {
     for (const event of ['input', 'change'])
       uiScope.listen($('view-settings'), event, clearSettingsFeedback);
     uiScope.listen($('view-settings'), 'click', (event) => {
-      if (eventElement(event).closest('[data-preset]')) clearSettingsFeedback();
+      if (eventElement(event).closest('.preset-apply-btn')) clearSettingsFeedback();
     });
   }
   if ($('connect'))
@@ -689,7 +689,9 @@ export function mountSettings() {
   const presetsGrid = $('pacingPresetsGrid');
   if (presetsGrid) {
     uiScope.handler(presetsGrid, 'onclick', async (e) => {
-      const card = eventElement(e).closest<HTMLElement>('.pacing-preset-card');
+      const card = eventElement(e)
+        .closest<HTMLElement>('.preset-apply-btn')
+        ?.closest<HTMLElement>('.pacing-preset-card');
       if (card && card.dataset.preset) {
         applyPacingPreset(card.dataset.preset, true);
       }

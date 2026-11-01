@@ -359,6 +359,29 @@ test(
       true,
       'A queue with no included campaign stays disabled after initial rendering',
     );
+    const paceAccents = await page.locator('.pace-control-card').evaluateAll((cards) =>
+      cards.map((card) => ({
+        color: getComputedStyle(card).borderTopColor,
+        width: getComputedStyle(card).borderTopWidth,
+      })),
+    );
+    assert.equal(
+      new Set(paceAccents.map((accent) => accent.color)).size,
+      3,
+      `Timing, volume and rest use their semantic accents: ${JSON.stringify(paceAccents)}`,
+    );
+    assert(paceAccents.every((accent) => accent.width === '3px'));
+    const savedPace = (await previewApi('state')).settings.pacing;
+    await page.locator('.pace-profiles > summary').click();
+    await page.locator('[data-preset=warmup] .preset-apply-btn').click();
+    assert.equal(await page.locator('#minSeconds').inputValue(), '240');
+    assert.equal(await page.locator('#dailyCap').inputValue(), '40');
+    assert.deepEqual(
+      (await previewApi('state')).settings.pacing,
+      savedPace,
+      'Preset application only changes the draft',
+    );
+    await page.locator('.pace-profiles > summary').click();
     const draft = 'Unsent React migration draft <&> "preserve"';
     await page.getByRole('tab', { name: 'Firebase sync', exact: true }).click();
     await page.locator('#trackingPcId').fill('4');
@@ -386,6 +409,19 @@ test(
           await page.screenshot({
             path: path.join(process.env.FC_UI_SCREENSHOT_DIR, `settings-${id}-${width}.png`),
           });
+          if (id === 'settingsSending') {
+            await page.evaluate(() => {
+              const viewport = document.querySelector('.app-viewport');
+              for (let i = 0; i < 2; i++) {
+                const board = document.querySelector('.pace-control-grid').getBoundingClientRect();
+                const tabs = document.querySelector('.settings-tab-bar').getBoundingClientRect();
+                viewport.scrollTop += board.top - tabs.bottom - 16;
+              }
+            });
+            await page.screenshot({
+              path: path.join(process.env.FC_UI_SCREENSHOT_DIR, `pace-board-${width}.png`),
+            });
+          }
         }
       }
     }
@@ -398,6 +434,20 @@ test(
       '4',
       'Tab navigation preserves unsaved sync configuration',
     );
+    await page.getByRole('tab', { name: 'Sending pace', exact: true }).click();
+    await page.locator('.pace-empty-queue > summary').click();
+    await page.locator('#pollSeconds').fill('4000');
+    await page.locator('.pace-empty-queue > summary').click();
+    await page.getByRole('tab', { name: 'Firebase sync', exact: true }).click();
+    await page.locator('#saveSettings').click();
+    await page.waitForFunction(() =>
+      document.querySelector('#settingsSaveFeedback').textContent.includes('pollSeconds'),
+    );
+    await page.locator('#pollSeconds').waitFor({ state: 'visible' });
+    assert.equal(await page.locator('#pollSeconds').inputValue(), '4000');
+    assert.equal(await page.locator('#pollSeconds').getAttribute('aria-invalid'), 'true');
+    await page.locator('#pollSeconds').fill('60');
+
     await page.setViewportSize({ width: 1440, height: 1000 });
 
     await page.locator('[data-view=templates]').click();
@@ -589,7 +639,7 @@ test(
       });
       assert.equal(
         layout.panels,
-        11,
+        12,
         'All concern-specific settings cards remain mounted across tabs',
       );
       assert(layout.fits && layout.paneFit, `Settings sections fit at ${width}px`);

@@ -805,3 +805,317 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Sending pace: a schedule control board, not a preset catalog. */
+.pace-workspace {
+  display: grid;
+  gap: 24px;
+}
+.pace-overview {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.8fr);
+  align-items: center;
+  gap: 32px;
+  padding: 24px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-surface);
+  border-radius: 5px;
+}
+.pace-overview h2 {
+  margin: 8px 0;
+  font-size: 24px;
+  letter-spacing: -0.6px;
+}
+.pace-overview > div > p:last-child {
+  margin: 0;
+  max-width: 600px;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+.pace-sequence {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  gap: 12px;
+}
+.pace-sequence li {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  font-size: 11px;
+  color: var(--text-secondary);
+}
+.pace-shape {
+  display: block;
+  width: 30px;
+  height: 30px;
+}
+.pace-shape--send {
+  background: var(--accent-blue);
+}
+.pace-shape--wait {
+  background: var(--brand-red);
+  border-radius: 0 0 0 100%;
+}
+.pace-shape--repeat {
+  background: var(--accent-blue);
+  border-radius: 50%;
+}
+.pace-shape--rest {
+  background: var(--brand-yellow);
+  border-radius: 50%;
+}
+.pace-profiles,
+.pace-empty-queue {
+  border: 1px solid var(--border-subtle);
+  padding: 16px 20px;
+  background: var(--bg-surface);
+  border-radius: 4px;
+}
+.pace-profiles > summary,
+.pace-empty-queue > summary {
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.pace-profiles > summary > span {
+  margin-left: 12px;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+.pace-profile-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 20px 0;
+}
+#view-settings .pace-profile-list .pacing-preset-card {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px;
+}
+.pace-profile-list strong {
+  font-size: 13px;
+}
+.pace-profile-list p {
+  margin: 6px 0 0;
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+#view-settings .pace-profile-list .preset-apply-btn {
+  width: auto;
+  flex-shrink: 0;
+  margin: 0;
+}
+.pace-control-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  align-items: start;
+}
+#view-settings .settings-tab-panel .pace-control-card {
+  padding: 24px;
+  border-top: 3px solid var(--accent-blue);
+}
+#view-settings .settings-tab-panel .pace-control-card--volume {
+  border-top-color: var(--brand-red);
+}
+#view-settings .settings-tab-panel .pace-control-card--rest {
+  grid-column: 1/-1;
+  border-top-color: var(--brand-yellow);
+}
+.pace-control-card > header {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.pace-card-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-app);
+  border-radius: 4px;
+}
+.pace-control-card .page-eyebrow {
+  margin: 0 0 5px;
+  font-size: 10px;
+}
+#view-settings .pace-control-card h2 {
+  margin: 0;
+  font-size: 20px;
+}
+.pace-control-card > p {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  margin: 18px 0;
+}
+.pace-field-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.pace-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.pace-field > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pace-field input {
+  min-width: 0;
+  width: 100%;
+  font-variant-numeric: tabular-nums;
+}
+.pace-field > div > span {
+  font-size: 11px;
+  flex-shrink: 0;
+}
+.pace-card-note {
+  font-size: 11px;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border-subtle);
+  margin-top: 20px;
+  padding-top: 12px;
+}
+.pace-rest-group {
+  display: inline-block;
+  width: calc(50% - 12px);
+  vertical-align: top;
+  padding: 16px;
+  margin: 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  background: var(--bg-app);
+  box-sizing: border-box;
+}
+.pace-rest-group + .pace-rest-group {
+  margin-left: 24px;
+}
+.pace-rest-group legend {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 0 6px;
+}
+.pace-empty-queue > div {
+  margin-top: 16px;
+  max-width: 500px;
+}
+#view-settings .settings-tab-panel .pace-recovery {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  border-left: 3px solid var(--brand-red);
+}
+.pace-recovery header {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+#view-settings .pace-recovery h2 {
+  margin: 0;
+  font-size: 16px;
+}
+.pace-recovery > div > p {
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 12px 0;
+}
+.pace-recovery details {
+  font-size: 11px;
+  color: var(--text-secondary);
+  max-width: 760px;
+  line-height: 1.7;
+}
+.pace-recovery summary {
+  cursor: pointer;
+}
+.pace-recovery > .ui-button {
+  flex-shrink: 0;
+}
+@media (max-width: 1050px) {
+  .pace-overview {
+    grid-template-columns: 1fr;
+  }
+  .pace-profile-list {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 760px) {
+  .pace-control-grid {
+    grid-template-columns: 1fr;
+  }
+  .pace-rest-group {
+    display: block;
+    width: 100%;
+  }
+  .pace-rest-group + .pace-rest-group {
+    margin: 16px 0 0;
+  }
+  #view-settings .settings-tab-panel .pace-recovery {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .pace-overview {
+    padding: 18px;
+    gap: 24px;
+  }
+}
+@media (max-width: 400px) {
+  .pace-field-pair {
+    grid-template-columns: 1fr;
+  }
+  #view-settings .pace-profile-list .pacing-preset-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .pace-profiles > summary > span {
+    display: block;
+    margin: 6px 0 0;
+  }
+}
+
+.pace-rest-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+.pace-rest-fields .pace-rest-group {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+}
+.pace-rest-fields .pace-rest-group + .pace-rest-group {
+  margin: 0;
+}
+@media (max-width: 760px) {
+  .pace-rest-fields {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+.pace-recovery > div {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
