@@ -32,16 +32,29 @@
   flex-wrap: wrap;
   gap: 4px;
 }
-.mailroom-tabs .ui-button {
+#view-conversations .mailroom-tabs .ui-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  line-height: 1.25;
   min-height: 34px;
   padding: 6px 10px;
   font-size: 11px;
   gap: 6px;
 }
-.mailroom-tabs .ui-button > span {
-  min-width: 19px;
-  height: 19px;
+#view-conversations .mailroom-tabs .ui-button > span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  min-width: 22px;
+  height: 20px;
+  padding: 0 6px;
+  line-height: 1;
   font-size: 10px;
+  font-variant-numeric: tabular-nums;
 }
 .mailroom-tools {
   flex-wrap: wrap;

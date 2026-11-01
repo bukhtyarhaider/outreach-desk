@@ -630,6 +630,7 @@
 }
 
 .terminal-titlebar {
+  gap: 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -665,6 +666,22 @@
   font-size: 11px;
   font-family: var(--font-mono);
   color: var(--text-muted);
+}
+
+#view-live-activity .terminal-output {
+  color: #f8f6ed;
+  background: #20201d;
+}
+
+#view-live-activity .terminal-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  font-weight: 650;
+  font-family: var(--font-mono);
+  color: var(--text-primary);
+  overflow-wrap: anywhere;
 }
 
 .terminal-copy-btn {

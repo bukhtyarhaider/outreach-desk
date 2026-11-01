@@ -432,3 +432,8 @@ Replaced 131 hand-authored inline SVGs and decorative emoji status/timeline icon
 - Log actions close after completion/export/navigation, support Escape and outside dismissal, and retain original export/clear semantics. An initial long-stream test caught the menu covering auto-scroll after clearing; closing and restoring focus after the action resolved it.
 - **Nine activity/React tests passed**. Coverage includes a 19-event stream, sticky action visibility after scrolling at 1440/390, stable reading position through polling, Latest alignment, collapsed and expanded telemetry, existing filter/search/pause/clear behavior, and shared page-header/navigation regressions. Typecheck, formatting, production build and diff checks passed.
 - Reviewed responsive and scrolled evidence in `outputs/activity-stream-focus/`, including `activity-{sticky,latest}-{1440,390}.png`. Synthetic local state only; no live sending, customer settings or cloud configuration changed.
+
+## Unibox badge alignment and terminal contrast — 2026-11-01
+
+- Normalized queue badge sizing, padding, line height and inline flex alignment so labels and counts remain centered together. Kept existing queue controls/count IDs and selection behavior. Increased activity terminal title contrast/weight and fixed dark output using a contrasting light foreground; other terminal headings retain their existing base style.
+- Typecheck, formatting, production build and diff checks passed. Isolated browser geometry checks at 1440/390 verified all five badges (synthetic counts 2, 1, 777, 775, 0) fit and have zero vertical center difference from their buttons. Visually reviewed Unibox and final terminal screenshots in `outputs/chip-alignment/`. No customer data changed.
