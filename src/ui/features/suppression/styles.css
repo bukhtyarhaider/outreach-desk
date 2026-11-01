@@ -1,0 +1,201 @@
+.suppression-scope {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 20px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid var(--accent-blue);
+  border-radius: 4px;
+  margin-bottom: 24px;
+}
+.suppression-scope > svg {
+  color: var(--accent-blue);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.suppression-scope strong {
+  font-size: 13px;
+}
+.suppression-scope p {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+#view-suppression .suppression-records {
+  padding: 0;
+}
+.suppression-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 22px;
+}
+.suppression-toolbar h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 19px;
+  letter-spacing: -0.03em;
+}
+.suppression-toolbar p {
+  margin: 8px 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.suppression-filters {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.suppression-filters label {
+  display: grid;
+  gap: 6px;
+  font-size: 11px;
+  min-width: 0;
+}
+.suppression-filters .toolbar-search {
+  width: 300px;
+  max-width: 100%;
+}
+.suppression-guide {
+  display: flex;
+  gap: 10px;
+  padding: 14px 22px;
+  align-items: flex-start;
+  background: var(--bg-app);
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+.suppression-guide svg {
+  flex-shrink: 0;
+  margin-top: 3px;
+  color: var(--brand-red);
+}
+#view-suppression #suppressionList {
+  max-height: none;
+  overflow: visible;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+}
+#view-suppression #suppressionList li {
+  gap: 20px;
+  padding: 20px 22px;
+  border: 0;
+  border-bottom: 1px solid var(--border-subtle);
+  border-radius: 0;
+  background: var(--bg-surface);
+}
+#view-suppression #suppressionList li:last-child {
+  border-bottom: 0;
+}
+.suppression-contact {
+  min-width: 0;
+}
+.suppression-contact > strong {
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.suppression-contact p {
+  font-size: 12px;
+  margin: 7px 0 10px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.suppression-row-actions {
+  flex-shrink: 0;
+}
+#view-suppression #suppressionList .suppression-empty {
+  flex-direction: column;
+  text-align: center;
+  gap: 12px;
+  padding: 40px 24px;
+}
+.suppression-empty > svg {
+  color: var(--accent-blue);
+}
+.suppression-empty h3 {
+  font-size: 19px;
+}
+.suppression-empty p {
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.6;
+  max-width: 440px;
+  margin: 0;
+}
+#suppressionFields {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+.suppression-drawer-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-left: 3px solid var(--accent-blue);
+  border-radius: 4px;
+  margin-top: 24px;
+}
+.suppression-drawer-note svg {
+  color: var(--accent-blue);
+  flex-shrink: 0;
+}
+.suppression-drawer-note p {
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  margin: 0;
+}
+.suppression-feedback {
+  font-size: 13px;
+  line-height: 1.6;
+  margin-top: 20px;
+  padding: 14px;
+  background: #edf1fd;
+  border-left: 3px solid var(--accent-blue);
+  overflow-wrap: anywhere;
+}
+.suppression-feedback:empty {
+  display: none;
+}
+@media (max-width: 760px) {
+  .suppression-toolbar {
+    padding: 18px;
+  }
+  .suppression-filters {
+    width: 100%;
+  }
+  .suppression-filters label {
+    flex: 1 1 180px;
+  }
+  .suppression-filters .toolbar-search {
+    width: 100%;
+  }
+  .suppression-guide {
+    padding: 14px 18px;
+  }
+  #view-suppression #suppressionList li {
+    padding: 18px;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .suppression-row-actions,
+  .suppression-row-actions .ui-button {
+    width: 100%;
+  }
+}

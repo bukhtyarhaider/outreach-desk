@@ -764,6 +764,132 @@ test(
         );
       }
     }
+    await openView('suppression');
+    await previewApi('suppress', {
+      email: 'long-protected-contact-name-for-responsive-checking@example.invalid',
+      reason:
+        'A long existing protection reason that should remain readable without pushing the actions beyond the record edge.',
+    });
+    await page.locator('#suppressionAddOpen').click();
+    await page.locator('#suppressEmail').fill('QA-PROTECTED@example.invalid');
+    await page.locator('#suppressReason').fill('Manual review hold');
+    await page.locator('#suppressReason').press('Enter');
+    await page.waitForFunction(
+      () =>
+        document
+          .querySelector('#suppressionEditor [data-drawer-notice]')
+          .textContent.includes('Protection added for qa-protected@example.invalid') &&
+        !document.querySelector('#suppress').disabled,
+    );
+    assert.equal(
+      (await previewApi('state')).suppression['qa-protected@example.invalid'],
+      'Manual review hold',
+    );
+    await page.locator('#suppressEmail').fill('qa-protected@example.invalid');
+    await page.locator('#suppressReason').fill('Do not replace the existing reason');
+    await page.locator('#suppress').click();
+    await page.waitForFunction(() =>
+      document.querySelector('#suppressionFeedback').textContent.includes('already protected'),
+    );
+    assert.equal(
+      (await previewApi('state')).suppression['qa-protected@example.invalid'],
+      'Manual review hold',
+      'Duplicate add retains the original protection reason',
+    );
+    await page.route('**/api/suppress', (route) =>
+      route.fulfill({
+        status: 400,
+        contentType: 'application/json',
+        body: JSON.stringify({ error: 'Synthetic protection save error' }),
+      }),
+    );
+    await page.locator('#suppressEmail').fill('unsaved-hold@example.invalid');
+    await page.locator('#suppressReason').fill('Retained protection draft');
+    await page.locator('#suppress').click();
+    await page.waitForFunction(() =>
+      document
+        .querySelector('#suppressionEditor [data-drawer-notice]')
+        .textContent.includes('Synthetic protection save error'),
+    );
+    assert.equal(await page.locator('#suppressEmail').inputValue(), 'unsaved-hold@example.invalid');
+    assert.equal(await page.locator('#suppressReason').inputValue(), 'Retained protection draft');
+    await page.unroute('**/api/suppress');
+    for (const width of [1440, 390]) {
+      await page.setViewportSize({ width, height: 1000 });
+      assert(
+        await page
+          .locator('#suppressionEditor')
+          .evaluate((el) => el.scrollWidth <= el.clientWidth + 1),
+      );
+      if (process.env.FC_UI_SCREENSHOT_DIR)
+        await page.screenshot({
+          path: path.join(process.env.FC_UI_SCREENSHOT_DIR, `dnc-add-${width}.png`),
+        });
+    }
+    await page.getByRole('button', { name: 'Close Protect a contact', exact: true }).click();
+    await previewApi('suppress', {
+      email: 'captured-optout@example.invalid',
+      reason: 'Captured carrier opt-out: ' + 'a'.repeat(64),
+    });
+    await page.waitForFunction(() =>
+      document
+        .querySelector('#suppressionList')
+        .textContent.includes('captured-optout@example.invalid'),
+    );
+    const capturedRow = page.locator('[data-suppressed-email="captured-optout@example.invalid"]');
+    assert.equal(await capturedRow.locator('[data-unsuppress]').count(), 0);
+    assert.equal(
+      await capturedRow
+        .locator('[data-conversation-email]')
+        .getAttribute('data-conversation-email'),
+      'captured-optout@example.invalid',
+    );
+    assert(
+      !(await capturedRow.innerText()).includes('a'.repeat(64)),
+      'Technical opt-out hashes are replaced with readable guidance',
+    );
+    for (const width of [1440, 390]) {
+      await page.setViewportSize({ width, height: 1000 });
+      await page.locator('.suppression-records').scrollIntoViewIfNeeded();
+      assert(
+        await page
+          .locator('.suppression-records')
+          .evaluate((el) => el.scrollWidth <= el.clientWidth + 1),
+      );
+      if (process.env.FC_UI_SCREENSHOT_DIR)
+        await page.screenshot({
+          path: path.join(process.env.FC_UI_SCREENSHOT_DIR, `dnc-list-${width}.png`),
+        });
+    }
+    await page.locator('#suppressionKind').selectOption('captured');
+    assert.equal(await page.locator('#suppressionList [data-suppressed-email]').count(), 1);
+    await page.locator('#suppressionKind').selectOption('other');
+    await page.locator('#suppressionSearch').fill('qa-protected');
+    await page.locator('[data-unsuppress="qa-protected@example.invalid"]').click();
+    await page
+      .getByRole('dialog', { name: 'Remove contact protection?', exact: true })
+      .getByRole('button', { name: 'Cancel', exact: true })
+      .click();
+    assert.equal(
+      (await previewApi('state')).suppression['qa-protected@example.invalid'],
+      'Manual review hold',
+    );
+    await page.locator('[data-unsuppress="qa-protected@example.invalid"]').click();
+    await page
+      .getByRole('dialog', { name: 'Remove contact protection?', exact: true })
+      .getByRole('button', { name: 'Remove entry', exact: true })
+      .click();
+    await page.waitForFunction(() =>
+      document.querySelector('#notice').textContent.includes('Removal requested'),
+    );
+    assert.equal(
+      (await previewApi('state')).suppression['qa-protected@example.invalid'],
+      undefined,
+    );
+    await page.locator('#suppressionSearch').fill('no match for this protection');
+    assert.match(await page.locator('#suppressionList').innerText(), /No matching contacts/);
+    await page.locator('[data-suppression-empty=reset]').click();
+    assert.equal(await page.locator('#suppressionKind').inputValue(), 'all');
     await page.locator('[data-view="accounts"]').click();
     await page.locator('[data-edit-profile]').first().click();
     await page.locator('#connectionMode').selectOption('cdp');

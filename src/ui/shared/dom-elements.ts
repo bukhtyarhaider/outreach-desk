@@ -508,6 +508,10 @@ export interface UIElements {
   trackingWorker: HTMLElementTagNameMap['pre'];
   trackingReview: HTMLElementTagNameMap['pre'];
   'view-suppression': HTMLElementTagNameMap['section'];
+  suppressionAddOpen: HTMLElementTagNameMap['button'];
+  suppressionForm: HTMLElementTagNameMap['form'];
+  suppressionFields: HTMLElementTagNameMap['fieldset'];
+  suppressionKind: HTMLElementTagNameMap['select'];
   suppressEmail: HTMLElementTagNameMap['input'];
   suppressReason: HTMLElementTagNameMap['input'];
   suppress: HTMLElementTagNameMap['button'];
