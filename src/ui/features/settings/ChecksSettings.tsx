@@ -46,7 +46,7 @@ export function ChecksSettings() {
           </fieldset>
           <p className={'hint'}>
             {
-              'Turning template checks off keeps your individual choices for when you enable them again. Save sending settings to apply changes. A stopped queue must be started again.'
+              'Turning template checks off keeps your individual choices for when you enable them again. Save changes to apply your edits. A stopped queue must be started again.'
             }
           </p>
           <p className={'hint'}>
@@ -59,14 +59,14 @@ export function ChecksSettings() {
           <div className={'panel-head'}>
             <h2 className={'panel-title'}>
               <Icon icon={SquareCheckBig} size={16} />
-              {'\n                      Lead Eligibility Rules\n                    '}
+              {'\n                      Lead eligibility rules\n                    '}
             </h2>
           </div>
           <div className={'form-group'}>
             <label className={'check'}>
               <Input id={'requireActive'} type={'checkbox'} />
               {
-                '\n                      Require Active operating status (FMCSA)\n                    '
+                '\n                      Require Active operating status in the workbook\n                    '
               }
             </label>
             <label className={'check'}>
@@ -79,13 +79,15 @@ export function ChecksSettings() {
             </label>
           </div>
           <div className={'form-group'}>
-            <label htmlFor={'readyStatuses'}>
-              {'Ready Statuses (comma separated; use blank for empty cells)'}
-            </label>
-            <Input id={'readyStatuses'} />
+            <label htmlFor={'readyStatuses'}>{'Eligible workbook statuses'}</label>
+            <Input id={'readyStatuses'} aria-describedby="readyStatusesHelp" />
+            <p id="readyStatusesHelp" className="hint">
+              Separate statuses with commas, for example: blank, new, pending, ready. Use “blank” to
+              allow empty Status cells. These rules do not verify FMCSA records.
+            </p>
           </div>
           <div className={'form-group'}>
-            <label htmlFor={'sentStatus'}>{'Status Written After Send'}</label>
+            <label htmlFor={'sentStatus'}>{'Workbook status after a confirmed send'}</label>
             <Input id={'sentStatus'} placeholder={'e.g. Proposal Sent'} />
           </div>
         </Panel>

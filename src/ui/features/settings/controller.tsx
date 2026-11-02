@@ -1,3 +1,9 @@
+import {
+  captureSettingsBaseline,
+  scanSettingsDraft,
+  mountSettingsDraft,
+  settingsFieldChanged,
+} from './draft';
 import { clearSettingsFeedback, settingsSaveFeedback, revealSettingsError } from './save-feedback';
 import { confirmAction } from '../../shared/confirmation';
 import { StatusBadge } from '../../design-system/layout';
@@ -208,6 +214,7 @@ export function applyPacingPreset(presetKey: string, showNotice = true) {
     }
   }
   highlightPacingPreset(presetKey);
+  scanSettingsDraft();
   if (showNotice) {
     notice(`Applied "${preset.name}" preset. Click "Save changes" to apply these values.`);
   }
@@ -287,6 +294,7 @@ export function fillSettings() {
   if ($('firebaseBackend')) $('firebaseBackend').value = s.tracking?.firebaseBackend || 'both';
   if ($('firebaseSyncMode')?.onchange) $('firebaseSyncMode').dispatchEvent(new Event('change'));
   detectActivePreset();
+  captureSettingsBaseline();
 }
 
 export function renderFirebaseDiagnostics() {
@@ -404,6 +412,7 @@ export function renderFirebaseDiagnostics() {
 }
 
 export function mountSettings() {
+  mountSettingsDraft();
   if ($('view-settings')) {
     for (const event of ['input', 'change'])
       uiScope.listen($('view-settings'), event, clearSettingsFeedback);
@@ -593,39 +602,40 @@ export function mountSettings() {
       action($('saveSettings'), async () => {
         clearSettingsFeedback();
         const s = structuredClone(session.state.settings);
-        s.templateChecks = {
-          enabled: $('templateChecksEnabled').checked,
-          promotionalClaims: $('promotionalClaimsCheck').value,
-          messageLength: $('messageLengthCheck').value,
-        };
-        // Profile business details are saved only by the Accounts editor.
-        for (const key of pacingFields) s.pacing[key] = Number(($(key) as HTMLInputElement).value);
-        for (const key of ['requireActive', 'requireNoOutOfService', 'allowHidden'])
-          s.eligibility[key as 'requireActive' | 'requireNoOutOfService' | 'allowHidden'] = (
-            $(key) as HTMLInputElement
-          ).checked;
-        s.eligibility.readyStatuses = $('readyStatuses')
-          .value.split(',')
-          .map((v) => (v.trim() === 'blank' ? '' : v.trim()));
-        s.eligibility.sentStatus = $('sentStatus').value;
-        s.team = {
-          enabled: $('teamEnabled').checked,
-          url: $('teamUrl').value,
-          workerName: $('workerName').value,
-        };
-        s.tracking = {
-          ...s.tracking,
-          syncMode: $('firebaseSyncMode')?.value || 'auto',
-          pcId: $('trackingPcId')?.value.trim() || '',
-          publicUrl: $('trackingPublicUrl')?.value.trim() || '',
-          firebaseBackend: $('firebaseBackend')?.value || 'both',
-        };
+        const changed = settingsFieldChanged;
+        if (changed('templateChecksEnabled'))
+          s.templateChecks.enabled = $('templateChecksEnabled').checked;
+        if (changed('promotionalClaimsCheck'))
+          s.templateChecks.promotionalClaims = $('promotionalClaimsCheck').value;
+        if (changed('messageLengthCheck'))
+          s.templateChecks.messageLength = $('messageLengthCheck').value;
+        // Apply only edited fields to the latest known settings. Other concern drafts stay independent.
+        for (const key of pacingFields)
+          if (changed(key)) s.pacing[key] = Number(($(key) as HTMLInputElement).value);
+        for (const key of ['requireActive', 'requireNoOutOfService', 'allowHidden'] as const)
+          if (changed(key)) s.eligibility[key] = ($(key) as HTMLInputElement).checked;
+        if (changed('readyStatuses'))
+          s.eligibility.readyStatuses = $('readyStatuses')
+            .value.split(',')
+            .map((v) => (v.trim() === 'blank' ? '' : v.trim()));
+        if (changed('sentStatus')) s.eligibility.sentStatus = $('sentStatus').value;
+        if (changed('teamEnabled')) s.team.enabled = $('teamEnabled').checked;
+        if (changed('teamUrl')) s.team.url = $('teamUrl').value;
+        if (changed('workerName')) s.team.workerName = $('workerName').value;
+        if (changed('firebaseSyncMode')) s.tracking.syncMode = $('firebaseSyncMode').value;
+        if (changed('trackingPcId')) s.tracking.pcId = $('trackingPcId').value.trim();
+        if (changed('trackingPublicUrl'))
+          s.tracking.publicUrl = $('trackingPublicUrl').value.trim();
+        if (changed('firebaseBackend')) s.tracking.firebaseBackend = $('firebaseBackend').value;
         const token = $('teamToken').value;
         try {
           await api('/api/settings', { settings: s, teamToken: token });
           $('teamToken').value = '';
           await refresh();
-          settingsSaveFeedback('Settings saved.');
+          fillSettings();
+          settingsSaveFeedback(
+            'Settings saved. Your configuration edits are now active on this PC.',
+          );
           notice('Settings saved.');
         } catch (error) {
           revealSettingsError(errorMessage(error), pacingFields);

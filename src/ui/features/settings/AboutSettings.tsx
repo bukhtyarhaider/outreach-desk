@@ -9,10 +9,10 @@ export function AboutSettings() {
       </p>
       <div className="settings-about-release">
         <div>
-          <strong>Release catalog</strong>
-          <p>See version history and what changed in this app.</p>
+          <strong>Internal build catalog</strong>
+          <p>See internal testing checkpoints, the installed build, and what changed.</p>
         </div>
-        <ActionLink href="#catalog">View releases →</ActionLink>
+        <ActionLink href="#catalog">View build history →</ActionLink>
       </div>
       <details className="settings-technical">
         <summary>Application & technical details</summary>

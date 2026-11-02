@@ -9,7 +9,7 @@ export function useStickyHeaders() {
     const context = viewport.querySelector<HTMLElement>('.workspace-context-shell');
     const headers = viewport.querySelectorAll<HTMLElement>('.view-page > .page-header');
     const sectionNavs = viewport.querySelectorAll<HTMLElement>(
-      '.tracking-section-nav, .activity-stream-tools',
+      '.tracking-section-nav, .activity-stream-tools, .settings-tab-bar',
     );
     const measure = () => {
       const contextHeight =
@@ -24,7 +24,7 @@ export function useStickyHeaders() {
       );
       viewport.style.setProperty(
         '--sticky-section-nav-height',
-        `${viewport.querySelector<HTMLElement>('.view-page.active .tracking-section-nav, .view-page.active .activity-stream-tools')?.getBoundingClientRect().height ?? 0}px`,
+        `${viewport.querySelector<HTMLElement>('.view-page.active .tracking-section-nav, .view-page.active .activity-stream-tools, .view-page.active .settings-tab-bar')?.getBoundingClientRect().height ?? 0}px`,
       );
     };
     const observer = new ResizeObserver(measure);

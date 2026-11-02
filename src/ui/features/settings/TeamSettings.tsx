@@ -8,7 +8,7 @@ export function TeamSettings() {
           <div className={'panel-head'}>
             <h2 className={'panel-title'}>
               <Icon icon={Users} size={16} />
-              {'\n                      Shared Team Coordination\n                    '}
+              {'\n                      Shared team coordination\n                    '}
             </h2>
           </div>
           <div className={'form-group'}>
@@ -18,7 +18,7 @@ export function TeamSettings() {
             </label>
           </div>
           <div className={'form-group'}>
-            <label htmlFor={'teamUrl'}>{'Coordinator Server URL'}</label>
+            <label htmlFor={'teamUrl'}>{'Coordinator server URL'}</label>
             <Input id={'teamUrl'} type={'url'} placeholder={'http://192.168.1.50:4318'} />
           </div>
           <div className={'form-grid-2'}>
@@ -27,7 +27,7 @@ export function TeamSettings() {
               <Input id={'workerName'} placeholder={'PC-01'} />
             </div>
             <div className={'form-group'}>
-              <label htmlFor={'teamToken'}>{'Access Token'}</label>
+              <label htmlFor={'teamToken'}>{'Access token'}</label>
               <Input
                 id={'teamToken'}
                 type={'password'}
@@ -36,6 +36,10 @@ export function TeamSettings() {
               />
             </div>
           </div>
+          <p className="hint">
+            Leave the token blank to keep the existing credential. Enter a replacement only when it
+            changes. Saving does not start outreach.
+          </p>
           <p id={'teamStatus'} className={'hint'} role="status" aria-live="polite"></p>
         </Panel>
         <Panel className="settings-card settings-explainer">

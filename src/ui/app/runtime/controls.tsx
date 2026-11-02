@@ -1,3 +1,4 @@
+import { settingsDraftCount } from '../../features/settings/draft';
 import { syncLeadSelection } from '../../features/leads/selection';
 import { publishWorkspace } from '../../shared/workspace-store';
 import { Icon, Trash2 } from '../../design-system/icons';
@@ -62,6 +63,10 @@ export function updateControls() {
       session.state.job.enabled ||
       !!session.state.prepared ||
       !session.state.campaigns.some((c) => c.enabled);
+  const saveSettings = $('saveSettings');
+  if (saveSettings)
+    saveSettings.disabled =
+      session.pending || session.state.busy || !!session.state.prepared || !settingsDraftCount();
   const saveProf = $('saveProfile');
   if (saveProf)
     saveProf.disabled = session.pending || session.state.busy || session.state.job.enabled;

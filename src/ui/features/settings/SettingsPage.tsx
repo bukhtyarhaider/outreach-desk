@@ -1,4 +1,9 @@
-import { Button } from '../../design-system/primitives';
+import {
+  SettingsDraftActions,
+  SettingsTools,
+  SettingsChangeReview,
+  SettingsSaveScope,
+} from './SettingsTools';
 import { SectionHeader } from '../../design-system/layout';
 import { AppearanceSettings } from './AppearanceSettings';
 import { SendingSettings } from './SendingSettings';
@@ -7,14 +12,14 @@ import { FirebaseSettings } from './FirebaseSettings';
 import { TeamSettings } from './TeamSettings';
 import { AboutSettings } from './AboutSettings';
 import { SettingsTabs, settingsTabs, useSettingsTab } from './SettingsTabs';
-const content = [
-  SendingSettings,
-  ChecksSettings,
-  FirebaseSettings,
-  TeamSettings,
-  AppearanceSettings,
-  AboutSettings,
-];
+const content = {
+  settingsSending: SendingSettings,
+  settingsChecks: ChecksSettings,
+  settingsConnections: FirebaseSettings,
+  settingsTeam: TeamSettings,
+  settingsAppearance: AppearanceSettings,
+  settingsAbout: AboutSettings,
+};
 export function SettingsPage() {
   const active = useSettingsTab();
   const instant = active.id === 'settingsAppearance' || active.id === 'settingsAbout';
@@ -24,25 +29,19 @@ export function SettingsPage() {
         <div>
           <p className="page-eyebrow">Configuration</p>
           <h1 className="page-title">Settings</h1>
-          <p className="page-subtitle">A focused place for each part of your workspace.</p>
+          <p className="page-subtitle">
+            Configure sending and connections for this PC. Review edits before applying them.
+          </p>
         </div>
-        <div className="header-actions" hidden={instant}>
-          <Button variant="primary" id="saveSettings">
-            Save changes
-          </Button>
-        </div>
+        <SettingsDraftActions instant={instant} />
       </div>
       <SettingsTabs active={active.id} />
-      <p className="settings-save-scope">
-        {active.id === 'settingsAppearance'
-          ? 'Browser preference · saved automatically on this device.'
-          : active.id === 'settingsAbout'
-            ? 'Application details · no configuration changes here.'
-            : 'Save changes applies your sending, checks, Firebase and team edits together. Switching tabs keeps unfinished edits.'}
-      </p>
+      <SettingsTools />
+      <SettingsSaveScope active={active.id} />
       <p id="settingsSaveFeedback" className="settings-save-feedback" role="status" hidden />
-      {settingsTabs.map((tab, index) => {
-        const Content = content[index];
+      <SettingsChangeReview />
+      {settingsTabs.map((tab) => {
+        const Content = content[tab.id];
         return (
           <section
             key={tab.id}

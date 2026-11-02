@@ -1,43 +1,8 @@
 import { useSyncExternalStore, useLayoutEffect, useRef } from 'react';
 import { Button } from '../../design-system/primitives';
-export const settingsTabs = [
-  {
-    id: 'settingsSending',
-    label: 'Sending pace',
-    description: 'Set delivery timing, rolling limits and rest breaks.',
-    hash: '#settings',
-  },
-  {
-    id: 'settingsChecks',
-    label: 'Eligibility & checks',
-    description: 'Choose eligible leads and configure message checks.',
-    hash: '#settingsChecks',
-  },
-  {
-    id: 'settingsConnections',
-    label: 'Firebase sync',
-    description: 'Manage this PC’s open-event sync and inspect its connection health.',
-    hash: '#settingsConnections',
-  },
-  {
-    id: 'settingsTeam',
-    label: 'Team coordination',
-    description: 'Coordinate recipient reservations and shared mailbox pacing.',
-    hash: '#settingsTeam',
-  },
-  {
-    id: 'settingsAppearance',
-    label: 'Appearance',
-    description: 'Personalize this browser’s workspace. Changes save automatically.',
-    hash: '#settingsAppearance',
-  },
-  {
-    id: 'settingsAbout',
-    label: 'About',
-    description: 'Application information and internal build history.',
-    hash: '#settingsAbout',
-  },
-] as const;
+import { settingsTabs } from './sections';
+export { settingsTabs } from './sections';
+import { useSettingsChanges } from './draft';
 function subscribe(listener: () => void) {
   window.addEventListener('hashchange', listener);
   return () => window.removeEventListener('hashchange', listener);
@@ -51,6 +16,7 @@ export function useSettingsTab() {
   return settingsTabs.find((tab) => hash === tab.hash || hash === `#${tab.id}`) ?? settingsTabs[0];
 }
 export function SettingsTabs({ active }: { active: string }) {
+  const changes = useSettingsChanges();
   const ref = useRef<HTMLElement>(null);
   useLayoutEffect(() => {
     const nav = ref.current;
@@ -76,6 +42,7 @@ export function SettingsTabs({ active }: { active: string }) {
           id={`tab-${tab.id}`}
           variant="ghost"
           role="tab"
+          title={tab.description}
           aria-controls={tab.id}
           aria-selected={tab.id === active}
           tabIndex={tab.id === active ? 0 : -1}
@@ -101,6 +68,11 @@ export function SettingsTabs({ active }: { active: string }) {
           }}
         >
           {tab.label}
+          {changes.some((change) => change.section === tab.id) && (
+            <span className="settings-tab-dirty" aria-hidden="true">
+              {changes.filter((change) => change.section === tab.id).length}
+            </span>
+          )}
         </Button>
       ))}
     </nav>

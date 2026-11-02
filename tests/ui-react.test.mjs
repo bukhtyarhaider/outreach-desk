@@ -439,7 +439,8 @@ test(
         assert.equal(await page.locator('#view-settings [role=tabpanel]:visible').count(), 1);
         assert.equal(
           await page.locator('#saveSettings').isVisible(),
-          !['Appearance', 'About'].includes(label),
+          true,
+          'Configuration edits remain saveable from Appearance and About',
         );
         assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
         if (process.env.FC_UI_SCREENSHOT_DIR) {
@@ -1271,6 +1272,7 @@ test(
     assert.equal(await page.locator('#campaignSelect').inputValue(), activeCampaign);
     assert.equal(await page.locator('#profileSelect').inputValue(), activeProfile);
     assert.equal(await page.locator('#subject').inputValue(), templateDraft);
+    page.once('dialog', (dialog) => dialog.accept());
     await page.reload();
     await page.locator('#view-settings.active').waitFor();
     assert.equal(
@@ -1285,6 +1287,7 @@ test(
     assert(await page.locator('#campaignSelect').isVisible());
     assert.equal(await page.locator('#campaignSelect').inputValue(), activeCampaign);
     assert.equal(await page.locator('#profileSelect').inputValue(), activeProfile);
+    page.once('dialog', (dialog) => dialog.accept());
     await page.reload();
     await page.locator('#campaignSelect option').first().waitFor({ state: 'attached' });
     assert.equal(

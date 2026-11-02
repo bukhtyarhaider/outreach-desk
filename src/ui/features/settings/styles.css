@@ -1178,3 +1178,216 @@
   margin-top: 18px;
   font-size: 12px;
 }
+
+/* Find, review and apply configuration without losing cross-tab context. */
+#view-settings .settings-draft-actions {
+  align-items: center;
+  gap: 8px;
+}
+.settings-draft-status {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+  width: 100%;
+  color: var(--text-secondary);
+  font-size: 11px;
+}
+.settings-draft-status svg {
+  color: var(--accent-blue);
+}
+.settings-tab-dirty {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--accent-blue);
+  color: white;
+  font-size: 10px;
+  margin-left: 5px;
+}
+.settings-find {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 12px 24px;
+  margin: 20px 0 12px;
+  padding: 18px 20px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+.settings-find > label {
+  width: min(100%, 460px);
+  margin: 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+.settings-find > label > span {
+  display: block;
+  position: relative;
+  margin-top: 8px;
+}
+.settings-find > label svg {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--text-secondary);
+}
+.settings-find input {
+  padding-left: 36px;
+}
+.settings-find > p {
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin: 0 0 3px;
+}
+.settings-find > p .ui-button {
+  padding-inline: 4px !important;
+}
+.settings-find-results {
+  flex: 1 0 100%;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 12px;
+}
+.settings-find-results > p {
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin: 0 0 12px;
+}
+.settings-find-results ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 0;
+  margin: 0 0 12px;
+  list-style: none;
+  max-height: 320px;
+  overflow-y: auto;
+}
+.settings-find-results li .ui-button {
+  display: flex;
+  justify-content: space-between;
+  text-align: left;
+  width: 100%;
+  gap: 12px;
+}
+.settings-find-results small {
+  display: block;
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 400;
+  margin-top: 3px;
+}
+.settings-change-list section + section {
+  margin-top: 24px;
+}
+.settings-change-list h3 {
+  font-size: 14px;
+  margin: 0 0 12px;
+}
+.settings-change-list dl {
+  margin: 0;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.settings-change-list dl > div {
+  padding: 12px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.settings-change-list dl > div:last-child {
+  border-bottom: 0;
+}
+.settings-change-list dt .ui-button {
+  padding: 0 !important;
+  min-height: 24px;
+  text-align: left;
+  justify-content: flex-start;
+}
+.settings-change-list dd {
+  margin: 8px 0 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.settings-change-list dd > span {
+  display: block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.settings-change-list dd > span:last-child {
+  color: var(--accent-blue);
+}
+.settings-change-list small {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+#view-settings .settings-save-scope {
+  margin-bottom: 16px;
+}
+#view-settings .settings-tab-panel > .panel-head {
+  margin: 20px 0 16px;
+}
+@media (max-width: 760px) {
+  #view-settings .settings-draft-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+  .settings-draft-status {
+    width: auto;
+    justify-content: flex-start;
+    flex-basis: 100%;
+  }
+  .settings-find {
+    padding: 14px;
+    gap: 12px;
+  }
+  .settings-find-results ul {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .settings-change-list dd {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+}
+
+#view-settings .settings-draft-actions {
+  display: grid;
+  grid-template-columns: auto auto;
+  justify-content: end;
+}
+#view-settings .settings-draft-actions[hidden] {
+  display: none !important;
+}
+.settings-draft-actions .settings-draft-status {
+  grid-column: 1 / -1;
+  justify-self: end;
+  width: auto;
+}
+@media (max-width: 760px) {
+  #view-settings .settings-draft-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .settings-draft-actions .settings-draft-status {
+    justify-self: start;
+  }
+}
+
+.settings-lock-reason {
+  grid-column: 1 / -1;
+  color: var(--text-secondary);
+  font-size: 11px;
+  line-height: 1.6;
+  max-width: 38ch;
+}

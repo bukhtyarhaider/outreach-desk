@@ -40,9 +40,15 @@ The launcher (`scripts/launch.mjs`) manages process lifecycles and enforces sing
 
 ## Configure a mailbox and campaign
 
-Open **Mailbox & settings** and enter the email, profile name, sender name, business name, legal name, postal address, and services your team actually offers. Choose a **Browser Connection Method** and save the profile. Use **New profile** to create another account. On the dashboard, choose **Connect mailbox**. The password field is optional: you can sign in directly in the browser. Passwords entered in the dashboard are passed to the local application and the mailbox's login form, and are not saved by the application. Browser login sessions are now saved locally.
+Open **Accounts → New profile** and enter the email, profile name, sender name, business name, legal name, postal address, and services your team actually offers. Choose a **Browser Connection Method** and save the profile. Use **New profile** to create another account. On the dashboard, choose **Connect mailbox**. The password field is optional: you can sign in directly in the browser. Passwords entered in the dashboard are passed to the local application and the mailbox's login form, and are not saved by the application. Browser login sessions are now saved locally.
 
 Select Chrome or Edge and, if necessary, change the webmail URL. The current transport adapter supports the inspected Private Email webmail interface, including its Composer iframe and existing signature. Other webmail providers need an adapter implementation; changing the URL alone does not make their UI compatible.
+
+### Working with Settings
+
+Settings is separated into Sending pace, Eligibility & checks, Firebase sync, Team coordination, Appearance and About. Use **Find a setting** to jump to a field, including advanced fields in collapsed sections. Mailbox profiles and sign-in belong in Accounts.
+
+Configuration edits remain in place while switching tabs or pages. A count in the header and affected tabs identifies unfinished edits. **Review edits** shows the values originally loaded beside your changes; credential values remain hidden. Save all pending configuration edits from the page header or review drawer. Only edited fields are applied to the latest known server settings; this does not provide an atomic cross-window conflict lock. Failed saves retain the draft and identify invalid fields. **Discard edits** requires confirmation and returns configuration fields to the latest loaded saved values. Appearance preferences save automatically in this browser and are kept when configuration edits are discarded. Leaving/reloading the browser warns about unsaved configuration edits.
 
 ### Saved Browser Profile
 
@@ -185,7 +191,7 @@ Outreach Desk provides two methods for open tracking:
 1. **Local GIF Pixel Listener** (`src/pixel-server.mjs`): Runs an isolated HTTP listener on port 4319 serving 1×1 transparent GIFs for opaque 256-bit hashed tokens. Requires an external HTTPS reverse proxy (nginx/caddy) mapped to `FC_TRACKING_PUBLIC_URL` and requires the local workstation to remain online.
 2. **24/7 Firebase Cloud Telemetry Sync** (`src/firebase-sync.mjs`): Eliminates the need for local port forwarding, ngrok tunnels, or keeping the PC on 24/7. When emails are opened while your PC is asleep or off, a cloud worker logs open events into Firebase Realtime Database or Cloud Firestore. When Outreach Desk runs, `FirebaseSync` pages through cloud opens, matches original local tokens, saves hourly-coalesced open signals locally, and only then acknowledges them. Bounded scans resume across runs and revisit acknowledged events to recover older sync failures.
    - **Credentials auto-discovery**: Automatically detects `data/firebase-service-account.json`, or environment variables (`FC_FIREBASE_CREDENTIALS_PATH`, `FC_FIREBASE_SERVICE_ACCOUNT_KEY`, `GOOGLE_APPLICATION_CREDENTIALS`).
-   - **Sync modes**: Configurable in **Settings → Email Tracking Telemetry** as **Automatic** (periodic background sync) or **Manual** (operator triggers on demand via the **Sync Firebase** button in Email Tracking).
+   - **Sync modes**: Configurable in **Settings → Firebase sync** as **Automatic** (periodic background sync) or **Manual** (operator triggers on demand via the **Sync Firebase** button in Email Tracking).
    - **PC identity and diagnostics**: Settings shows the effective PC ID/source, tracking URL, project/database, credential source (keys hidden), data folder, mode, last checks, errors and scan counters. Save a unique PC ID and matching tracking URL on each workstation; Settings values override the environment. Events require an original local token match before cloud acknowledgement.
    - **Truthful sync results**: Select RTDB, Firestore or both in Settings. Failures, incomplete scans, missing local tokens and PC-ID mismatches are shown explicitly. See [the four-PC repair guide](SYNC-REPAIR.md) for the verified October 2026 diagnosis and rollout steps.
 
