@@ -1128,3 +1128,28 @@ html:has(.ui-drawer[open]) .app-viewport {
     padding-bottom: max(10px, env(safe-area-inset-bottom));
   }
 }
+
+/* Busy actions retain React-owned labels and icons through state refreshes. */
+.ui-button[data-working='true']::before {
+  content: '';
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: ui-action-spin 0.8s linear infinite;
+}
+.ui-button[data-working='true'] > svg {
+  display: none;
+}
+@keyframes ui-action-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ui-button[data-working='true']::before {
+    animation: none;
+  }
+}

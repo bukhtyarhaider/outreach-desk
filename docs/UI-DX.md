@@ -159,3 +159,13 @@ Record labels are derived from recorded reason text, not independent verificatio
 `features/catalog` owns the installed-build summary, native build disclosures, filters and native upgrade-guide disclosure. The catalog reads only bundled internal build metadata; it does not query an online update service. Keep entry IDs stable so open disclosures survive filter/refresh. Search opens matching entries; clearing it restores manually opened entries. The retired local-note endpoint returns HTTP 410; existing `releaseNotes` state is retained without being displayed or exported. Add future internal builds in `src/release-catalog.mjs`, rather than adding an editable catalog form.
 
 Application versioning comes from package.json via src/app-version.mjs. Catalog history uses `build` for normalized alpha packages, `checkpoint` plus `legacyVersion` for earlier internal package labels, and `milestone` for dated unversioned work. See [VERSIONING.md](VERSIONING.md); data schema versions are separate.
+
+### Leads Workspace
+
+`features/leads` owns the filters, rendered rows, selection feedback, scoped inventory and workbook tools. `selection.ts` synchronizes page checkboxes, partial-selection state and off-page counts without refetching rows or replacing focused controls. Selection spans filters/pages within the active campaign; campaign switching, reload and successful deletions clear it. Only currently eligible rows can be selected. Previewing or navigating to Review batch never sends email.
+
+`src/lead-report.mjs` is a read-only projection over the existing server-evaluated candidates. It provides worksheet-scoped inventory before search/eligibility filters, search across contact/location/reason fields, global sorting before 50-row pagination, and an effective page offset clamped after deletions. Candidate eligibility, workbook mutation and sending guards remain server-owned. The UI sends the captured campaign ID when deleting so an active-campaign change rejects stale actions.
+
+Leads requests use a sequence and UI-generation check to prevent stale results replacing newer filters. Failed/loading lists are inert until recovery; selected deletion is disabled while results are paused. Errors retain filters and expose Retry. Preview responses also check request generation and route before opening the shared drawer.
+
+Shared action feedback uses `data-working` and `aria-busy` with the primitive busy indicator. Never remove/replace a React-owned button's child nodes to display a loading label: a concurrent region refresh can otherwise fail during reconciliation. Native confirmation remains above drawers; the shared saving overlay and server protections still apply.

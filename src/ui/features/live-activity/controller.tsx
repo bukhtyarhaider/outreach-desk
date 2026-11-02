@@ -520,7 +520,13 @@ export function mountLiveActivity() {
   }
   if ($('reload'))
     uiScope.handler($('reload'), 'onclick', () =>
-      action($('reload'), () => api('/api/reload', {})),
+      action($('reload'), async () => {
+        await api('/api/reload', {});
+        session.selected.clear();
+        session.previewId = null;
+        session.offset = 0;
+        notice('Workbook reloaded. Batch selection cleared so you can review the current rows.');
+      }),
     );
   if ($('batch'))
     uiScope.handler($('batch'), 'onclick', () =>

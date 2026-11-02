@@ -1,3 +1,4 @@
+import { syncLeadSelection } from '../../features/leads/selection';
 import { publishWorkspace } from '../../shared/workspace-store';
 import { Icon, Trash2 } from '../../design-system/icons';
 import { renderRegion } from '../../shared/regions';
@@ -6,6 +7,7 @@ import { $ } from '../../shared/runtime';
 export function updateControls() {
   if (!session.state) return;
   publishWorkspace(session.state, session.selected.size, session.rows);
+  syncLeadSelection();
   const prep = $('prepare');
   if (prep)
     prep.disabled = Boolean(
@@ -67,7 +69,12 @@ export function updateControls() {
   if (newProf)
     newProf.disabled = session.pending || session.state.busy || session.state.job.enabled;
   const relBtn = $('reload');
-  if (relBtn) relBtn.disabled = session.pending || session.state.busy || !!session.state.prepared;
+  if (relBtn)
+    relBtn.disabled =
+      session.pending ||
+      session.state.busy ||
+      !!session.state.prepared ||
+      !session.state.activeCampaign;
   const connBtn = $('connect');
   if (connBtn)
     connBtn.disabled =
@@ -91,7 +98,12 @@ export function updateControls() {
   const delSelLeads = $('deleteSelectedLeads');
   if (delSelLeads) {
     delSelLeads.disabled =
-      session.pending || session.state.busy || session.state.job.enabled || !session.selected.size;
+      session.pending ||
+      session.state.busy ||
+      session.state.job.enabled ||
+      !!session.state.prepared ||
+      !session.selected.size ||
+      !!$('leadRows')?.inert;
     renderRegion(
       delSelLeads,
       <>
@@ -107,6 +119,7 @@ export function updateControls() {
       session.pending ||
       session.state.busy ||
       session.state.job.enabled ||
+      !!session.state.prepared ||
       !session.state.activeCampaign;
   }
   const saveCampaign = $('saveCampaign');

@@ -47,6 +47,13 @@ export interface UIElements {
   clearSelection: HTMLElementTagNameMap['button'];
   deleteSelectedLeads: HTMLElementTagNameMap['button'];
   selectPage: HTMLElementTagNameMap['input'];
+  leadsSort: HTMLElementTagNameMap['select'];
+  leadsReset: HTMLElementTagNameMap['button'];
+  leadsOverview: HTMLElementTagNameMap['div'];
+  leadsFeedback: HTMLElementTagNameMap['div'];
+  leadsSelectionCount: HTMLElementTagNameMap['strong'];
+  leadsSelectionHint: HTMLElementTagNameMap['p'];
+  leadsReviewBatch: HTMLElementTagNameMap['a'];
   leadRows: HTMLElementTagNameMap['tbody'];
   pageInfo: HTMLElementTagNameMap['span'];
   previous: HTMLElementTagNameMap['button'];

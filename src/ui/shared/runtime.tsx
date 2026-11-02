@@ -75,9 +75,9 @@ export async function action(button: EventTarget | null, fn: () => unknown | Pro
     return;
   if (session.pending) return;
   session.pending = true;
-  const original = [...button.childNodes];
   button.disabled = true;
-  button.textContent = 'Working…';
+  button.setAttribute('data-working', 'true');
+  button.setAttribute('aria-busy', 'true');
   notice('');
   try {
     if (/save|delete|remove|restore|reset|update/i.test(button.id))
@@ -97,7 +97,8 @@ export async function action(button: EventTarget | null, fn: () => unknown | Pro
     notice(errorMessage(e));
   } finally {
     session.pending = false;
-    button.replaceChildren(...original);
+    button.removeAttribute('data-working');
+    button.removeAttribute('aria-busy');
     button.disabled = false;
     updateControls();
   }

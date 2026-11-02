@@ -29,6 +29,7 @@ import { historyReport, historyCsv, csv, saveFollowUp } from "./history-report.m
 import { StateFile } from "./state-file.mjs";
 import { CarrierWorkspace } from "./carrier-workspace.mjs";
 import { sharedReplyHold } from './conversation-assistant.mjs';
+import { leadReport } from "./lead-report.mjs";
 import { APP_BUILD_LABEL } from "./app-version.mjs";
 import { APP_VERSION, releaseCatalog } from "./release-catalog.mjs";
 
@@ -1230,6 +1231,8 @@ const server = http.createServer(async (req, res) => {
           });
         }
         if (pathname === "/api/delete-leads") {
+          if (input.campaignId && input.campaignId !== state.activeCampaign)
+            throw new Error("The active campaign changed. Reload leads and review your selection before deleting.");
           if (state.automation.enabled || prepared)
             throw new Error(
               "Stop outreach and close compose before deleting leads.",
@@ -1670,25 +1673,7 @@ const server = http.createServer(async (req, res) => {
       );
     }
     if (pathname === "/api/leads") {
-      let leads = candidates();
-      if (url.searchParams.get("sheet"))
-        leads = leads.filter((l) => l.sheet === url.searchParams.get("sheet"));
-      if (url.searchParams.get("filter") === "ready")
-        leads = leads.filter((l) => !l.blocked);
-      if (url.searchParams.get("filter") === "excluded")
-        leads = leads.filter((l) => l.blocked);
-      const q = (url.searchParams.get("q") || "").toLowerCase();
-      if (q)
-        leads = leads.filter((l) =>
-          `${l.company} ${l.email} ${l.fields["owner / principal"] || ""}`
-            .toLowerCase()
-            .includes(q),
-        );
-      const offset = Math.max(0, Number(url.searchParams.get("offset")) || 0);
-      return response(res, {
-        total: leads.length,
-        leads: leads.slice(offset, offset + 50),
-      });
+      return response(res, { ...leadReport(candidates(), url.searchParams), campaignId: state.activeCampaign });
     }
     if (pathname === "/api/catalog" || pathname === "/api/export-catalog") {
       const catalog = releaseCatalog();
