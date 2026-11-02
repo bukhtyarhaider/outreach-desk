@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { historyReport, historyCsv, saveFollowUp, csv } from '../src/history-report.mjs';
-import { releaseCatalog, saveReleaseNote, APP_VERSION } from '../src/release-catalog.mjs';
+import { releaseCatalog, APP_VERSION } from '../src/release-catalog.mjs';
 import { insightState } from './fixtures/send-insights.mjs';
 
 test('send metrics use explicit confirmed-send denominators and valid first-signal intervals', () => {
@@ -57,17 +57,15 @@ test('CSV protects spreadsheet formulas, quotes and multiline notes; manual revi
   assert.throws(() => saveFollowUp(state, { trackingId: before.trackingId, status: 'inferred', note: '' }), /manual/);
 });
 
-test('release catalog distinguishes verified package versions, historical milestones and persistent editable local notes', () => {
-  const state = {};
+test('release catalog exposes recorded builds and milestones without legacy local notes', () => {
+  const state = { releaseNotes: [{ id: 'legacy', title: 'Private rollout note' }] };
   const initial = releaseCatalog(state);
-  assert.equal(APP_VERSION, '2.2.0-rc.9'); assert.equal(initial.packageVersions, 12);
-  assert(initial.releases.some((r) => r.kind === 'milestone' && r.changes.some((text) => text.includes('V1.1.0'))));
-  const note = saveReleaseNote(state, { version: '2.1.0', date: '2026-10-29', title: 'PC 2 updated', changes: 'Kept local data\nChecked sync' }, 'local-note-1');
-  assert.equal(note.changes.length, 2);
-  saveReleaseNote(state, { id: note.id, version: '2.1.0', date: '2026-10-29', title: 'PC 2 verified', changes: 'Verified' }, 'unused');
-  assert.equal(releaseCatalog(state).notes.length, 1);
-  assert.equal(releaseCatalog(state).notes[0].title, 'PC 2 verified');
-  assert.throws(() => saveReleaseNote(state, { version: 'two' }, 'bad'), /version/);
+  assert.equal(initial.installedVersion, APP_VERSION);
+  assert.equal(initial.packageVersions, initial.releases.filter(r => r.kind === 'release').length);
+  assert(initial.releases.some(r => r.kind === 'milestone' && r.changes.some(text => text.includes('V1.1.0'))));
+  assert(!('notes' in initial));
+  assert(!JSON.stringify(initial).includes('Private rollout note'));
+  assert.equal(state.releaseNotes[0].title, 'Private rollout note');
 });
 
 

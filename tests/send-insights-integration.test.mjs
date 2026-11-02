@@ -10,7 +10,7 @@ import { loadPlaywright } from '../src/browser.mjs';
 const root = path.resolve(import.meta.dirname, '..');
 async function fixture(t, port, extra = 30) {
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'fc-send-insights-'));
-  await fs.writeFile(path.join(dir, 'state.json'), JSON.stringify(insightState(extra)));
+  await fs.writeFile(path.join(dir, 'state.json'), JSON.stringify({ ...insightState(extra), releaseNotes: [{ id: 'legacy-note', title: 'Retained private legacy note' }] }));
   let child;
   const stop = async () => { if (child?.exitCode === null) { const exit = once(child, 'exit'); child.kill('SIGTERM'); await exit; } };
   const start = async () => {
@@ -30,7 +30,7 @@ async function fixture(t, port, extra = 30) {
   await start(); return { dir, api, raw, start, stop, url: `http://127.0.0.1:${port}` };
 }
 
-test('history HTTP exports match all filtered pages; reply and catalog notes survive restart with protections intact', async (t) => {
+test('history HTTP exports match all filtered pages; reply reviews survive restart and removed catalog notes cannot be written', async (t) => {
   const { api, raw, stop, start, dir } = await fixture(t, 14672);
   const report = await api('history?offset=25');
   assert.equal(report.total, 37); assert.equal(report.records.length, 12); assert.equal(report.summary.attempts, 37);
@@ -45,19 +45,21 @@ test('history HTTP exports match all filtered pages; reply and catalog notes sur
   const full = await api('export-history');
   assert.equal(full.records.length, 37); assert(full.suppression); assert(!JSON.stringify(full).includes('openTokenHash'));
   await api('history/review', { trackingId: 'tracking-fast', status: 'no_reply', note: 'Manual inspection; follow up Friday' });
-  await api('catalog/note', { version: '2.1.0', date: '2026-10-29', title: 'PC 2 rollout', changes: 'Backed up data\nVerified Firebase' });
+  const removed = await raw('catalog/note', { version: '2.1.0', title: 'Removed feature' });
+  assert.equal(removed.status, 410);
   const saved = JSON.parse(await fs.readFile(path.join(dir, 'state.json'), 'utf8'));
   assert.equal(saved.history['fast@example.com'].status, 'Sent'); assert.equal(saved.history['fast@example.com'].sendStatus, 'webmail_sent');
   assert.equal(saved.history['fast@example.com'].teamToken, 'PRIVATE_TEAM_TOKEN');
+  assert.equal(saved.releaseNotes[0].title, 'Retained private legacy note');
   await stop(); await start();
   const reviewed = await api('history?q=fast@example.com');
   assert.equal(reviewed.records[0].replyStatus, 'no_reply'); assert.match(reviewed.records[0].followUp.note, /follow up Friday/);
-  const catalog = await api('catalog'); assert.equal(catalog.installedVersion, '2.2.0-rc.9'); assert.equal(catalog.notes.length, 1);
-  assert.equal((await api('export-catalog')).notes[0].title, 'PC 2 rollout');
+  const catalog = await api('catalog'); assert.equal(catalog.installedVersion, '2.2.0-rc.9'); assert(!('notes' in catalog));
+  assert(!('notes' in await api('export-catalog')));
   assert.equal((await api('state')).appVersion, '2.2.0-rc.9');
 });
 
-test('send insights and version catalog UI support filters, exports, review, notes and narrow screens', { skip: process.env.FC_BROWSER_TESTS !== '1' }, async (t) => {
+test('send insights and version catalog UI support filters, exports, review and narrow screens', { skip: process.env.FC_BROWSER_TESTS !== '1' }, async (t) => {
   const { url, api } = await fixture(t, 14673, 0);
   const browser = await loadPlaywright().chromium.launch({ channel: process.env.FC_TEST_BROWSER_CHANNEL || 'chrome', headless: true });
   t.after(() => browser.close());
@@ -93,25 +95,51 @@ test('send insights and version catalog UI support filters, exports, review, not
   assert.match(await page.locator('#appVersion').textContent(), /2\.2\.0-rc\.9/);
   await page.locator('#catalogType').selectOption('release');
   assert.equal(await page.locator('#catalogEntries article').count(), 12);
-  await page.locator('#catalogNoteTitle').fill('PC 3 rollout <test>');
-  await page.locator('#catalogNoteChanges').fill('Preserved local state\nVerified sync');
-  await page.locator('#catalogSaveNote').click();
-  await page.waitForFunction(() => document.querySelector('#notice').textContent === 'Local catalog note saved.');
-  await page.locator('#catalogType').selectOption('local');
-  assert.match(await page.locator('#catalogEntries').innerText(), /PC 3 rollout <test>/);
-  await page.getByRole('button', { name: 'Edit local note' }).click();
-  await page.locator('#catalogNoteTitle').fill('PC 3 verified');
-  await page.locator('#catalogSaveNote').click();
-  await page.waitForFunction(() => document.querySelector('#catalogEntries').textContent.includes('PC 3 verified'));
-  await page.reload();
-  await page.waitForFunction(() => document.querySelector('#catalogMetrics').textContent.includes('2.2.0-rc.9'));
-  await page.locator('#catalogType').selectOption('local');
-  assert.equal(await page.locator('#catalogEntries article').count(), 1);
+  assert.equal(await page.locator('#catalogNoteTitle').count(), 0);
+  assert.equal(await page.locator('#catalogType option[value="local"]').count(), 0);
+  const current = page.locator('.catalog-current details');
+  assert(await current.evaluate(el => el.open));
+  await current.locator('summary').click();
+  await page.locator('#catalogRefresh').click();
+  await page.waitForFunction(() => !document.querySelector('#catalogEntries').hasAttribute('aria-busy'));
+  assert.equal(await current.evaluate(el => el.open), false);
+  await page.locator('#catalogType').selectOption('milestone');
+  assert.equal(await page.locator('#catalogEntries article').count(), 6);
+  await page.locator('#catalogSearch').fill('nothing matches xyz');
+  assert.match(await page.locator('#catalogEntries').innerText(), /No matching releases/);
+  await page.locator('#catalogEntries').getByRole('button', { name: 'Clear filters' }).click();
+  assert.equal(await page.locator('#catalogType').inputValue(), '');
+  await page.locator('#catalogSearch').fill('Firebase');
+  assert(await page.locator('#catalogEntries article').count() > 0);
+  assert(await page.locator('#catalogEntries details').evaluateAll(nodes => nodes.every(n => n.open)));
+  await page.locator('#catalogReset').click();
+  await page.route('**/api/catalog', route => route.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({error:'Test connection failure'}) }));
+  await page.locator('#catalogRefresh').click();
+  await page.waitForFunction(() => document.querySelector('#catalogStatus').textContent.includes('Previously loaded history'));
+  assert.equal(await page.locator('#catalogEntries article').count(), 18);
+  await page.unroute('**/api/catalog');
+  await page.locator('#catalogRefresh').click();
+  await page.waitForFunction(() => document.querySelector('#catalogStatus').textContent.includes('18 of 18'));
+  await current.locator('summary').focus();
+  await page.keyboard.press('Enter');
+  assert(await current.evaluate(el => el.open));
+  const downloadEvent = page.waitForEvent('download');
+  await page.getByRole('link', {name:'Export catalog', exact:true}).click();
+  const download = await downloadEvent;
+  assert.match(download.suggestedFilename(), /outreach-catalog/);
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 1000 });
     await page.locator('#catalogMetrics').scrollIntoViewIfNeeded();
     const bounds = await page.locator('#catalogMetrics').boundingBox(); assert(bounds.x >= 0 && bounds.x + bounds.width <= width + 1, JSON.stringify(bounds));
+    assert(await page.locator('#catalogEntries').evaluate((el) => el.getBoundingClientRect().right <= window.innerWidth + 1));
     if (process.env.FC_UI_SCREENSHOT_DIR) await page.screenshot({ path: path.join(process.env.FC_UI_SCREENSHOT_DIR, `version-catalog-${width}.png`) });
+    await page.locator('.catalog-history').scrollIntoViewIfNeeded();
+    if (process.env.FC_UI_SCREENSHOT_DIR) await page.screenshot({ path: path.join(process.env.FC_UI_SCREENSHOT_DIR, `version-history-${width}.png`) });
+    await page.locator('.catalog-guide > summary').click();
+    assert(await page.locator('.catalog-guide').evaluate(el => el.open));
+    assert.equal(await page.locator('#catalogUpgradeSteps li').count(), 5);
+    if (process.env.FC_UI_SCREENSHOT_DIR) await page.screenshot({ path: path.join(process.env.FC_UI_SCREENSHOT_DIR, `version-guide-${width}.png`) });
+    await page.locator('.catalog-guide > summary').click();
   }
   assert.deepEqual(errors, []);
 });

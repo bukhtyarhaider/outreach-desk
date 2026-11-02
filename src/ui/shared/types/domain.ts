@@ -234,7 +234,7 @@ export interface HistorySummary {
 }
 export interface CatalogEntry {
   id: string;
-  kind: string;
+  kind: 'release' | 'milestone';
   version: string;
   date: string;
   title: string;
@@ -245,7 +245,6 @@ export interface Catalog {
   installedVersion: string;
   packageVersions: number;
   milestones: number;
-  notes: CatalogEntry[];
   releases: CatalogEntry[];
   upgradeSteps: string[];
 }

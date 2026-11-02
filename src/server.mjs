@@ -29,7 +29,7 @@ import { historyReport, historyCsv, csv, saveFollowUp } from "./history-report.m
 import { StateFile } from "./state-file.mjs";
 import { CarrierWorkspace } from "./carrier-workspace.mjs";
 import { sharedReplyHold } from './conversation-assistant.mjs';
-import { APP_VERSION, releaseCatalog, saveReleaseNote } from "./release-catalog.mjs";
+import { APP_VERSION, releaseCatalog } from "./release-catalog.mjs";
 
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const DATA = path.resolve(process.env.FC_DATA_DIR || path.join(ROOT, "data"));
@@ -907,9 +907,7 @@ const server = http.createServer(async (req, res) => {
           return response(res, { ok: true, review });
         }
         if (pathname === "/api/catalog/note") {
-          const note = saveReleaseNote(state, input, randomUUID());
-          await persist();
-          return response(res, { ok: true, note });
+          return response(res, { error: "Local release notes are no longer supported." }, 410);
         }
         if (pathname === "/api/tracking/manual-placement") {
           const record = state.tracking.records[input.trackingId];
@@ -1691,7 +1689,7 @@ const server = http.createServer(async (req, res) => {
       });
     }
     if (pathname === "/api/catalog" || pathname === "/api/export-catalog") {
-      const catalog = releaseCatalog(state);
+      const catalog = releaseCatalog();
       if (pathname === "/api/catalog") return response(res, catalog);
       res.writeHead(200, { "Content-Type": "application/json", "Content-Disposition": `attachment; filename="outreach-catalog-${APP_VERSION}.json"`, "Cache-Control": "no-store" });
       return res.end(JSON.stringify({ exportedAt: new Date().toISOString(), ...catalog }, null, 2));

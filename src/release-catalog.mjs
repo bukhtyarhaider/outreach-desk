@@ -27,19 +27,6 @@ export const UPGRADE_STEPS = [
   "Check Settings for the correct PC ID, public tracking URL, database selection and sync mode. Run Sync opens now and review diagnostics.",
   "Update each PC separately. This catalog describes the installed build; it does not check an online update server or prove another PC was updated.",
 ];
-export function releaseCatalog(state) {
-  return { installedVersion: APP_VERSION, releases: RELEASES, packageVersions: RELEASES.filter((r) => r.kind === "release").length, milestones: RELEASES.filter((r) => r.kind === "milestone").length, notes: state.releaseNotes || [], upgradeSteps: UPGRADE_STEPS };
-}
-export function saveReleaseNote(state, input, id) {
-  if (typeof input.version !== "string" || input.version.length > 80 || !/^\d+\.\d+\.\d+(?:-[a-zA-Z0-9.-]+)?$/.test(input.version)) throw new Error("Use a version such as 2.1.0.");
-  if (typeof input.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(input.date) || new Date(`${input.date}T00:00:00Z`).toISOString().slice(0, 10) !== input.date) throw new Error("Choose a valid release-note date.");
-  if (typeof input.title !== "string" || !input.title.trim() || input.title.length > 160) throw new Error("Enter a release-note title up to 160 characters.");
-  if (typeof input.changes !== "string" || !input.changes.trim() || input.changes.length > 6000) throw new Error("Enter changes up to 6,000 characters, one per line.");
-  state.releaseNotes ||= [];
-  const existing = input.id ? state.releaseNotes.find((note) => note.id === input.id) : null;
-  if (input.id && !existing) throw new Error("Local release note not found.");
-  if (!existing && state.releaseNotes.length >= 500) throw new Error("The local catalog has 500 notes. Edit an existing note instead.");
-  const note = { id: existing?.id || id, version: input.version, date: input.date, title: input.title.trim(), changes: input.changes.split(/\r?\n/).map((v) => v.trim()).filter(Boolean), updatedAt: new Date().toISOString(), kind: "local" };
-  if (existing) Object.assign(existing, note); else state.releaseNotes.push(note);
-  return note;
+export function releaseCatalog() {
+  return { installedVersion: APP_VERSION, releases: RELEASES, packageVersions: RELEASES.filter((r) => r.kind === "release").length, milestones: RELEASES.filter((r) => r.kind === "milestone").length, upgradeSteps: UPGRADE_STEPS };
 }

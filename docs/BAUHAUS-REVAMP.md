@@ -34,7 +34,7 @@ Campaign creation is the primary entry point: import workbook, review mapping an
 | Send history | Reports; outcomes, manual uncertainty review, inspectors, filters and exports |
 | Tracking | Reports/Deliverability; image-request evidence, DSN diagnostics, manual placement, seed tests and DNS inspection |
 | Suppression | Do Not Contact; add/remove, protected recipients and shared synchronization |
-| Release catalog | Help/System; release entries and editable local notes |
+| Release catalog | Help/System; searchable release entries and manual upgrade guide |
 | Mailbox/settings | Accounts and Settings; all current profiles, pacing, checks, eligibility, PC/Firebase diagnostics and coordinator controls |
 
 Account management means current mailbox profiles, not new billing/subscriptions or user authentication. Unibox means current conversations, not unsupported email providers or real-time server delivery. Keep shared coordination settings without introducing a new team collaboration product. No speculative features are required.

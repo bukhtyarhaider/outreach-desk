@@ -1,65 +1,78 @@
-import { StatValue } from '../../design-system/StatValue';
-import { StatusBadge } from '../../design-system/layout';
-import { Button, Panel } from '../../design-system/primitives';
+import { ChevronDown, Monitor, Layers } from '../../design-system/icons';
+import { EmptyState, StatusBadge } from '../../design-system/layout';
+import { Button } from '../../design-system/primitives';
 import { uiScope } from '../../shared/lifecycle';
-import { contentOr } from '../../shared/regions';
 import { renderRegion } from '../../shared/regions';
-import { displayText } from '../../shared/utils';
-import type { Catalog } from '../../shared/types/api';
-import { eventElement } from '../../shared/dom';
 import { errorMessage } from '../../shared/utils';
-import { session } from '../../shared/session';
-import { $, api, action, notice } from '../../shared/runtime';
-export let catalogData: Catalog | null = null,
-  catalogEditId: string | null = null;
+import type { Catalog } from '../../shared/types/api';
+import { $, api, action } from '../../shared/runtime';
+export let catalogData: Catalog | null = null;
+let openEntries = new Set<string>();
+let loadedOnce = false;
 
 export async function loadCatalog() {
-  $('catalogStatus').textContent = 'Loading catalog…';
+  $('catalogStatus').textContent = 'Loading recorded history…';
+  $('catalogEntries').setAttribute('aria-busy', 'true');
   try {
-    catalogData = await api<Catalog>('/api/catalog');
-    if (!$('catalogNoteVersion').value)
-      $('catalogNoteVersion').value = catalogData!.installedVersion;
-    if (!$('catalogNoteDate').value)
-      $('catalogNoteDate').value = new Date().toLocaleDateString('en-CA');
-    const metrics = [
-      ['Installed on this PC', `v${catalogData!.installedVersion}`],
-      ['Recorded package versions', catalogData.packageVersions],
-      ['Historical updates', catalogData.milestones],
-      ['My local notes', catalogData.notes.length],
-    ];
+    const data = await api<Catalog>('/api/catalog');
+    catalogData = data;
+    if (!loadedOnce) {
+      const installed = data.releases.find(
+        (r) => r.kind === 'release' && r.version === data.installedVersion,
+      );
+      if (installed) openEntries.add(installed.id);
+      loadedOnce = true;
+    }
     renderRegion(
       $('catalogMetrics'),
-      metrics.map(([label, value]) => (
-        <>
-          <div className={'history-metric'}>
-            <span>{displayText(label)}</span>
-            <StatValue value={typeof value === 'number' ? value : 1}>
-              {displayText(value)}
-            </StatValue>
+      <>
+        <div className="catalog-installed">
+          <span className="catalog-build-icon">
+            <Monitor size={23} aria-hidden="true" />
+          </span>
+          <div>
+            <p className="page-eyebrow">INSTALLED ON THIS PC</p>
+            <strong>v{data.installedVersion}</strong>
+            <p>
+              {data.installedVersion.includes('-')
+                ? 'Prerelease build · review changes before rollout'
+                : 'Numbered package build'}
+            </p>
           </div>
-        </>
-      )),
+        </div>
+        <div className="catalog-inventory">
+          <Layers size={18} aria-hidden="true" />
+          <div>
+            <strong>{data.packageVersions} package releases</strong>
+            <span>{data.milestones} historical updates</span>
+          </div>
+        </div>
+      </>,
     );
     renderRegion(
       $('catalogUpgradeSteps'),
-      catalogData.upgradeSteps.map((step) => (
-        <>
-          <li>{displayText(step)}</li>
-        </>
+      data.upgradeSteps.map((step, index) => (
+        <li key={step}>
+          <span aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+          <p>{step}</p>
+        </li>
       )),
     );
     renderCatalogEntries();
   } catch (error) {
-    $('catalogStatus').textContent = `Could not load catalog: ${errorMessage(error)}`;
+    $('catalogStatus').textContent =
+      `Could not refresh catalog. ${catalogData ? 'Previously loaded history remains visible. ' : ''}${errorMessage(error)} Use Refresh to try again.`;
     throw error;
+  } finally {
+    $('catalogEntries').removeAttribute('aria-busy');
   }
 }
 
 export function renderCatalogEntries() {
   if (!catalogData) return;
-  const q = $('catalogSearch').value.trim().toLowerCase(),
-    kind = $('catalogType').value;
-  const entries = [...catalogData.releases, ...catalogData.notes]
+  const q = $('catalogSearch').value.trim().toLowerCase();
+  const kind = $('catalogType').value;
+  const entries = catalogData.releases
     .filter(
       (r) =>
         (!kind || r.kind === kind) &&
@@ -68,114 +81,76 @@ export function renderCatalogEntries() {
     .sort((a, b) => b.date.localeCompare(a.date));
   renderRegion(
     $('catalogEntries'),
-    contentOr(
-      entries.map((r) => (
-        <>
-          <article
-            className={
-              'panel catalog-entry ' +
-              (r.kind === 'release' && r.version === catalogData!.installedVersion
-                ? 'catalog-current'
-                : '')
-            }
-          >
-            <div className={'catalog-entry-meta'}>
-              <StatusBadge className={'status-pill'}>
-                {r.kind === 'release'
-                  ? 'Package release'
-                  : r.kind === 'milestone'
-                    ? 'Historical update'
-                    : 'Local note'}
-              </StatusBadge>
-              <span>
-                {'v'}
-                {displayText(r.version)}
-                {' · '}
-                {displayText(r.date)}
-              </span>
-              {r.kind === 'release' && r.version === catalogData!.installedVersion ? (
-                <>
-                  <StatusBadge className={'status-pill good'}>{'Installed build'}</StatusBadge>
-                </>
-              ) : (
-                ''
-              )}
-            </div>
-            <h2>{displayText(r.title)}</h2>
-            <ul>
-              {r.changes.map((change) => (
-                <>
-                  <li>{displayText(change)}</li>
-                </>
-              ))}
-            </ul>
-            {r.evidence ? (
-              <>
-                <small className={'hint'}>
-                  {'Source: '}
-                  {displayText(r.evidence)}
-                </small>
-              </>
-            ) : (
-              <>
-                <Button className={'secondary'} data-catalog-edit={displayText(r.id)}>
-                  {'Edit local note'}
-                </Button>
-              </>
-            )}
+    entries.length ? (
+      entries.map((r) => {
+        const installed = r.kind === 'release' && r.version === catalogData!.installedVersion;
+        return (
+          <article className={`catalog-entry${installed ? ' catalog-current' : ''}`} key={r.id}>
+            <details
+              open={q ? true : openEntries.has(r.id)}
+              onToggle={(event) => {
+                if (q) return;
+                if (event.currentTarget.open) openEntries.add(r.id);
+                else openEntries.delete(r.id);
+              }}
+            >
+              <summary>
+                <div className="catalog-version">
+                  <strong>v{r.version}</strong>
+                  <time dateTime={r.date}>
+                    {new Intl.DateTimeFormat('en', { dateStyle: 'medium', timeZone: 'UTC' }).format(
+                      new Date(`${r.date}T00:00:00Z`),
+                    )}
+                  </time>
+                </div>
+                <div className="catalog-release-title">
+                  <div className="catalog-entry-meta">
+                    <StatusBadge tone={r.kind === 'release' ? 'info' : 'neutral'}>
+                      {r.kind === 'release' ? 'Package release' : 'Historical update'}
+                    </StatusBadge>
+                    {installed && <StatusBadge tone="positive">Installed build</StatusBadge>}
+                  </div>
+                  <h3>{r.title}</h3>
+                  <small>{r.changes.length} changes</small>
+                </div>
+                <ChevronDown className="catalog-chevron" size={18} aria-hidden="true" />
+              </summary>
+              <div className="catalog-entry-body">
+                <ul>
+                  {r.changes.map((change) => (
+                    <li key={change}>{change}</li>
+                  ))}
+                </ul>
+                {r.evidence && <p className="hint">Recorded source: {r.evidence}</p>}
+              </div>
+            </details>
           </article>
-        </>
-      )),
-      <>
-        <Panel as="div" className={'panel'}>
-          {'No catalog entries match your search.'}
-        </Panel>
-      </>,
+        );
+      })
+    ) : (
+      <EmptyState
+        title="No matching releases"
+        description="Try a version number, feature, or a different entry type."
+        action={<Button onClick={resetFilters}>Clear filters</Button>}
+      />
     ),
   );
   $('catalogStatus').textContent =
-    `${entries.length} matching catalog entries · includes this build's recorded history`;
+    `${entries.length} of ${catalogData.releases.length} recorded entries${q || kind ? ' · filters applied' : ''}`;
+  $('catalogReset').disabled = !q && !kind;
 }
-
-export function newCatalogNote() {
-  catalogEditId = null;
-  $('catalogNoteHeading').textContent = 'Add a local release note';
-  $('catalogNoteVersion').value = catalogData?.installedVersion || session.state?.appVersion || '';
-  $('catalogNoteDate').value = new Date().toLocaleDateString('en-CA');
-  $('catalogNoteTitle').value = '';
-  $('catalogNoteChanges').value = '';
+function resetFilters() {
+  $('catalogSearch').value = '';
+  $('catalogType').value = '';
+  renderCatalogEntries();
+  $('catalogSearch').focus();
 }
-
 export function mountCatalog() {
+  catalogData = null;
+  loadedOnce = false;
+  openEntries = new Set();
   uiScope.handler($('catalogSearch'), 'oninput', renderCatalogEntries);
   uiScope.handler($('catalogType'), 'onchange', renderCatalogEntries);
+  uiScope.handler($('catalogReset'), 'onclick', resetFilters);
   uiScope.handler($('catalogRefresh'), 'onclick', () => action($('catalogRefresh'), loadCatalog));
-  uiScope.handler($('catalogNewNote'), 'onclick', newCatalogNote);
-  uiScope.handler($('catalogEntries'), 'onclick', (e) => {
-    const button = eventElement(e).closest<HTMLElement>('[data-catalog-edit]');
-    if (!button) return;
-    const note = catalogData!.notes.find((note) => note.id === button.dataset.catalogEdit);
-    if (!note) return;
-    catalogEditId = note.id;
-    $('catalogNoteHeading').textContent = 'Edit local release note';
-    $('catalogNoteVersion').value = note.version;
-    $('catalogNoteDate').value = note.date;
-    $('catalogNoteTitle').value = note.title;
-    $('catalogNoteChanges').value = note.changes.join('\n');
-    $('catalogNoteTitle').scrollIntoView({ behavior: 'smooth', block: 'center' });
-  });
-  uiScope.handler($('catalogSaveNote'), 'onclick', () =>
-    action($('catalogSaveNote'), async () => {
-      await api('/api/catalog/note', {
-        id: catalogEditId,
-        version: $('catalogNoteVersion').value.trim(),
-        date: $('catalogNoteDate').value,
-        title: $('catalogNoteTitle').value,
-        changes: $('catalogNoteChanges').value,
-      });
-      newCatalogNote();
-      await loadCatalog();
-      notice('Local catalog note saved.');
-    }),
-  );
 }

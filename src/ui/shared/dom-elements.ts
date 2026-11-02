@@ -438,6 +438,7 @@ export interface UIElements {
   historySaveReview: HTMLElementTagNameMap['button'];
   historyReviewSaved: HTMLElementTagNameMap['span'];
   'view-catalog': HTMLElementTagNameMap['section'];
+  catalogReset: HTMLElementTagNameMap['button'];
   catalogRefresh: HTMLElementTagNameMap['button'];
   catalogMetrics: HTMLElementTagNameMap['div'];
   catalogUpgradeSteps: HTMLElementTagNameMap['ol'];
@@ -445,13 +446,6 @@ export interface UIElements {
   catalogType: HTMLElementTagNameMap['select'];
   catalogStatus: HTMLElementTagNameMap['p'];
   catalogEntries: HTMLElementTagNameMap['div'];
-  catalogNoteHeading: HTMLElementTagNameMap['h2'];
-  catalogNoteVersion: HTMLElementTagNameMap['input'];
-  catalogNoteDate: HTMLElementTagNameMap['input'];
-  catalogNoteTitle: HTMLElementTagNameMap['input'];
-  catalogNoteChanges: HTMLElementTagNameMap['textarea'];
-  catalogSaveNote: HTMLElementTagNameMap['button'];
-  catalogNewNote: HTMLElementTagNameMap['button'];
   'view-tracking': HTMLElementTagNameMap['section'];
   trackingFirebaseSync: HTMLElementTagNameMap['button'];
   trackingRefresh: HTMLElementTagNameMap['button'];
