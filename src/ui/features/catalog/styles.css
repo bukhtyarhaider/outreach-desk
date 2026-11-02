@@ -264,3 +264,24 @@
     transition: none;
   }
 }
+
+.catalog-version-guide,
+.catalog-legacy {
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+.catalog-version-guide {
+  margin: 0 0 20px;
+  padding: 0 4px;
+}
+.catalog-version-guide strong {
+  color: var(--text-primary);
+  margin-right: 8px;
+}
+.catalog-legacy {
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  border-left: 2px solid var(--border-subtle);
+}

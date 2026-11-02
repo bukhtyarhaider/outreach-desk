@@ -61,8 +61,12 @@ test('release catalog exposes recorded builds and milestones without legacy loca
   const state = { releaseNotes: [{ id: 'legacy', title: 'Private rollout note' }] };
   const initial = releaseCatalog(state);
   assert.equal(initial.installedVersion, APP_VERSION);
-  assert.equal(initial.packageVersions, initial.releases.filter(r => r.kind === 'release').length);
-  assert(initial.releases.some(r => r.kind === 'milestone' && r.changes.some(text => text.includes('V1.1.0'))));
+  assert.equal(initial.internalBuilds, initial.entries.filter(r => r.kind === 'build' || r.kind === 'checkpoint').length);
+  assert(initial.entries.some(r => r.kind === 'milestone' && r.changes.some(text => text.includes('V1.1.0'))));
+  assert.equal(initial.publicReleaseCount, 0);
+  assert.equal(initial.buildLabel, 'Internal alpha');
+  assert(initial.entries.some(r => r.kind === 'checkpoint' && r.legacyVersion === '2.2.0-rc.9' && !r.version));
+  assert(initial.entries.some(r => r.kind === 'build' && r.version === APP_VERSION));
   assert(!('notes' in initial));
   assert(!JSON.stringify(initial).includes('Private rollout note'));
   assert.equal(state.releaseNotes[0].title, 'Private rollout note');

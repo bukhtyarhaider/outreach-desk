@@ -6,6 +6,8 @@ import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
 import { insightState } from './fixtures/send-insights.mjs';
+import { APP_VERSION, APP_BUILD_LABEL } from '../src/app-version.mjs';
+import { releaseCatalog } from '../src/release-catalog.mjs';
 import { loadPlaywright } from '../src/browser.mjs';
 const root = path.resolve(import.meta.dirname, '..');
 async function fixture(t, port, extra = 30) {
@@ -54,9 +56,13 @@ test('history HTTP exports match all filtered pages; reply reviews survive resta
   await stop(); await start();
   const reviewed = await api('history?q=fast@example.com');
   assert.equal(reviewed.records[0].replyStatus, 'no_reply'); assert.match(reviewed.records[0].followUp.note, /follow up Friday/);
-  const catalog = await api('catalog'); assert.equal(catalog.installedVersion, '2.2.0-rc.9'); assert(!('notes' in catalog));
+  const catalog = await api('catalog'); assert.equal(catalog.installedVersion, APP_VERSION); assert(!('notes' in catalog));
   assert(!('notes' in await api('export-catalog')));
-  assert.equal((await api('state')).appVersion, '2.2.0-rc.9');
+  assert.equal((await api('state')).appVersion, APP_VERSION);
+  assert.equal((await api('state')).appBuildLabel, APP_BUILD_LABEL);
+  assert.equal((await api('state')).version, 2, 'Data schema version must not change');
+  assert.equal(catalog.publicReleaseCount, 0);
+  assert.equal((await api('export-catalog')).buildLabel, 'Internal alpha');
 });
 
 test('send insights and version catalog UI support filters, exports, review and narrow screens', { skip: process.env.FC_BROWSER_TESTS !== '1' }, async (t) => {
@@ -91,10 +97,12 @@ test('send insights and version catalog UI support filters, exports, review and 
   }
   await page.setViewportSize({ width: 1440, height: 1050 });
   await page.locator('[data-view="catalog"]').click();
-  await page.waitForFunction(() => document.querySelector('#catalogMetrics').textContent.includes('2.2.0-rc.9'));
-  assert.match(await page.locator('#appVersion').textContent(), /2\.2\.0-rc\.9/);
-  await page.locator('#catalogType').selectOption('release');
-  assert.equal(await page.locator('#catalogEntries article').count(), 12);
+  await page.waitForFunction(version => document.querySelector('#catalogMetrics').textContent.includes(version), APP_VERSION);
+  assert((await page.locator('#appVersion').textContent()).includes(APP_VERSION));
+  assert.match(await page.locator('#appVersion').textContent(), /Internal alpha/);
+  assert.match(await page.locator('#view-catalog').innerText(), /No public releases have been made/);
+  await page.locator('#catalogType').selectOption('build');
+  assert.equal(await page.locator('#catalogEntries article').count(), releaseCatalog().internalBuilds);
   assert.equal(await page.locator('#catalogNoteTitle').count(), 0);
   assert.equal(await page.locator('#catalogType option[value="local"]').count(), 0);
   const current = page.locator('.catalog-current details');
@@ -104,11 +112,14 @@ test('send insights and version catalog UI support filters, exports, review and 
   await page.waitForFunction(() => !document.querySelector('#catalogEntries').hasAttribute('aria-busy'));
   assert.equal(await current.evaluate(el => el.open), false);
   await page.locator('#catalogType').selectOption('milestone');
-  assert.equal(await page.locator('#catalogEntries article').count(), 6);
+  assert.equal(await page.locator('#catalogEntries article').count(), releaseCatalog().milestones);
   await page.locator('#catalogSearch').fill('nothing matches xyz');
-  assert.match(await page.locator('#catalogEntries').innerText(), /No matching releases/);
+  assert.match(await page.locator('#catalogEntries').innerText(), /No matching builds/);
   await page.locator('#catalogEntries').getByRole('button', { name: 'Clear filters' }).click();
   assert.equal(await page.locator('#catalogType').inputValue(), '');
+  await page.locator('#catalogSearch').fill('2.2.0-rc.9');
+  assert.equal(await page.locator('#catalogEntries article').count(), 1);
+  assert.match(await page.locator('#catalogEntries').innerText(), /Original internal package label: v2.2.0-rc.9. Not a public release/);
   await page.locator('#catalogSearch').fill('Firebase');
   assert(await page.locator('#catalogEntries article').count() > 0);
   assert(await page.locator('#catalogEntries details').evaluateAll(nodes => nodes.every(n => n.open)));
@@ -116,10 +127,10 @@ test('send insights and version catalog UI support filters, exports, review and 
   await page.route('**/api/catalog', route => route.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({error:'Test connection failure'}) }));
   await page.locator('#catalogRefresh').click();
   await page.waitForFunction(() => document.querySelector('#catalogStatus').textContent.includes('Previously loaded history'));
-  assert.equal(await page.locator('#catalogEntries article').count(), 18);
+  assert.equal(await page.locator('#catalogEntries article').count(), releaseCatalog().entries.length);
   await page.unroute('**/api/catalog');
   await page.locator('#catalogRefresh').click();
-  await page.waitForFunction(() => document.querySelector('#catalogStatus').textContent.includes('18 of 18'));
+  await page.waitForFunction(count => document.querySelector('#catalogStatus').textContent.includes(`${count} of ${count}`), releaseCatalog().entries.length);
   await current.locator('summary').focus();
   await page.keyboard.press('Enter');
   assert(await current.evaluate(el => el.open));

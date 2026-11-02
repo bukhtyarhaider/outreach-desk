@@ -19,7 +19,8 @@ import { updateControls } from './controls';
 export async function refresh() {
   session.state = await api<AppState>('/api/state');
   if ($('releasePreviewBanner')) $('releasePreviewBanner').hidden = !session.state.previewMode;
-  if ($('appVersion')) $('appVersion').textContent = `Desktop v${session.state.appVersion}`;
+  if ($('appVersion'))
+    $('appVersion').textContent = `${session.state.appBuildLabel} · v${session.state.appVersion}`;
   for (const key of ['total', 'ready', 'excluded', 'sent']) {
     const el = $(key);
     if (el) el.textContent = session.state.counts[key].toLocaleString();

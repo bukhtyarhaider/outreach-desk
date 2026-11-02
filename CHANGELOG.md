@@ -1,81 +1,117 @@
-# Outreach Desk changelog
+# Outreach Desk internal development history
 
-Current candidate: **2.2.0-rc.9**. Previous stable package: **2.1.0**.
+Current internal baseline: **0.1.0-alpha.1**. **No public releases have been made.**
 
-The repository records package versions 1.0.0 and 2.0.0 before this release. Later updates often kept the same package version; they appear as dated milestones below. The historical Git label V1.1.0 did not change the recorded package version from 2.0.0.
+Earlier stable/release-candidate descriptions were inaccurate: all entries below are internal testing checkpoints or dated development milestones. Original package labels are kept for traceability, not renumbered retroactively. See [versioning guide](docs/VERSIONING.md) for the alpha → beta → release-candidate → first-public-release workflow. Historical validation records retain their original labels.
 
-## 2.2.0-rc.9 — 2026-10-30 (release candidate)
+## 2026-11-03 — 0.1.0-alpha.1 — internal alpha baseline — Internal alpha baseline — workspace and workflow refinement
 
-- Mark as read now removes an incoming message from dashboard highlights, including when it still needs a reply. Conversations and the outstanding reply count remain available.
-- Marking unread or receiving a new carrier message restores the alert. Filtering precedes pagination; no-response follow-up tasks remain visible.
-- Updated direct-action feedback and browser coverage for dismissal, reload persistence and retained reply drafts/tasks.
+- Established explicit internal-alpha numbering. Earlier package labels are retained as historical references; none of the recorded history represents a public release.
+- Consolidated React/TypeScript UI, shared Bauhaus primitives, campaign navigation, dashboard, Unibox, tracking, settings, and guided import workflows.
+- Refined templates, Mailbox tools and Do Not Contact; removed editable local release notes and improved catalog navigation.
+- Retained sending, signatures, recipient protections, local state isolation and human-reviewed native-mailbox replies. Internal checks do not establish production or provider readiness.
 
-## 2.2.0-rc.8 — 2026-10-30 (release candidate)
+Recorded source: Current source baseline; VALIDATION.md; docs/UI-DX.md.
 
-- Added direct Mark as read / Mark as unread controls to dashboard carrier alerts and the latest incoming conversation message.
-- Dashboard highlights, unread counts and conversation read state refresh together, while reply tasks and unsaved draft text remain intact. New evidence stays unread and stale requests are rejected.
-- Added visible saving/error feedback and responsive controls using the shared design. Provider flags, approvals and sending behavior remain unchanged.
+## 2026-11-03 — Development milestone — Catalog cleanup during internal testing
 
-## 2.2.0-rc.7 — 2026-10-30 (release candidate)
+- Removed local release-note creation and editing; retained existing note data without displaying or exporting it.
+- Added compact installed-build identity, searchable expandable history, filter recovery, and a manual update guide.
 
-- Select dashboard attention from the entire carrier backlog before pagination; preserve stable ordering for incoming/outgoing messages sharing a header second.
-- Preserve unsaved carrier status edits by carrier and bind saves to the original edited version. Refreshes cannot overwrite concurrent changes; an explicit reload action recovers the saved status.
-- Closed/Signed workflow labels clear reply tasks until new incoming evidence arrives. Correct the read/unread action label after an update.
-- Include recent exact-participant native outgoing history in follow-up waiting periods, even without thread references. Reserve internal capture IDs to protect scan progress.
-- Keep approval, native mailbox Send, signatures, duplicate/uncertainty/opt-out protections and the existing shared design.
+Recorded source: Git c86fdc0; VALIDATION.md.
 
-## 2.2.0-rc.6 — 2026-10-30 (release candidate)
+## 2026-11-01 — Development milestone — Internal UI and workflow refinements
 
-- Grouped carriers by mailbox and confirmed tool-contacted email. Captured older Inbox/Sent chains remain readable as contact context, even with different or missing thread references; unlinked latest messages require review before drafting.
-- Added Active / In review queues, carrier workflow statuses, dated follow-up notes, consistent carrier/thread read markers and retained status-change history. The individual-thread view remains available in Filters.
-- Added reuse of existing delivery-monitor credential references for the matching saved mailbox profile, with explicit read-only capture authorization. Monitoring credentials and browser sign-in alone do not silently enable capture.
-- Alternated historical folder pages so a large Sent folder does not starve Inbox, batched bounded metadata reads with safe per-UID fallback, and recovered missing original Sent bodies without duplicating tool sends.
-- Bound draft approval to new carrier evidence across threads; retained independent opt-out, uncertainty and native mailbox Send safeguards. Carrier statuses never send email or release protections.
+- Aligned settings, sending pace, activity, templates and drawers with shared application primitives.
+- Improved Unibox alignment, Mailbox tools setup and Do Not Contact protection workflows.
 
-## 2.2.0-rc.5 — 2026-10-30 (release candidate)
+Recorded source: Git 80dd182 / 79353c8 / 08ce2a3 / 641ed56; VALIDATION.md.
 
-- Restored the shared application header, labeled navigation, mailbox profile footer and developer details on Carrier conversations.
-- Removed the separate Mailroom shell styling, including hidden status/version information and alternate notification/banner treatment. The shared mobile navigation rules apply across routes.
-- Used the existing page heading, spacing, surface and border tokens around the conversation workspace. Queues, free writing, optional saved lines and exact approval retain their existing behavior.
+## 2026-10-30 — Internal checkpoint (original label 2.2.0-rc.9) — Dismiss read dashboard messages
 
-## 2.2.0-rc.4 — 2026-10-30 (release candidate)
+- Mark as read removes that incoming message from dashboard highlights while retaining its conversation and outstanding reply task.
+- Mark as unread or a new carrier reply restores the alert. Filtering precedes pagination and preserves no-response follow-up work.
+- Read state and dismissal persist through reload without changing provider flags or sending email.
 
-- Built the selected Mailroom layout in the normal Carrier conversations flow: list, latest carrier message and free reply editor together, with mobile list/detail navigation.
-- Added direct search and Needs reply / All / Waiting tabs; preserved broader filters, mailbox setup, full thread evidence and review controls in dialogs.
-- Review reply saves current wording and shows the exact text, account and recipient before approval. Optional saved lines support preview, insertion and reuse without replacing free writing.
-- Preserved unsaved draft text while filtering/navigating; reject changed conversation evidence during approval and keep errors visible in the review dialog.
-- Historical messages sort by their effective message time, rather than the order in which a scan imported them. Display names remain unverified email/header evidence.
-- Kept current sender, signature, import, opt-out, uncertainty and shared protection workflows. Final Send stays in the user's existing mailbox.
+Recorded source: VALIDATION.md; IMPORTS-AND-CONVERSATIONS.md; design-qa.md.
 
-## 2.2.0-rc.3 — 2026-10-30 (release candidate)
+## 2026-10-30 — Internal checkpoint (original label 2.2.0-rc.8) — Direct read controls for carrier messages
 
-- Restricted conversation capture to threads anchored by confirmed tool sends, including older nonlatest tracking history. Imported contacts alone cannot start a conversation.
-- Added a resumable full-history scan across available response folders, Sent reconciliation, cross-folder ancestry revisits, explicit partial states and stable incremental cursors.
-- Added replied-contact filtering, first/latest reply dates and human-reply counts; replies elsewhere and recent contact activity prevent stale follow-ups.
-- Replaced forced template use with free writing, searchable saved wording, previews, deliberate insertion/replacement, field buttons and retained wording versions.
-- Shorter untouched starters ask one relevant missing question. Custom/archived wording and exact-text approvals remain preserved. Final Send stays manual in the existing mailbox.
+- Dashboard carrier alerts and the latest incoming conversation message offer Mark as read / Mark as unread directly.
+- Unread counts and highlights update together while reply tasks and unsaved drafts stay intact. Newly captured evidence remains unread and stale read actions are rejected.
+- Saving/error feedback and desktop/mobile controls use the established design. Read tracking remains local to this PC; provider mailbox flags and sending behavior are unchanged.
 
-## 2.2.0-rc.2 — 2026-10-29 (release candidate)
+Recorded source: VALIDATION.md; IMPORTS-AND-CONVERSATIONS.md; design-qa.md.
 
-- Added the integrated reply desk with local intent suggestions, editable/versioned reply templates and evidence-backed carrier detail confirmations.
-- Both unanswered human responses and no-captured-response follow-ups have work queues; dashboard highlights link to the exact conversation with explicit local read/unread tracking.
-- Drafts require exact-text/account/recipient approval before copy. Edits/new evidence invalidate approval; cancel and retained versions support recovery. Final Send stays in the existing mailbox using native Reply and signatures.
-- Keep operator-reported mailbox actions separate from captured matching Sent copies and delivery; never fabricate submission from approval alone.
-- Expanded read-only capture to full history and archive folders, bounded resumable pages, stop/resume, partial folder failures, References-only changed senders and known carrier inbound-first reviews.
-- Retained opt-out/uncertainty guards and added current coordinator checks before drafting, approval and copy when team mode is enabled. The deferred Team work/ownership experiment is still excluded.
+## 2026-10-30 — Internal checkpoint (original label 2.2.0-rc.7) — Conversation tracking and status recovery
 
-## 2.2.0-rc.1 — 2026-10-29 (release candidate)
+- Dashboard attention covers the entire carrier backlog before pagination; same-second incoming replies remain visible as unanswered.
+- Status edits retain their original version and per-carrier unsaved form through refresh/navigation. Concurrent edits are rejected without losing text, with an explicit reload action.
+- Closed/Signed carrier labels clear reply tasks until new incoming evidence arrives. Read/unread buttons show the next action correctly.
+- Recent native outgoing contact history postpones follow-up even without thread references; reserved mailbox IDs protect scan progress.
+- Human approval, native mailbox Send, signatures, recipient protections and manual capture remain intact.
 
-- Integrated import review, guided mappings, source provenance and stable carrier/contact identities into the normal campaign/lead flow.
-- New browser uploads stay paused until a reviewed copy is activated. Immutable revisions, prior working files and Undo last activation support recovery; raw campaign settings cannot bypass mapping review.
-- Added the normal Carrier conversations view, EML imports, read-only capture configuration, guarded reviews and links from leads/Send History.
-- Captured opt-outs protect normal sending/Do Not Contact, with durable coordinator retries and a final pre-click check. Evidence faults fail closed.
-- Serialized campaign publication with other state writes; redacted reservation tokens from lead responses and recovered partial queue defaults.
-- Team work remains on the experiment branch. Live provider and team-PC rollout checks remain pending; see IMPORTS-AND-CONVERSATIONS.md.
+Recorded source: VALIDATION.md; IMPORTS-AND-CONVERSATIONS.md; design-qa.md.
 
-## 2026-10-29 — 2.1.0 — Send insights and version catalog
+## 2026-10-30 — Internal checkpoint (original label 2.2.0-rc.6) — Carrier inbox history and conversation workflow
 
-Previous stable package release.
+- Carrier view groups confirmed tool-contacted addresses per mailbox and shows older Inbox/Sent chains, including unlinked contact context with explicit thread review.
+- Active and In review queues, editable carrier stages, dated follow-up notes and synchronized history read markers support ongoing conversations without automatic sending.
+- Existing delivery-monitor credentials can be reused by reference in authorized conversation capture setup; browser sign-in alone is not treated as IMAP capture configuration.
+- Historical scans alternate folders, batch metadata and retain missing original Sent bodies, with safe per-UID fallback, resumable cursors and deduplication.
+- New contact evidence invalidates earlier approvals across threads. Workflow status never clears opt-outs, uncertain-send holds or approval requirements.
+
+Recorded source: IMPORTS-AND-CONVERSATIONS.md; VALIDATION.md; design-qa.md.
+
+## 2026-10-30 — Internal checkpoint (original label 2.2.0-rc.5) — Conversations in the shared app design
+
+- Carrier conversations uses the same shared titlebar, labeled sidebar, mailbox profile footer, developer details and responsive navigation as the other pages.
+- Removed route-specific shell overrides; restored workbook/mailbox status, version information, normal notifications and preview banner styling.
+- Aligned the heading, page spacing and conversation surface with existing app tokens while retaining the Mailroom queues, free editor, saved wording and exact approval flow.
+
+Recorded source: IMPORTS-AND-CONVERSATIONS.md; VALIDATION.md; design-qa.md.
+
+## 2026-10-30 — Internal checkpoint (original label 2.2.0-rc.4) — Mailroom conversation workspace
+
+- Selected Mailroom layout brings the carrier list, latest message and free reply editor into a single responsive workspace.
+- Needs reply, All and Waiting queues, direct search, compact intent suggestions and full thread evidence in Details keep the main writing flow focused.
+- Saved lines remain optional: search, preview, insert deliberately, edit freely and manage retained wording versions.
+- Review reply saves exact current text and opens account/recipient review. New evidence and edits invalidate approval; final Send remains manual in the existing mailbox.
+- Unsaved drafts survive queue/search navigation; mobile uses list and thread screens with Back to inbox. Existing sender, imports and protection guards are retained.
+
+Recorded source: IMPORTS-AND-CONVERSATIONS.md; VALIDATION.md; design-qa.md; feature branch feat/import-repairs-carrier-conversations.
+
+## 2026-10-30 — Internal checkpoint (original label 2.2.0-rc.3) — Historical tool-conversation scan and optional saved replies
+
+- Conversation capture is restricted to confirmed tool-started email threads; imported contacts alone no longer qualify. Older confirmed tracking sends are retained even when a newer history entry exists.
+- Scan all previous replies drains historical pages across available folders, reconciles Sent identifiers, revisits discovered ancestry and resumes saved progress after interruptions. Partial/failure states stay explicit.
+- Replied contacts, human-reply counts and first/latest response dates make earlier responders easy to find. Replies elsewhere and recent contact activity prevent stale no-response follow-ups.
+- Write freely, search saved wording, preview before insertion, insert at the cursor or replace deliberately, then save/review/approve. Untouched starters use shorter questions; custom wording, earlier versions and exact draft approvals are retained.
+- No automated response sending, production deployment or cross-PC inbox ownership is added. Final Send remains in the existing mailbox.
+
+Recorded source: IMPORTS-AND-CONVERSATIONS.md; VALIDATION.md; feature branch feat/import-repairs-carrier-conversations.
+
+## 2026-10-29 — Internal checkpoint (original label 2.2.0-rc.2) — Carrier reply desk, reviewed drafts and response tracking
+
+- All local source conversations include unanswered-response and no-captured-reply work queues, rule-based intent, and dashboard highlights with read markers.
+- Versioned reply templates create editable drafts. Exact recipient/text approval is required for copy; final Send remains a human action in the existing mailbox with its native thread and signature.
+- Carrier phone, equipment, ZIP and other details retain cited email evidence; operator confirmation, conflicts and corrections remain reviewable.
+- Read-only capture supports full history, archive folders, resumable pages and stop/restart. Changed senders/references and known imported carriers without a local send enter matching review.
+- Approvals, operator-reported sends and matching Sent copies remain separate. New evidence/edits invalidate old approvals; opt-outs and uncertain sends block drafts. No automated conversation sending is added.
+
+Recorded source: Feature branch feat/import-repairs-carrier-conversations; IMPORTS-AND-CONVERSATIONS.md; VALIDATION.md.
+
+## 2026-10-29 — Internal checkpoint (original label 2.2.0-rc.1) — Reviewed imports and carrier conversations
+
+- Import review is integrated into campaign upload, with guided column choices, strict outreach-Status mapping, source provenance and stable carrier/contact identity.
+- Saved revisions activate separate campaign workbooks; campaigns remain paused, prior workbooks stay recoverable, and the last activation can be undone.
+- Carrier conversations share the normal application shell with read-only mailbox settings, EML imports, exact thread matching, guarded manual reviews and links from leads/send history.
+- Captured opt-outs protect normal sending and Do Not Contact immediately, with a durable coordinator retry queue and a final check before webmail Send.
+- Team work/ownership experiments are excluded. This internal checkpoint was not a public release; live provider acceptance remains a designated-mailbox check.
+
+Recorded source: Feature branch feat/import-repairs-carrier-conversations; IMPORTS-AND-CONVERSATIONS.md.
+
+## 2026-10-29 — Internal checkpoint (original label 2.1.0) — Send insights and version catalog
 
 - Send-history filters for seen status, mailbox, campaign, template, UTC send dates and manual reply review.
 - Confirmed sent/seen counts, seen rates, average/median/fastest first-seen intervals with explicit sample counts.
@@ -83,71 +119,85 @@ Previous stable package release.
 - Version catalog with recorded releases, dated update milestones, upgrade instructions and editable local release notes.
 - Package, title bar and distribution filename consistently report 2.1.0.
 
-## 2026-10-29 — 2.0.0 — Recover multi-PC Firebase opens
+Recorded source: Internal package checkpoint; CHANGELOG.md.
 
-Update under the existing package version. Source: Git b8fb26c; VALIDATION.md.
+## 2026-10-29 — Development milestone — Recover multi-PC Firebase opens
+
+Original internal package label: 2.0.0; no separate public release.
 
 - Paginated, resumable scans replace the blocked last-100 query.
 - Token ownership recovers mismatched-PC and previously acknowledged events; local saves precede cloud acknowledgements.
 - PC/Firebase Settings diagnostics, setup warnings, database selection and read-only audit command.
 
-## 2026-10-26 — 2.0.0 — Queue wait and quota recovery
+Recorded source: Git b8fb26c; VALIDATION.md.
 
-Update under the existing package version. Source: Git 3bafecd / eae8d1e; VALIDATION.md.
+## 2026-10-26 — Development milestone — Queue wait and quota recovery
+
+Original internal package label: 2.0.0; no separate public release.
 
 - Clear long scheduled waits and show the reason for required intervals.
 - Confirmed hard reset starts fresh mailbox pacing counters while keeping history, suppression and uncertain-send protections.
 - Shared coordinator pacing reset and desktop/mobile controls.
 
-## 2026-10-21 — 2.0.0 — Cloud telemetry and launcher recovery
+Recorded source: Git 3bafecd / eae8d1e; VALIDATION.md.
 
-Update under the existing package version. Source: Git b3cdaff; VALIDATION.md.
+## 2026-10-21 — Development milestone — Cloud telemetry and launcher recovery
+
+Original internal package label: 2.0.0; no separate public release.
 
 - Realtime Database and Firestore open-event sync, credential discovery, manual/automatic sync controls.
 - Single-instance launcher, stop/restart handling and modular UI build.
 
-## 2026-10-20 — 2.0.0 — Compose fixes and configurable template checks
+Recorded source: Git b3cdaff; VALIDATION.md.
 
-Update under the existing package version. Source: Git 69a8473 / 8ed2071 / 154a25c; VALIDATION.md.
+## 2026-10-20 — Development milestone — Compose fixes and configurable template checks
+
+Original internal package label: 2.0.0; no separate public release.
 
 - Mailboxes without signatures can prepare messages while existing signature validation remains active.
 - Promotional and length checks support advisory, blocking and off settings.
-- Git merge 154a25c was named V1.1.0; its package.json still recorded 2.0.0. This label is retained as a historical note, not a separate verified package release.
+- Git merge 154a25c was named V1.1.0; its package.json still recorded 2.0.0. This label is retained as a historical note, not a separate public release.
 
-## 2026-10-19 — 2.0.0 — Persistent browser sessions
+Recorded source: Git 69a8473 / 8ed2071 / 154a25c; VALIDATION.md.
 
-Update under the existing package version. Source: Git e502825 / 643f415; VALIDATION.md.
+## 2026-10-19 — Development milestone — Persistent browser sessions
+
+Original internal package label: 2.0.0; no separate public release.
 
 - Saved browser profiles and attachment to an existing local Chrome/Edge debugging session.
 - Manual sign-in/challenge recovery, account validation and session-expiry handling.
 
-## 2026-10-14 — 2.0.0 — Delivery evidence and open tracking
+Recorded source: Git e502825 / 643f415; VALIDATION.md.
 
-Update under the existing package version. Source: Git 73762ee / e19cf15; VALIDATION.md.
+## 2026-10-14 — Development milestone — Delivery evidence and open tracking
+
+Original internal package label: 2.0.0; no separate public release.
 
 - IMAP bounce monitoring, opaque tracking pixels, seed inbox checks and DNS health reporting.
 - Independent send, delivery, bounce and open evidence with searchable tracking records.
 
-## 2026-10-10 — 2.0.0 — Outreach Desk 2
+Recorded source: Git 73762ee / e19cf15; VALIDATION.md.
 
-Numbered package release. Source: Git a5d6e03 package.json; README.md.
+## 2026-10-10 — Internal checkpoint (original label 2.0.0) — Multi-mailbox outreach prototype
 
 - Mailbox profiles, campaigns, editable templates and continuous outreach.
 - Durable send reservations, workbook repair, shared recipient protection and saved history.
-- Later improvements shipped under the same package version and are listed separately above.
+- Later internal improvements reused the same package label and are listed separately above.
 
-## 2026-10-10 — 1.0.0 — Initial outreach tool
+Recorded source: Git a5d6e03 package.json; README.md.
 
-Numbered package release. Source: Git 74e03f3 package.json.
+## 2026-10-10 — Internal checkpoint (original label 1.0.0) — Initial outreach tool
 
 - Initial local Playwright sending application with workbook integration and tests.
 
-## Updating a PC
+Recorded source: Git 74e03f3 package.json.
 
-1. Stop Outreach Desk on the PC being updated. Back up its entire data folder and .env file.
-2. Extract the new versioned ZIP over the application files. Preserve that PC's data and .env; keep team-data if this PC hosts the shared coordinator.
-3. Run Setup when dependencies changed, then Start and reload the browser. Verify the installed version in the title bar and this catalog.
+## Updating an internal test PC
+
+1. Click Stop outreach, wait for the current operation, and close any prepared message. Then stop the app on this PC and back up its entire data folder and .env file.
+2. Extract the new internal-build ZIP over the application files. Preserve that PC's data and .env; keep team-data if this PC hosts the shared coordinator.
+3. Run Setup when dependencies changed, then Start and reload the browser. Verify the installed build in the title bar and this catalog.
 4. Check Settings for the correct PC ID, public tracking URL, database selection and sync mode. Run Sync opens now and review diagnostics.
-5. Update each PC separately. This catalog describes the installed build; it does not check an online update server or prove another PC was updated.
+5. Update each PC separately. This catalog describes the installed internal build; it does not check an online update server or prove another PC was updated.
 
-For future releases, update package.json/package-lock.json and add a release entry in src/release-catalog.mjs, rebuild the UI, validate, and build the versioned ZIP. The in-app catalog reads the bundled release entries and keeps operator notes in the original state file.
+Package and verification instructions: [docs/VERSIONING.md](docs/VERSIONING.md). No customer data or schema versions are reset by the new application version label.

@@ -61,7 +61,7 @@ Dashboard composition keeps statistics above the runner/mailbox row, followed by
 
 The three editor panels remain mounted when tabs change. Browser Back/Forward and arrow/Home/End keys update the selected tab. The sidebar keeps Campaigns active for its create/edit children; breadcrumbs use the same route-label map. Opening the already-active campaign does not call the switch API or clear the selected batch/drafts. Changing to another campaign retains the existing cleanup behavior. Tests follow actual entry controls for all fifteen views and exercise creation with a synthetic workbook.
 
-All full metric cards reuse `design-system/StatMark.tsx` and its semantic variants. Legacy history/catalog/import/mailbox regions use `StatValue.tsx`; declarative Metric groups use the visual slot. Only supply a denominator for a real share in the same scope. Timings and independent counts indicate presence without inventing a completion target. Keep compact summary strips and operational status controls compact.
+All full metric cards reuse `design-system/StatMark.tsx` and its semantic variants. Legacy history/import/mailbox regions use `StatValue.tsx`; declarative Metric groups use the visual slot. Only supply a denominator for a real share in the same scope. Timings and independent counts indicate presence without inventing a completion target. Keep compact summary strips and operational status controls compact.
 
 Unibox composition, setup/filter modules, native controller ownership, keyboard navigation and save feedback are documented in `UNIBOX-UX.md`. All original fields remain mounted across page and dialog navigation.
 
@@ -156,4 +156,6 @@ Record labels are derived from recorded reason text, not independent verificatio
 
 ### Version Catalog
 
-`features/catalog` owns the installed-build summary, native release disclosures, filters and native upgrade-guide disclosure. The catalog reads only shipped release metadata; it does not query an online update service. Keep entry IDs stable so open disclosures survive filter/refresh. Search opens matching entries; clearing it restores manually opened entries. The retired local-note endpoint returns HTTP 410; existing `releaseNotes` state is retained without being displayed or exported. Add future releases in `src/release-catalog.mjs`, rather than adding an editable catalog form.
+`features/catalog` owns the installed-build summary, native build disclosures, filters and native upgrade-guide disclosure. The catalog reads only bundled internal build metadata; it does not query an online update service. Keep entry IDs stable so open disclosures survive filter/refresh. Search opens matching entries; clearing it restores manually opened entries. The retired local-note endpoint returns HTTP 410; existing `releaseNotes` state is retained without being displayed or exported. Add future internal builds in `src/release-catalog.mjs`, rather than adding an editable catalog form.
+
+Application versioning comes from package.json via src/app-version.mjs. Catalog history uses `build` for normalized alpha packages, `checkpoint` plus `legacyVersion` for earlier internal package labels, and `milestone` for dated unversioned work. See [VERSIONING.md](VERSIONING.md); data schema versions are separate.

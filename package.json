@@ -1,6 +1,6 @@
 {
   "name": "outreach-desk",
-  "version": "2.2.0-rc.9",
+  "version": "0.1.0-alpha.1",
   "private": true,
   "type": "module",
   "scripts": {

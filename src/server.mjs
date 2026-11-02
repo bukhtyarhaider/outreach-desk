@@ -29,6 +29,7 @@ import { historyReport, historyCsv, csv, saveFollowUp } from "./history-report.m
 import { StateFile } from "./state-file.mjs";
 import { CarrierWorkspace } from "./carrier-workspace.mjs";
 import { sharedReplyHold } from './conversation-assistant.mjs';
+import { APP_BUILD_LABEL } from "./app-version.mjs";
 import { APP_VERSION, releaseCatalog } from "./release-catalog.mjs";
 
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
@@ -1538,6 +1539,7 @@ const server = http.createServer(async (req, res) => {
       return response(res, {
         version: 2,
         appVersion: APP_VERSION,
+        appBuildLabel: APP_BUILD_LABEL,
         previewMode: PREVIEW_MODE,
         workbook: activeCampaign()?.workbook,
         sheets: activeData().sheets,

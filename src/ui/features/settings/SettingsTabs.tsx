@@ -34,7 +34,7 @@ export const settingsTabs = [
   {
     id: 'settingsAbout',
     label: 'About',
-    description: 'Application information and release history.',
+    description: 'Application information and internal build history.',
     hash: '#settingsAbout',
   },
 ] as const;

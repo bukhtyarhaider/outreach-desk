@@ -1,6 +1,6 @@
-> **2.2.0-rc.9 candidate:** reviewed import activation/recovery and the Mailroom conversation workspace are integrated into the normal sidebar. See [Import and conversation release guide](IMPORTS-AND-CONVERSATIONS.md). Team work is excluded; production rollout is pending review.
+> **Internal testing — 0.1.0-alpha.1.** No public releases have been made. Earlier 1.x/2.x and rc labels were internal development checkpoints, not stable releases. See [build numbering and release stages](docs/VERSIONING.md) and [the import/conversation guide](IMPORTS-AND-CONVERSATIONS.md). Team work remains excluded.
 
-# Outreach Desk 2.2.0-rc.9
+# Outreach Desk — internal alpha
 
 A configurable local email sales tool for teams using Private Email. Each PC has its own mailbox profiles and browser session. An optional shared coordinator prevents duplicate recipient claims across PCs and enforces team mailbox allowances.
 
@@ -14,7 +14,7 @@ The earlier `feat/sales-experiments` branch is preserved for later research. Tea
 
 ## Install on Windows and macOS
 
-1. Extract `Outreach-Desk-2.2.0-rc.9.zip` to a permanent folder on each PC. Give every OS user their own installation/data folder.
+1. Extract `Outreach-Desk-0.1.0-alpha.1.zip` to a permanent folder on each PC. Give every OS user their own installation/data folder.
 2. Install [Node.js 20+](https://nodejs.org/), [Python 3.9+](https://www.python.org/downloads/), and Google Chrome or Microsoft Edge. On Windows select **Add Python to PATH** during installation.
 3. Windows: open `Setup-Windows.cmd` once, then `Start-Windows.cmd`. macOS: open `Setup-Mac.command` once, then `Start-Mac.command`. If macOS strips execute permission from the archive, run `chmod +x *.command` in that folder. Setup installs the locked npm dependencies from the npm registry.
 4. The launcher opens http://127.0.0.1:4317. Keep its terminal open while using the tool. Closing it stops the local server. Linux also works with `npm ci` then `npm run launch`.
@@ -224,7 +224,7 @@ Run `npm run check:ui` before committing frontend changes. `npm test` and `npm r
 Run `FC_BROWSER_TESTS=1 npm test` on macOS (PowerShell: `$env:FC_BROWSER_TESTS='1'; npm test`) to run the complete suite including real Chrome tests against synthetic local inboxes and temporary profiles: persistent cookies, restart reuse, profile locks, manual challenge recovery, wrong-account detection, expiry, CDP attach/detach, discovery, tracking dashboard filters, and desktop/mobile responsiveness. Set `FC_TEST_BROWSER_CHANNEL=msedge` to exercise Edge instead. No live Cloudflare/Namecheap outcome is claimed by synthetic tests.
 
 
-## Send insights and version catalog (2.1.0)
+## Send insights and internal Version Catalog
 
 **Send History & Audit** now filters by recipient/subject/note search, outcome, seen signal, mailbox, campaign, template, UTC send-date range (confirmation time, or attempt date when unconfirmed) and manual reply-review status. Sort by send dates, first/last seen activity, or fastest/slowest first-seen interval. Counts and filtered exports cover every matching row across pages, using only this PC's history. Refresh is explicit and the open history view also refreshes every 15 seconds while preserving unsaved review notes.
 
@@ -232,6 +232,6 @@ Metrics include confirmed sends, first-seen signals, seen/confirmed-send percent
 
 Use **Filtered CSV**, **Filtered JSON**, **Stats CSV** or the existing **Full history backup**. CSV includes recipients, mailbox/campaign/template, send timestamps, first/last seen, retained hourly signal count, delay in seconds, bounce evidence and manual reply notes. Stats CSV uses `Ms` suffixes for duration metrics and percentages for rate metrics. CSV cells protect spreadsheet formulas. Full JSON keeps the prior backup sections; filtered JSON includes only matching send/tracking records.
 
-**Version Catalog** shows the installed package build, searchable numbered releases and historical updates, plus an expandable manual upgrade guide. Release entries expand to show changes and recorded source references; search reveals matching changes automatically. Export the recorded catalog as JSON. Local release-note creation/editing has been removed; existing saved note data is left intact in `data/state.json` but is excluded from the catalog and its export. Earlier updates often retained package 2.0.0; the historical Git label V1.1.0 is explained rather than assigned an invented package version. See [CHANGELOG.md](CHANGELOG.md).
+**Version Catalog** shows the installed internal build, searchable development checkpoints and milestones, and an expandable manual update guide. No public releases are recorded. Original 1.x/2.x/rc labels are retained inside historical entries for traceability; they were internal identifiers. The current numbering starts at **0.1.0-alpha.1**; use alpha.2, alpha.3, etc. for new packaged test builds. Export catalog JSON includes this classification. Local release-note editing remains removed, while existing saved notes remain untouched in data/state.json. See [CHANGELOG.md](CHANGELOG.md) and [docs/VERSIONING.md](docs/VERSIONING.md).
 
-To publish a future version: update `package.json` and the root package entries in `package-lock.json`, add the new release to `src/release-catalog.mjs`, record validation, rebuild the UI, run the regression suite, then run `npm run bundle`. The ZIP filename reads the package version automatically. The title bar reads the same version from the running server. On each PC, stop the app, back up and retain `.env`/`data` (and `team-data` for a coordinator), replace application files, run Setup if dependencies changed, restart/reload, and check the catalog and sync diagnostics. This is a manual distribution workflow, not an online update service.
+For the next internal test package, follow [docs/VERSIONING.md](docs/VERSIONING.md): update package.json/package-lock.json together, record the new build in src/release-catalog.mjs, validate, rebuild, and bundle. The sidebar, catalog, exports and ZIP use the same package version. This manual workflow does not publish a public release, install another PC, or reset data/schema versions. Preserve each PC's own .env and data when updating.

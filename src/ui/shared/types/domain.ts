@@ -146,6 +146,7 @@ import type { FirebaseDiagnostics } from './firebase';
 export interface AppState {
   version: number;
   appVersion: string;
+  appBuildLabel: string;
   previewMode: boolean;
   workbook?: Workbook;
   sheets: Sheet[];
@@ -234,8 +235,9 @@ export interface HistorySummary {
 }
 export interface CatalogEntry {
   id: string;
-  kind: 'release' | 'milestone';
-  version: string;
+  kind: 'build' | 'checkpoint' | 'milestone';
+  version?: string;
+  legacyVersion?: string;
   date: string;
   title: string;
   changes: string[];
@@ -243,9 +245,11 @@ export interface CatalogEntry {
 }
 export interface Catalog {
   installedVersion: string;
-  packageVersions: number;
+  buildLabel: string;
+  publicReleaseCount: number;
+  internalBuilds: number;
   milestones: number;
-  releases: CatalogEntry[];
+  entries: CatalogEntry[];
   upgradeSteps: string[];
 }
 export interface TrackingRecord {

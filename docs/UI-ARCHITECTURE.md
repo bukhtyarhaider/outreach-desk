@@ -16,7 +16,7 @@ src/ui/
     runtime/                       Bootstrap state rendering, controls and polling
   features/
     campaigns/                     Upload and campaign configuration
-    catalog/                       Recorded release catalog and manual upgrade guide
+    catalog/                       Internal build catalog and manual upgrade guide
     conversations/                 Inbox, capture setup, reply assistant, mailroom
     dashboard/                     Overview and carrier activity
     drawer/                        Lead and tracking inspector interactions

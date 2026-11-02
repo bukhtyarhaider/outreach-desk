@@ -17,8 +17,8 @@ export async function loadCatalog() {
     const data = await api<Catalog>('/api/catalog');
     catalogData = data;
     if (!loadedOnce) {
-      const installed = data.releases.find(
-        (r) => r.kind === 'release' && r.version === data.installedVersion,
+      const installed = data.entries.find(
+        (r) => r.kind === 'build' && r.version === data.installedVersion,
       );
       if (installed) openEntries.add(installed.id);
       loadedOnce = true;
@@ -33,17 +33,13 @@ export async function loadCatalog() {
           <div>
             <p className="page-eyebrow">INSTALLED ON THIS PC</p>
             <strong>v{data.installedVersion}</strong>
-            <p>
-              {data.installedVersion.includes('-')
-                ? 'Prerelease build · review changes before rollout'
-                : 'Numbered package build'}
-            </p>
+            <p>{data.buildLabel} · not a public release</p>
           </div>
         </div>
         <div className="catalog-inventory">
           <Layers size={18} aria-hidden="true" />
           <div>
-            <strong>{data.packageVersions} package releases</strong>
+            <strong>{data.internalBuilds} internal build checkpoints</strong>
             <span>{data.milestones} historical updates</span>
           </div>
         </div>
@@ -72,18 +68,22 @@ export function renderCatalogEntries() {
   if (!catalogData) return;
   const q = $('catalogSearch').value.trim().toLowerCase();
   const kind = $('catalogType').value;
-  const entries = catalogData.releases
+  const entries = catalogData.entries
     .filter(
       (r) =>
-        (!kind || r.kind === kind) &&
-        (!q || [r.version, r.date, r.title, ...r.changes].join(' ').toLowerCase().includes(q)),
+        (!kind || r.kind === kind || (kind === 'build' && r.kind === 'checkpoint')) &&
+        (!q ||
+          [r.version, r.legacyVersion, r.date, r.title, ...r.changes]
+            .join(' ')
+            .toLowerCase()
+            .includes(q)),
     )
     .sort((a, b) => b.date.localeCompare(a.date));
   renderRegion(
     $('catalogEntries'),
     entries.length ? (
       entries.map((r) => {
-        const installed = r.kind === 'release' && r.version === catalogData!.installedVersion;
+        const installed = r.kind === 'build' && r.version === catalogData!.installedVersion;
         return (
           <article className={`catalog-entry${installed ? ' catalog-current' : ''}`} key={r.id}>
             <details
@@ -96,7 +96,13 @@ export function renderCatalogEntries() {
             >
               <summary>
                 <div className="catalog-version">
-                  <strong>v{r.version}</strong>
+                  <strong>
+                    {r.version
+                      ? `v${r.version}`
+                      : r.legacyVersion
+                        ? 'Internal checkpoint'
+                        : 'Development update'}
+                  </strong>
                   <time dateTime={r.date}>
                     {new Intl.DateTimeFormat('en', { dateStyle: 'medium', timeZone: 'UTC' }).format(
                       new Date(`${r.date}T00:00:00Z`),
@@ -105,8 +111,12 @@ export function renderCatalogEntries() {
                 </div>
                 <div className="catalog-release-title">
                   <div className="catalog-entry-meta">
-                    <StatusBadge tone={r.kind === 'release' ? 'info' : 'neutral'}>
-                      {r.kind === 'release' ? 'Package release' : 'Historical update'}
+                    <StatusBadge tone={r.kind === 'build' ? 'info' : 'neutral'}>
+                      {r.kind === 'build'
+                        ? 'Internal alpha'
+                        : r.kind === 'checkpoint'
+                          ? 'Internal checkpoint'
+                          : 'Development milestone'}
                     </StatusBadge>
                     {installed && <StatusBadge tone="positive">Installed build</StatusBadge>}
                   </div>
@@ -116,6 +126,11 @@ export function renderCatalogEntries() {
                 <ChevronDown className="catalog-chevron" size={18} aria-hidden="true" />
               </summary>
               <div className="catalog-entry-body">
+                {r.legacyVersion && (
+                  <p className="catalog-legacy">
+                    Original internal package label: v{r.legacyVersion}. Not a public release.
+                  </p>
+                )}
                 <ul>
                   {r.changes.map((change) => (
                     <li key={change}>{change}</li>
@@ -129,14 +144,14 @@ export function renderCatalogEntries() {
       })
     ) : (
       <EmptyState
-        title="No matching releases"
-        description="Try a version number, feature, or a different entry type."
+        title="No matching builds"
+        description="Try a build label, feature, or a different entry type."
         action={<Button onClick={resetFilters}>Clear filters</Button>}
       />
     ),
   );
   $('catalogStatus').textContent =
-    `${entries.length} of ${catalogData.releases.length} recorded entries${q || kind ? ' · filters applied' : ''}`;
+    `${entries.length} of ${catalogData.entries.length} recorded entries${q || kind ? ' · filters applied' : ''}`;
   $('catalogReset').disabled = !q && !kind;
 }
 function resetFilters() {
