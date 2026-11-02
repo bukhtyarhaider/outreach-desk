@@ -1,3 +1,4 @@
+import { refresh } from '../../app/runtime/refresh';
 import { confirmAction } from '../../shared/confirmation';
 import { workbookLabel } from '../../shared/workspace-store';
 import { syncLeadSelection } from './selection';
@@ -17,7 +18,7 @@ import { switchDrawerTab, renderLeadDetails, openPreviewDrawer } from '../drawer
 let leadsRequest = 0;
 let previewRequest = 0;
 
-export async function loadLeads() {
+export async function loadLeads(recoverCampaign = true): Promise<void> {
   if (!$('sheet') || !$('leadsSort')) return;
   const request = ++leadsRequest;
   const generation = uiScope.generation;
@@ -44,10 +45,28 @@ export async function loadLeads() {
       session.state.activeCampaign !== campaignId
     )
       return;
-    if (result.campaignId !== campaignId)
+    if (
+      !Object.hasOwn(result, 'campaignId') ||
+      !result.summary ||
+      !Number.isFinite(result.offset) ||
+      !Number.isFinite(result.pageSize)
+    )
       throw new Error(
-        'The active campaign changed in another window. Refresh the workspace before continuing.',
+        'The app server is still running an older build. Restart Outreach Desk, then choose Retry to enable the updated Leads Workspace.',
       );
+    if ((result.campaignId ?? null) !== (campaignId ?? null)) {
+      if (!recoverCampaign)
+        throw new Error(
+          'The campaign changed again while loading. Choose Retry to refresh the current workspace.',
+        );
+      await refresh();
+      if (request !== leadsRequest || !uiScope.isCurrent(generation)) return;
+      session.selected.clear();
+      session.previewId = null;
+      session.offset = 0;
+      $('sheet').value = '';
+      return await loadLeads(false);
+    }
     session.rows = result.leads;
     session.total = result.total;
     session.offset = result.offset;
@@ -202,7 +221,7 @@ export async function loadLeads() {
           Could not update leads: {errorMessage(error)} Previous rows are paused to prevent actions
           on stale results.
         </span>
-        <Button size="sm" onClick={() => void loadLeads()}>
+        <Button size="sm" onClick={() => void retryLeads()}>
           Retry
         </Button>
       </>,
@@ -211,6 +230,22 @@ export async function loadLeads() {
   } finally {
     if (request === leadsRequest && uiScope.isCurrent(generation))
       $('leadRows').removeAttribute('aria-busy');
+  }
+}
+
+async function retryLeads() {
+  try {
+    const previousCampaign = session.state?.activeCampaign;
+    await refresh();
+    if (session.state.activeCampaign !== previousCampaign) {
+      session.selected.clear();
+      session.previewId = null;
+      session.offset = 0;
+      $('sheet').value = '';
+    }
+    await loadLeads();
+  } catch (error) {
+    notice(`Could not reconnect to Outreach Desk: ${errorMessage(error)}`);
   }
 }
 

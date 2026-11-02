@@ -17,7 +17,15 @@ import { renderLiveActivityView } from '../../features/live-activity/controller'
 import { renderSuppressionList } from '../../features/suppression/controller';
 import { updateControls } from './controls';
 export async function refresh() {
+  const previousCampaign = session.state?.activeCampaign;
+  const hadState = !!session.state;
   session.state = await api<AppState>('/api/state');
+  if (hadState && previousCampaign !== session.state.activeCampaign) {
+    session.selected.clear();
+    session.previewId = null;
+    session.offset = 0;
+    if ($('sheet')) $('sheet').value = '';
+  }
   if ($('releasePreviewBanner')) $('releasePreviewBanner').hidden = !session.state.previewMode;
   if ($('appVersion'))
     $('appVersion').textContent = `${session.state.appBuildLabel} · v${session.state.appVersion}`;

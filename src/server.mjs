@@ -1673,7 +1673,7 @@ const server = http.createServer(async (req, res) => {
       );
     }
     if (pathname === "/api/leads") {
-      return response(res, { ...leadReport(candidates(), url.searchParams), campaignId: state.activeCampaign });
+      return response(res, { ...leadReport(candidates(), url.searchParams), campaignId: state.activeCampaign || null });
     }
     if (pathname === "/api/catalog" || pathname === "/api/export-catalog") {
       const catalog = releaseCatalog();

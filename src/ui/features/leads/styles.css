@@ -266,3 +266,15 @@
     grid-column: auto;
   }
 }
+
+/* Labels and actions share one control baseline. */
+#view-leads .leads-filters > label {
+  margin: 0;
+}
+#view-leads .leads-filters .ui-input,
+#view-leads .leads-filters .ui-select,
+html body #leadsReset {
+  height: 39px;
+  min-height: 39px;
+  margin: 0;
+}

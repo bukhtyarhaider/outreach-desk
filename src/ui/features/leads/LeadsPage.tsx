@@ -99,9 +99,7 @@ export function LeadsPage() {
               <option value="location">State / city A–Z</option>
             </Select>
           </label>
-          <Button id="leadsReset" size="sm">
-            Reset filters
-          </Button>
+          <Button id="leadsReset">Reset filters</Button>
         </div>
         <div className="leads-selection-bar">
           <div>

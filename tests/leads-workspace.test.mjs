@@ -17,6 +17,7 @@ test('Leads Workspace supports truthful multi-page selection, previews, recovery
  const state=upgrade(fixture.state);
  state.campaigns[0].reviewRequired=false;
  state.campaigns[0].name='Internal QA audience';
+ state.campaigns.push({...structuredClone(state.campaigns[0]),id:'c2',name:'Second QA campaign'});
  state.profiles[0].email='sender@example.com';
  state.suppression['lead0@example.com']='Do not contact';
  const script=`import sys,zipfile
@@ -96,10 +97,29 @@ with zipfile.ZipFile(sys.argv[1],'w') as z:
  await page.waitForFunction(()=>!document.querySelector('#leadRows').inert);
  await page.locator('#leadsReset').click();
  await page.waitForFunction(()=>document.querySelector('#pageInfo').textContent.includes('54 matching'));
+ // An old running server must produce restart guidance, never a false campaign-change diagnosis.
+ await page.route('**/api/leads?**',async route=>{const res=await route.fetch();const body=await res.json();await route.fulfill({json:{total:body.total,leads:body.leads}});});
+ await page.locator('#leadsSort').selectOption('email');
+ await page.waitForFunction(()=>document.querySelector('#leadsFeedback').textContent.includes('server is still running an older build'));
+ assert.doesNotMatch(await page.locator('#leadsFeedback').innerText(),/campaign changed in another window/);
+ await page.unroute('**/api/leads?**');
+ await page.getByRole('button',{name:'Retry',exact:true}).click();
+ await page.waitForFunction(()=>!document.querySelector('#leadRows').inert);
+ // A real switch from another window refreshes scope and clears old batch identities.
+ await page.locator('#leadRows [data-select]:not(:disabled)').first().check();
+ await raw('select-campaign',{id:'c2'});
+ await page.locator('#leadsSort').selectOption('company');
+ await page.waitForFunction(()=>document.querySelector('#leadsOverview').textContent.includes('Second QA campaign')&&!document.querySelector('#leadRows').inert);
+ assert.match(await page.locator('#leadsSelectionCount').innerText(),/No leads selected/);
+ await raw('select-campaign',{id:'c1'});
+ await page.waitForFunction(()=>document.querySelector('#leadsOverview').textContent.includes('Internal QA audience')&&!document.querySelector('#leadRows').inert);
  for(const width of [1440,390]){
   await page.setViewportSize({width,height:1050});
   await page.locator('#leadsOverview').scrollIntoViewIfNeeded();
   assert(await page.locator('.app-viewport').evaluate(el=>el.scrollWidth<=el.clientWidth+1));
+  const geometry=await page.locator('.leads-filters').evaluate(el=>[...el.querySelectorAll('input,select,#leadsReset')].map(node=>({height:node.getBoundingClientRect().height,bottom:node.getBoundingClientRect().bottom})));
+  assert(geometry.every(item=>Math.abs(item.height-39)<1),JSON.stringify(geometry));
+  if(width===1440)assert(geometry.every(item=>Math.abs(item.bottom-geometry[0].bottom)<1),JSON.stringify(geometry));
   if(process.env.FC_UI_SCREENSHOT_DIR){await fs.mkdir(process.env.FC_UI_SCREENSHOT_DIR,{recursive:true});await page.screenshot({path:path.join(process.env.FC_UI_SCREENSHOT_DIR,`leads-${width}.png`)});await page.locator('.leads-surface').scrollIntoViewIfNeeded();await page.screenshot({path:path.join(process.env.FC_UI_SCREENSHOT_DIR,`leads-table-${width}.png`)});}
  }
  await page.setViewportSize({width:1440,height:1050});
