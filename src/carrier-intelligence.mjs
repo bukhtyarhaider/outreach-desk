@@ -63,5 +63,5 @@ export function carrierIntent(message) {
 }
 export const logicalTime=(m)=>{const header=Date.parse(m.date),captured=Date.parse(m.capturedAt)||0;return Number.isFinite(header)&&header>=0&&header<=captured+300000?header:captured;};
 export function conversationVersion(root,messages,profile,protection) {
-  return digest(JSON.stringify({rules:INTELLIGENCE_VERSION,root:{id:root.id,account:root.account,recipient:root.recipient,sentAt:root.sentAt,subject:root.subject,company:root.company,carrierId:root.carrierId,identityReview:root.identityReview},messages:messages.map((m)=>[m.id,m.fingerprint,m.match,m.category,m.kind,m.reviewedAt]).sort(),profile,protection}));
+  return digest(JSON.stringify({rules:INTELLIGENCE_VERSION,root:{id:root.id,account:root.account,recipient:root.recipient,sentAt:root.sentAt,subject:root.subject,company:root.company,carrierId:root.carrierId,identityReview:root.identityReview,bodyHash:digest(root.body||''),bodyUnavailable:!!root.bodyUnavailable,bodyTruncated:!!root.bodyTruncated,bodyEvidence:root.bodyEvidence||null},messages:messages.map((m)=>[m.id,m.fingerprint,m.match,m.category,m.kind,m.reviewedAt]).sort(),profile,protection}));
 }

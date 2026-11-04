@@ -92,3 +92,15 @@ test('historical inbox order uses message time across backfills and header displ
  await f.ops.replies.ingest(Buffer.from(eml({id:'<older-owner@example.com>',from:'John Smith <'+recipient+'>',text:'What lanes do you cover?'}).toString().replace('Thu, 29 Oct 2026 12:00:00 +0000','Wed, 28 Oct 2026 16:00:00 +0000')),account);
  const rows=(await f.desk.list(new URLSearchParams({work:'all'}))).rows;assert.equal(rows[0].recipient,second);assert.equal(rows[0].contactName,'Maria Lopez');const detail=await f.desk.detail(rows[0].id,'conversation');assert.equal(detail.assistant.fields.contactName.confirmed,null);assert.deepEqual(detail.assistant.fields.contactName.candidates,[]);assert.equal(detail.root.recipient,second);for(const q of ['Maria Lopez','Dedicated lane questions'])assert.deepEqual((await f.desk.list(new URLSearchParams({q}))).rows.map((r)=>r.recipient),[second]);
 });
+
+test('material original-message recovery invalidates exact reply approval without discarding its audit history',async(t)=>{
+ const f=await setup(t,'I am interested.');
+ f.state.history[recipient].body='';await f.ops.replies.refreshHistory();
+ const made=await suggest(f);await approve(f,made.draft);
+ const previous=(await f.get()).assistant.version;
+ f.state.history[recipient].body='Recovered original context with different service details.';
+ await f.ops.replies.refreshHistory();
+ assert.notEqual((await f.get()).assistant.version,previous);
+ await assert.rejects(f.desk.approved(made.draft.id),/review again/);
+ const saved=await f.ops.replies.load();assert(saved.assistant.drafts[made.draft.id].approvedAt);
+});

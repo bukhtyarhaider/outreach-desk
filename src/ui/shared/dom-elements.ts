@@ -27,6 +27,7 @@ export interface UIElements {
   progress: HTMLElementTagNameMap['progress'];
   quota: HTMLElementTagNameMap['span'];
   selectedCount: HTMLElementTagNameMap['span'];
+  sendingTemplate: HTMLSelectElement;
   randomTemplates: HTMLElementTagNameMap['input'];
   batch: HTMLElementTagNameMap['button'];
   profileSelect: HTMLElementTagNameMap['select'];

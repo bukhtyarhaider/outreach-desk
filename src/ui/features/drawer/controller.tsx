@@ -535,6 +535,8 @@ export function mountDrawer() {
     uiScope.handler($('prepare'), 'onclick', () =>
       action($('prepare'), async () => {
         const r = await api<PreviewResponse>('/api/prepare', {
+          campaignId: session.state.activeCampaign,
+          expectedCampaignRevision: session.state.campaignRevision,
           id: session.previewId,
           key: $('template').value,
           randomTemplates: $('randomTemplates').checked,

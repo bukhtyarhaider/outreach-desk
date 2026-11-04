@@ -160,6 +160,23 @@ export function ManualBatchPanel() {
         <Input id="randomTemplates" type="checkbox" defaultChecked />
         Randomly select enabled, matching templates
       </label>
+      <label htmlFor="sendingTemplate">
+        Fixed sending template (used when random selection is off)
+      </label>
+      <select id="sendingTemplate" defaultValue="">
+        <option value="">Choose a sending template</option>
+        {Object.entries(state?.templates ?? {})
+          .filter(([, t]) => t.enabled !== false)
+          .map(([key, t]) => (
+            <option key={key} value={key}>
+              {t.name}
+            </option>
+          ))}
+      </select>
+      <p className="hint">
+        This policy applies to selected batches and continuous outreach. Preview wording is selected
+        separately in the lead drawer.
+      </p>
       <div className="form-actions dashboard-batch-actions">
         <Button id="batch">
           <Icon icon={Send} size={14} />

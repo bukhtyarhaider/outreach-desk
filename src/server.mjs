@@ -594,7 +594,7 @@ async function runner() {
           continue;
         }
         let choice = null;
-        const campaigns = state.campaigns.filter((c) => c.enabled);
+        const campaigns = state.campaigns.filter((c) => c.enabled && (!a.campaignIds || a.campaignIds.includes(c.id)));
         for (let i = 0; i < campaigns.length; i++) {
           const c = campaigns[((a.campaignCursor || 0) + i) % campaigns.length];
           const lead = candidates(c.id).find(
@@ -704,6 +704,36 @@ async function runner() {
     await persist();
   }
 }
+function launchPlan(input) {
+  const mode = input.mode;
+  if (!['selected', 'continuous'].includes(mode)) throw new Error('Choose selected or continuous outreach.');
+  if (input.campaignId !== state.activeCampaign || input.profileId !== state.activeProfile)
+    throw Object.assign(new Error('Mailbox or campaign changed. Review the launch again.'), { status: 409 });
+  const ids = input.ids || [];
+  if (mode === 'selected' && (!Array.isArray(ids) || !ids.length || new Set(ids).size !== ids.length))
+    throw new Error('Choose distinct eligible leads.');
+  if (mode === 'selected') ids.forEach(id => eligible(id));
+  const campaigns = state.campaigns.filter(c => c.enabled && (mode !== 'selected' || c.id === input.campaignId));
+  if (!campaigns.length) throw new Error('Enable the intended campaign before launching.');
+  const randomTemplates = input.randomTemplates !== false;
+  if (!randomTemplates && template(input.key).enabled === false) throw new Error('Choose an enabled sending template.');
+  const recipients = new Set();
+  const audience = campaigns.map(c => ({ id: c.id, name: c.name, leads: candidates(c.id).filter(l => {
+    if (l.blocked || recipients.has(l.email) || (mode === 'selected' && !ids.includes(l.id))) return false;
+    recipients.add(l.email); return true;
+  }) }));
+  const count = audience.reduce((n, c) => n + c.leads.length, 0);
+  if (!count) throw new Error('No eligible recipients in this launch.');
+  const pool = Object.entries(state.templates).filter(([, t]) => t.enabled !== false);
+  for (const campaign of audience) for (const lead of campaign.leads) {
+    const matches = randomTemplates ? pool.filter(([, t]) => (t.requiredFields || []).every(f => !!lead.fields[f])) : [[input.key, template(input.key)]];
+    if (!matches.length || matches.some(([, t]) => !(t.requiredFields || []).every(f => !!lead.fields[f]))) throw new Error(`No eligible sending template for ${lead.company}.`);
+    for (const [, t] of matches) { const msg = render(lead, t, business()); if (assessChecks(msg, state.settings.templateChecks).blockers.length) throw new Error(`Review template checks for ${lead.company}.`); }
+  }
+  const request = { mode, campaignIds: campaigns.map(c => c.id), ids: mode === 'selected' ? ids : undefined, campaignId: input.campaignId, profileId: input.profileId, randomTemplates, key: randomTemplates ? undefined : input.key };
+  const token = hash(JSON.stringify({ request, campaignRevision, settings: state.settings, profiles: state.profiles, campaigns: state.campaigns, templates: state.templates, audience: audience.map(c => [c.id, c.leads]), history: state.history, protection: state.sourceProtections, suppression: state.suppression, teamSnapshot }));
+  return { token, request, count, sender: profile().email, campaigns: audience.map(({ id, name, leads }) => ({ id, name, count: leads.length })), templatePolicy: randomTemplates ? 'Random enabled templates matching each lead' : template(input.key).name, pacing: state.settings.pacing };
+}
 async function startAutomation(input) {
   if (prepared) throw new Error("Close the prepared message first.");
   checkBusiness();
@@ -719,6 +749,7 @@ async function startAutomation(input) {
   a.status = "Starting";
   a.message = "Continuous queue starting.";
   a.mode = input.ids ? "selected" : "continuous";
+  a.campaignIds = input.campaignIds || null;
   a.selected = input.ids?.map((id) => `${state.activeCampaign}:${id}`) || null;
   a.randomTemplates = input.randomTemplates !== false;
   a.templateKey = input.key || Object.keys(state.templates)[0];
@@ -786,7 +817,7 @@ const server = http.createServer(async (req, res) => {
       return response(res, { error: "Invalid host" }, 403);
     const url = new URL(req.url, `http://${expected}`),
       pathname = url.pathname;
-    if (PREVIEW_MODE && ["/api/connect", "/api/resume", "/api/prepare", "/api/send", "/api/start", "/api/batch", "/api/tracking/seed-send", "/api/conversations/scan"].includes(pathname))
+    if (PREVIEW_MODE && ["/api/connect", "/api/resume", "/api/prepare", "/api/send", "/api/start", "/api/batch", "/api/launch", "/api/tracking/seed-send", "/api/conversations/scan"].includes(pathname))
       return response(res, { error: "Sample preview: sending and mailbox connections are disabled." }, 403);
     if (req.method === "POST") {
       if (
@@ -1400,6 +1431,9 @@ const server = http.createServer(async (req, res) => {
             );
           checkBusiness();
           await syncTeam();
+          if ((input.campaignId !== undefined && input.campaignId !== state.activeCampaign) ||
+              (input.expectedCampaignRevision !== undefined && input.expectedCampaignRevision !== campaignRevision))
+            throw Object.assign(new Error('Campaign changed. Reload and review this lead again.'), { status: 409 });
           const l = eligible(input.id);
           const key = input.randomTemplates
             ? pickTemplate(state.templates, l)
@@ -1428,6 +1462,16 @@ const server = http.createServer(async (req, res) => {
           await syncTeam();
           await sendPrepared();
           state.automation.message = "Send confirmed. Workbook updated.";
+          return response(res, { ok: true });
+        }
+        if (pathname === '/api/launch-plan' || pathname === '/api/launch') {
+          await syncTeam();
+          checkBusiness();
+          const plan = launchPlan(input);
+          if (pathname === '/api/launch-plan') return response(res, plan);
+          if (!input.expectedContext || input.expectedContext !== plan.token)
+            throw Object.assign(new Error('Launch context changed. Review the current sender, audience and template policy again.'), { status: 409 });
+          await startAutomation(plan.request);
           return response(res, { ok: true });
         }
         if (pathname === "/api/start" || pathname === "/api/batch") {
@@ -1570,6 +1614,7 @@ const server = http.createServer(async (req, res) => {
           .length,
       };
       return response(res, {
+        campaignRevision,
         deletedCampaigns: (state.deletedCampaigns || []).map(t => ({ id: t.campaign.id, name: t.campaign.name, deletedAt: t.deletedAt })),
         version: 2,
         appVersion: APP_VERSION,

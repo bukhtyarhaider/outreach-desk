@@ -1,3 +1,11 @@
+# Phase 2 first increment — November 4, 2026
+
+On `feat/product-quality-roadmap`, Phase 1 is retained as commit `b36efa9`; Phase 2 is a separate increment, committed at the user’s request before Phase 3 starts. Full Node 22.23.4/Chrome verification passed **239/239 JavaScript and 12/12 Python tests**, zero failures/skips (approximately 172 seconds for JavaScript). Strict TypeScript, formatting, UI build, server syntax and diff checks passed.
+
+New coverage verifies reviewed launch context, fixed sending policy independent of preview, review cancellation, stale campaign/revision/wording rejection, cross-campaign recipient deduplication, retained campaign scope, and reply approval invalidation after material original-body recovery. Tests used temporary synthetic workspaces and fake mail; no real email or production-state change occurred. Legacy local launch endpoints remain a documented compatibility boundary. See `docs/PHASE-2-PROGRESS.md` for implemented scope and remaining work; Phase 2 is not complete.
+
+---
+
 # Phase 1 integrity and reliability — November 4, 2026
 
 Internal working changes on `feat/bauhaus-saas-ui-revamp`, based on audit commit `3aca754f4f3e9dcd8ad6d7c9247e961da50af46a`; application package remains `0.1.0-alpha.1`. This validation does not identify a newly distributed package.

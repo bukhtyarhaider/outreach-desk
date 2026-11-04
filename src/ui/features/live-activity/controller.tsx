@@ -22,6 +22,36 @@ export function eventIdentity(event: ActivityEvent): string {
   ]);
 }
 
+interface LaunchReview {
+  token: string;
+  request: Record<string, unknown>;
+  count: number;
+  sender: string;
+  templatePolicy: string;
+  campaigns: Array<{ id: string; name: string; count: number }>;
+  pacing: { minSeconds: number; maxSeconds: number; hourlyCap: number; dailyCap: number };
+}
+async function reviewLaunch(mode: 'selected' | 'continuous') {
+  const plan = await api<LaunchReview>('/api/launch-plan', {
+    mode,
+    ids: mode === 'selected' ? [...session.selected] : undefined,
+    campaignId: session.state.activeCampaign,
+    profileId: session.state.activeProfile,
+    key: $('sendingTemplate').value,
+    randomTemplates: $('randomTemplates').checked,
+  });
+  const summary = `Start ${mode} outreach from ${plan.sender}?\n\n${plan.count} eligible recipients now\n${plan.campaigns.map((c) => `${c.name}: ${c.count}`).join('\n')}\n\nTemplate policy: ${plan.templatePolicy}\nGap: ${plan.pacing.minSeconds}–${plan.pacing.maxSeconds}s; caps: ${plan.pacing.hourlyCap}/hour, ${plan.pacing.dailyCap}/24h.\n\nThe queue will recheck protections before each send. Continuous outreach also checks future eligible leads in these reviewed campaigns.`;
+  if (
+    !(await confirmAction(summary, {
+      title: 'Review outreach launch',
+      confirmLabel: 'Start reviewed outreach',
+    }))
+  )
+    return false;
+  await api('/api/launch', { ...plan.request, expectedContext: plan.token });
+  return true;
+}
+
 let pausedEvents: ActivityEvent[] | null = null;
 
 let latestEventKey: string | null = null;
@@ -531,11 +561,7 @@ export function mountLiveActivity() {
   if ($('batch'))
     uiScope.handler($('batch'), 'onclick', () =>
       action($('batch'), async () => {
-        await api('/api/batch', {
-          ids: [...session.selected],
-          key: $('template').value,
-          randomTemplates: $('randomTemplates').checked,
-        });
+        if (!(await reviewLaunch('selected'))) return;
         session.selected.clear();
         notice('Batch dispatch initiated.');
       }),
@@ -543,10 +569,7 @@ export function mountLiveActivity() {
   if ($('start'))
     uiScope.handler($('start'), 'onclick', () =>
       action($('start'), async () => {
-        await api('/api/start', {
-          key: $('template').value,
-          randomTemplates: $('randomTemplates').checked,
-        });
+        if (!(await reviewLaunch('continuous'))) return;
         notice('Continuous outreach started.');
       }),
     );
