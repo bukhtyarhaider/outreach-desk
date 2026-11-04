@@ -47,18 +47,8 @@ async function stopProcessGracefully(pid) {
   } catch {
     return;
   }
-  try {
-    if (process.platform === "win32") {
-      try {
-        process.kill(pid);
-      } catch {}
-    } else {
-      process.kill(pid, "SIGTERM");
-    }
-  } catch (e) {
-    if (e.code === "ESRCH") return;
-  }
-  for (let i = 0; i < 30; i++) {
+  await fetch(`http://127.0.0.1:${PORT}/api/shutdown`, { method: 'POST', headers: { 'X-FC-Request': '1' }, signal: AbortSignal.timeout(2000) });
+  for (let i = 0; i < 300; i++) {
     await new Promise((r) => setTimeout(r, 100));
     try {
       process.kill(pid, 0);
@@ -66,9 +56,7 @@ async function stopProcessGracefully(pid) {
       return;
     }
   }
-  try {
-    process.kill(pid, "SIGKILL");
-  } catch {}
+  throw new Error("Shutdown is still in progress. Wait for the original process to finish; its lock was retained.");
 }
 
 async function lock() {
@@ -92,9 +80,11 @@ async function lock() {
         process.argv.includes("--restart") ||
         process.argv.includes("--force")
       ) {
+        const identity = await fetch(`http://127.0.0.1:${PORT}/api/instance`, { signal: AbortSignal.timeout(1500) }).then(r => r.json()).catch(() => null);
+        if (identity?.pid !== pid) throw new Error('Cannot verify the lock owner. Stop the original app manually; no process was terminated.');
         console.log(`[Outreach Desk] Stopping previous instance (PID ${pid})...`);
         await stopProcessGracefully(pid);
-        await fs.unlink(lockPath).catch(() => {});
+        if (Number(await fs.readFile(lockPath, "utf8").catch(() => "")) === pid) await fs.unlink(lockPath).catch(() => {});
         return lock();
       }
       throw new Error(`Another instance is using this data folder (PID: ${pid}).`);
@@ -277,6 +267,7 @@ async function reload(c = activeCampaign()) {
       l.hidden = parsed.sheets.find((s) => s.part === l.part)?.hidden;
       l.campaignId = c.id;
     }
+    await retainSourceProtections(parsed.leads);
     campaignData.set(c.id, parsed);
     campaignRevision++;
   } catch (err) {
@@ -286,6 +277,7 @@ async function reload(c = activeCampaign()) {
   }
 }
 for (const c of state.campaigns) await reload(c);
+await retainSourceProtections([...campaignData.values()].flatMap(d => d.leads));
 if (state.automation.enabled) {
   state.automation.status = "Waiting for mailbox";
   state.automation.message =
@@ -312,7 +304,7 @@ async function syncTeam() {
           },
         ]),
       );
-      const suppression = { ...state.suppression };
+      const suppression = { ...state.sourceProtections, ...state.suppression };
       for (const dataset of campaignData.values())
         for (const lead of dataset.leads) {
           const notes = `${lead.status} ${lead.fields["historical notes"] || ""}`;
@@ -343,12 +335,27 @@ async function syncTeam() {
     seededTeamUrl = null;
   }
 }
+async function retainSourceProtections(leads = []) {
+  state.sourceProtections ||= {};
+  for (const lead of leads) {
+    const notes = `${lead.status || ''} ${lead.fields?.['historical notes'] || ''}`;
+    const reason = /unsubscribe|remove|do not contact|opt.?out|declined|not interested|bounc/i.test(notes)
+      ? 'Workbook opt-out / declined / bounce'
+      : /sent|email send|proposal|follow.?up|replied|interested|client|onboard/i.test(notes) ? 'Previously contacted in workbook' : null;
+    if (reason && lead.email) state.sourceProtections[lead.email] ||= reason;
+  }
+  // Import archives retain protections even after their source campaign disappears.
+  const archived = await carriers.imports.load();
+  for (const [email, reasons] of Object.entries(archived.protections || {}))
+    state.sourceProtections[email] ||= Array.isArray(reasons) ? reasons.join('; ') : String(reasons);
+  await persist();
+}
 function candidates(campaignId = state.activeCampaign) {
   const data = campaignData.get(campaignId) || { leads: [] },
     c = state.campaigns.find((c) => c.id === campaignId);
   const globalState = {
     ...state,
-    suppression: { ...state.suppression, ...teamSnapshot.suppression },
+    suppression: { ...state.sourceProtections, ...state.suppression, ...teamSnapshot.suppression },
     history: { ...teamSnapshot.records, ...state.history },
   };
   for (const dataset of campaignData.values())
@@ -450,8 +457,8 @@ async function sendPrepared() {
   const p = prepared,
     lead = eligible(p.id, p.campaignId),
     account = profile();
-  if (currentQuota().waitMs)
-    throw new Error("Mailbox sending allowance reached.");
+  const wait = pacingWait(true);
+  if (wait) throw new Error(`${wait.message} Retry after ${wait.seconds} seconds.`);
   await mail.validate();
   let reservation = null;
   let pacingEpoch = pacingReset()?.id;
@@ -496,7 +503,7 @@ async function sendPrepared() {
       lead,
       message: p.message,
       persist,
-      send: () => mail.send({ beforeSubmit: () => { const hold = carriers.guard(lead.email); if (hold) throw new Error(hold); } }),
+      send: () => mail.send({ beforeSubmit: () => { const hold = state.sourceProtections?.[lead.email] || state.suppression[lead.email] || carriers.guard(lead.email); if (hold) throw new Error(hold); } }),
       syncStatus,
       event,
       onConfirmed: () => {
@@ -792,6 +799,11 @@ const server = http.createServer(async (req, res) => {
       if (req.headers["x-fc-request"] !== "1")
         return response(res, { error: "Missing request header" }, 403);
       if (pathname === "/api/conversations/stop-capture") {req.resume();carriers.capture.stop();return response(res,{ok:true,message:"Stopping read-only scan; saved progress is retained."});}
+      if (pathname === "/api/shutdown") {
+        req.resume(); response(res, { ok: true });
+        setImmediate(() => process.emit('SIGTERM'));
+        return;
+      }
       if (pathname === "/api/stop") {
         state.automation.enabled = false;
         state.automation.message = "Stopping after the current operation…";
@@ -1200,6 +1212,19 @@ const server = http.createServer(async (req, res) => {
           await persist();
           return response(res, { ok: true });
         }
+        if (pathname === "/api/restore-campaign") {
+          if (state.automation.enabled || prepared) throw new Error('Stop outreach and close compose before restoring a campaign.');
+          const index = (state.deletedCampaigns || []).findIndex(t => t.campaign.id === input.id);
+          if (index < 0) throw new Error('Retained campaign not found.');
+          const entry = state.deletedCampaigns[index];
+          if (!existsSync(path.join(DATA, entry.campaign.workbook.file))) throw new Error('Retained workbook is missing. Restore its backup.');
+          const restored = { ...entry.campaign, enabled: false };
+          state.campaigns.push(restored);
+          state.deletedCampaigns.splice(index, 1);
+          try { await persist(); } catch (error) { state.campaigns.pop(); state.deletedCampaigns.splice(index, 0, entry); throw error; }
+          await reload(restored);
+          return response(res, { ok: true });
+        }
         if (pathname === "/api/delete-campaign") {
           if (state.automation.enabled || prepared)
             throw new Error(
@@ -1209,22 +1234,23 @@ const server = http.createServer(async (req, res) => {
           const cIndex = state.campaigns.findIndex((c) => c.id === targetId);
           if (cIndex === -1) throw new Error("Campaign workspace not found.");
           const c = state.campaigns[cIndex];
+          await retainSourceProtections([...campaignData.values()].flatMap(d => d.leads));
+          const previous = { campaigns: [...state.campaigns], activeCampaign: state.activeCampaign, workbook: state.workbook };
+          state.deletedCampaigns ||= [];
+          const tombstone = { campaign: structuredClone(c), deletedAt: new Date().toISOString() };
+          state.deletedCampaigns.push(tombstone);
           state.campaigns.splice(cIndex, 1);
-          campaignData.delete(targetId);
           if (state.activeCampaign === targetId) {
             state.activeCampaign = state.campaigns[0]?.id || null;
             state.workbook = state.campaigns[0]?.workbook || null;
           }
-          const stillUsed = state.campaigns.some(
-            (other) => other.workbook?.file === c.workbook?.file,
-          );
-          if (!stillUsed && c.workbook?.file) {
-            try {
-              await fs.unlink(path.join(DATA, c.workbook.file));
-            } catch {}
-          }
-          event(`Deleted workspace ${c.name}.`);
-          await persist();
+          // Retain the original working file: the durable tombstone is a reversible
+          // logical Trash entry. Never destroy files before publication succeeds.
+          try { await persist(); }
+          catch (error) { Object.assign(state, previous); state.deletedCampaigns.pop(); throw error; }
+          campaignData.delete(targetId);
+          campaignRevision++;
+          event(`Moved workspace ${c.name} to retained Trash.`);
           return response(res, {
             ok: true,
             activeCampaign: state.activeCampaign,
@@ -1241,6 +1267,7 @@ const server = http.createServer(async (req, res) => {
             throw new Error("Select at least one lead to delete.");
           const c = activeCampaign();
           if (!c) throw new Error("No active campaign workbook found.");
+          await retainSourceProtections([...campaignData.values()].flatMap(d => d.leads));
           await python("delete", path.join(DATA, c.workbook.file), {
             ids: input.ids,
             mapping: c.mapping,
@@ -1422,10 +1449,12 @@ const server = http.createServer(async (req, res) => {
             .toLowerCase();
           if (!EMAIL.test(email)) throw new Error("Enter one valid email.");
           const reason = String(input.reason || "Do not contact").slice(0, 200);
-          await team.call("suppress", { email, reason });
           state.suppression[email] = reason;
+          state.replySuppressionOutbox ||= {};
+          state.replySuppressionOutbox[email] = { reason, capturedAt: new Date().toISOString() };
           event(`Suppressed ${email}.`);
           await persist();
+          void carriers.flushSuppression().catch(() => {});
           return response(res, { ok: true });
         }
         if (pathname === "/api/unsuppress") {
@@ -1434,16 +1463,16 @@ const server = http.createServer(async (req, res) => {
             .toLowerCase();
           if (!EMAIL.test(email)) throw new Error("Enter one valid email.");
           if (carriers.guard(email)) throw new Error("A captured opt-out protects this contact. Review its conversation evidence; category edits do not clear opt-outs.");
-          delete state.suppression[email];
-          if (teamSnapshot.suppression?.[email])
-            delete teamSnapshot.suppression[email];
+          if (state.sourceProtections?.[email]) throw new Error("Source evidence protects this address. Removing a campaign cannot clear its protection.");
           if (state.settings.team.enabled) {
-            try {
-              await team.call("unsuppress", { email });
-            } catch (err) {
-              console.error("Team unsuppress error:", err.message);
-            }
+            if (state.replySuppressionOutbox?.[email] || carriers.flushing)
+              throw new Error('Protection delivery is pending. Wait for coordinator synchronization before removing it.');
+            await team.call("unsuppress", { email });
           }
+          delete state.suppression[email];
+          if (state.replySuppressionOutbox) delete state.replySuppressionOutbox[email];
+          if (state.replySuppressionSent) delete state.replySuppressionSent[email];
+          if (teamSnapshot.suppression?.[email]) delete teamSnapshot.suppression[email];
           event(`Removed ${email} from suppression list.`);
           await persist();
           return response(res, { ok: true });
@@ -1505,6 +1534,7 @@ const server = http.createServer(async (req, res) => {
     }
     if (req.method !== "GET")
       return response(res, { error: "Method not allowed" }, 405);
+    if (pathname === "/api/instance") return response(res, { pid: process.pid });
     if (pathname === "/api/campaigns") {
       const workspace = await carriers.imports.load();
       return response(res, { campaigns: state.campaigns.map((c) => ({ id: c.id, name: c.name, available: existsSync(path.join(DATA, c.workbook.file)), hasWorkspace: Object.values(workspace.imports).some((e) => e.campaignId === c.id) })), activeCampaign: state.activeCampaign });
@@ -1540,6 +1570,7 @@ const server = http.createServer(async (req, res) => {
           .length,
       };
       return response(res, {
+        deletedCampaigns: (state.deletedCampaigns || []).map(t => ({ id: t.campaign.id, name: t.campaign.name, deletedAt: t.deletedAt })),
         version: 2,
         appVersion: APP_VERSION,
         appBuildLabel: APP_BUILD_LABEL,
@@ -1564,7 +1595,7 @@ const server = http.createServer(async (req, res) => {
         busy,
         job: job(),
         prepared,
-        suppression: { ...state.suppression, ...teamSnapshot.suppression },
+        suppression: { ...state.sourceProtections, ...state.suppression, ...teamSnapshot.suppression },
         attemptCount: Object.keys(state.history).length,
         attempts: Object.fromEntries(
           Object.entries(state.history)

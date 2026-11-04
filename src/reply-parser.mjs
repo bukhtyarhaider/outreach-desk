@@ -23,7 +23,12 @@ export function suggestCategory(text) {
   const t = text.trim();
   // Negated or quoted instructions must not silently create an opt-out.
   const negation = /(?:don['’]?t|do not|never|not asking.{0,15}to)\s+(?:unsubscribe|remove|stop)|not.{0,15}(?:opt.?out|unsubscribe)/i.test(t);
-  if (!negation && (/^(?:remove|unsubscribe|stop)[.!]?$/i.test(t) || /\b(?:please\s+)?(?:remove (?:me|us|my (?:email|address))|unsubscribe (?:me|us)|stop (?:emailing|contacting|sending)|do not (?:email|contact)|take (?:me|us) off)\b/i.test(t))) return { category: 'opt_out', reason: 'Explicit request in newly written text', definiteOptOut: true };
+  const stopRequest = t.split(/[.!?;\n]+/).some((part) => {
+    const clause = part.trim();
+    const clauseNegated = /(?:don['’]?t|do not|never|not asking.{0,15}to)\s+(?:unsubscribe|remove|stop)|not.{0,15}(?:opt.?out|unsubscribe)/i.test(clause);
+    return !clauseNegated && (/^(?:please\s+)?(?:unsubscribe|stop)[.!]?$/i.test(clause) || /\b(?:do not|don['’]?t) send (?:me|us)(?: any)?(?: more)? (?:emails?|messages?)\b/i.test(clause) || /\bremove my (?:company|business) from (?:your|the) list\b/i.test(clause) || /^(?:remove|unsubscribe|stop)[.!]?$/i.test(clause) || /\b(?:please\s+)?(?:remove (?:me|us|my (?:email|address))|unsubscribe (?:me|us)|stop (?:emailing|contacting|sending)|do not (?:email|contact)|take (?:me|us) off)\b/i.test(clause));
+  });
+  if (stopRequest) return { category: 'opt_out', reason: 'Explicit request in newly written text', definiteOptOut: true };
   if (/\b(?:price|pricing|fees?|how much|percentage|cost)\b/i.test(t)) return { category: 'pricing', reason: 'Pricing question keywords' };
   if (/\b(?:already|have|using).{0,25}(?:dispatcher|dispatch service)\b/i.test(t)) return { category: 'already_has_dispatcher', reason: 'Existing dispatch support mentioned' };
   if (/\b(?:not interested|no thanks|not a fit)\b/i.test(t)) return { category: 'not_fit', reason: 'Disinterest wording' };

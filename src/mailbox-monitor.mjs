@@ -121,8 +121,14 @@ export class MailboxMonitor {
     for (const uid of (uids || []).filter((n) => n > cursor.uid).sort((a, b) => a - b).slice(0, 100)) {
       if (this.stopped) return;
       const meta = await client.fetchOne(String(uid), { size: true }, { uid: true });
+      if (!meta) {
+        if ((await client.search({ uid: String(uid) }, { uid: true }) || []).includes(uid))
+          throw new Error('Message metadata unavailable; cursor retained.');
+      } else if (!Number.isFinite(meta.size)) throw new Error('Message size unavailable; cursor retained.');
       if (meta && meta.size <= 2_000_000) {
         const fetched = await client.fetchOne(String(uid), { source: true }, { uid: true });
+        if (!fetched?.source && (await client.search({ uid: String(uid) }, { uid: true }) || []).includes(uid))
+          throw new Error('Message source unavailable; cursor retained.');
         if (fetched?.source) {
           try {
             if (sent) await reconcileSent(t, fetched.source, config.user);

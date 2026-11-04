@@ -1,3 +1,5 @@
+import { api, notice } from '../../shared/runtime';
+import { refresh } from '../../app/runtime/refresh';
 import { PageHeader, SummaryStrip } from '../../design-system/layout';
 import { useWorkspace } from '../../shared/workspace-store';
 import { CreateCampaignLink } from './CreateCampaignLink';
@@ -29,6 +31,31 @@ export function CampaignsPage() {
         ]}
       />
       <CampaignOverview />
+      {!!state?.deletedCampaigns?.length && (
+        <section aria-label="Retained campaign Trash">
+          <h2>Retained campaign Trash</h2>
+          <p>Working files and contact protections are retained. Restored campaigns stay paused.</p>
+          {state.deletedCampaigns.map((c) => (
+            <p key={c.id}>
+              {c.name}{' '}
+              <button
+                disabled={state.busy || state.job.enabled}
+                onClick={async () => {
+                  try {
+                    await api('/api/restore-campaign', { id: c.id });
+                    await refresh();
+                    notice('Campaign restored and paused.');
+                  } catch (error) {
+                    notice(error instanceof Error ? error.message : 'Restore failed.');
+                  }
+                }}
+              >
+                Restore
+              </button>
+            </p>
+          ))}
+        </section>
+      )}
     </section>
   );
 }

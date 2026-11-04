@@ -10,7 +10,7 @@ export async function deleteActiveCampaign(btn: HTMLButtonElement) {
   const c = session.state.campaigns.find((c) => c.id === campaignId);
   if (
     !(await confirmAction(
-      `Are you sure you want to delete workspace "${c?.name || 'Current'}" and all its leads?`,
+      `Are you sure you want to move workspace to retained Trash "${c?.name || 'Current'}" and its leads out of the active workspace? Files and protections will be retained.`,
     ))
   )
     return;
@@ -22,7 +22,7 @@ export async function deleteActiveCampaign(btn: HTMLButtonElement) {
     await refresh();
     fillCampaign();
     await loadLeads();
-    notice('Workspace deleted.');
+    notice('Workspace moved to retained Trash. Restore it from Campaigns.');
   });
 }
 

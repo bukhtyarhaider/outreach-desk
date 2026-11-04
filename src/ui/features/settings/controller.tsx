@@ -12,7 +12,7 @@ import { Icon, Trash2 } from '../../design-system/icons';
 import type { BrowserDiscoveryResponse } from '../../shared/types/api';
 import { Button } from '../../design-system/primitives';
 import { uiScope } from '../../shared/lifecycle';
-import { renderRegion } from '../../shared/regions';
+import { renderRegion, renderStableRegion } from '../../shared/regions';
 import { displayText } from '../../shared/utils';
 import type { Profile, Pacing } from '../../shared/types/domain';
 import { eventElement } from '../../shared/dom';
@@ -29,7 +29,7 @@ export function renderProfilesTable() {
   if (countBadge) {
     countBadge.textContent = `${session.state.profiles.length} Profile${session.state.profiles.length === 1 ? '' : 's'}`;
   }
-  renderRegion(
+  renderStableRegion(
     tbody,
     session.state.profiles.length ? (
       session.state.profiles.map((p) => {

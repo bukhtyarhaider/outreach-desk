@@ -144,6 +144,7 @@ export interface Attempt {
 }
 import type { FirebaseDiagnostics } from './firebase';
 export interface AppState {
+  deletedCampaigns?: Array<{ id: string; name: string; deletedAt: string }>;
   version: number;
   appVersion: string;
   appBuildLabel: string;

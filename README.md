@@ -15,7 +15,7 @@ The earlier `feat/sales-experiments` branch is preserved for later research. Tea
 ## Install on Windows and macOS
 
 1. Extract `Outreach-Desk-0.1.0-alpha.1.zip` to a permanent folder on each PC. Give every OS user their own installation/data folder.
-2. Install [Node.js 20+](https://nodejs.org/), [Python 3.9+](https://www.python.org/downloads/), and Google Chrome or Microsoft Edge. On Windows select **Add Python to PATH** during installation.
+2. Install [Node.js 22, 24 or 26 LTS](https://nodejs.org/), [Python 3.11+](https://www.python.org/downloads/), and Google Chrome or Microsoft Edge. On Windows select **Add Python to PATH** during installation.
 3. Windows: open `Setup-Windows.cmd` once, then `Start-Windows.cmd`. macOS: open `Setup-Mac.command` once, then `Start-Mac.command`. If macOS strips execute permission from the archive, run `chmod +x *.command` in that folder. Setup installs the locked npm dependencies from the npm registry.
 4. The launcher opens http://127.0.0.1:4317. Keep its terminal open while using the tool. Closing it stops the local server. Linux also works with `npm ci` then `npm run launch`.
 
@@ -36,7 +36,7 @@ The launcher (`scripts/launch.mjs`) manages process lifecycles and enforces sing
   - `npm run launch -- --restart` (or `-r`): Stop existing instance and restart.
   - `npm run launch -- --close` (or `--stop`): Stop the running instance cleanly.
   - `npm run launch -- --open` (or `-o`): Open active instance in browser without prompting.
-- **Stale lock recovery**: If an abnormal OS shutdown leaves `data/app.lock`, the launcher checks process health, removes orphaned lock files, and terminates unresponsive background PIDs before starting fresh.
+- **Stale lock recovery**: If an abnormal OS shutdown leaves `data/app.lock`, the launcher verifies the lock owner through the application instance endpoint. Unverified live PIDs require manual inspection and are never terminated automatically.
 
 ## Configure a mailbox and campaign
 
@@ -81,8 +81,8 @@ Profiles contain sensitive login material. Keep them on the same device/OS user,
 Add `.xlsx` files as campaigns. Imports make a working copy and preserve an original backup. Use the campaign selector to inspect each one, name it, enable/disable it, limit it to exact worksheet names, or delete obsolete campaign workspaces. The continuous queue rotates through enabled campaigns; **Send selected leads** only processes the selected recipients, respecting the same pacing and allowances.
 
 - **Lead Preview Drawer & Modal**: Click any lead in the Leads table to slide open the Lead Inspector drawer, displaying all imported spreadsheet fields, carrier operating status, eligibility reasons, and rendered template previews.
-- **Surgical Lead Deletion**: Select individual or multiple leads in the Leads table and click **Delete selected leads** to permanently and surgically purge them from the underlying campaign `.xlsx` workbook using Python openpyxl routines without affecting surrounding formatting or formula caches.
-- **Campaign Workspace Deletion**: In **Campaigns**, delete unused campaigns to remove their working copies and clean up workspace memory.
+- **Surgical Lead Deletion**: Select individual or multiple leads in the Leads table and click **Delete selected leads** to permanently and surgically purge them from the underlying campaign `.xlsx` workbook using the Python ZIP/XML worker without affecting surrounding formatting or formula caches.
+- **Campaign Trash**: Removing a campaign retains its working workbook and source protections. Open **Campaigns → Retained campaign Trash → Restore** to restore it paused. Files are not automatically purged. Removing a campaign or lead never clears durable source protections.
 
 Column headers supported by default include `Carrier Legal Name`/`Company`/`Company name`, `Email`/`Email address`, `Status`, and `Owner / Principal`/`Contact`/`Contact name`. Optional per-worksheet mappings are editable under **Campaign settings**:
 
@@ -136,10 +136,10 @@ Each message uses one recipient and keeps any existing webmail signature unchang
 ### Telemetry, suppression and audit
 
 - **Live System Activity**: A dedicated real-time telemetry console with visual status feeds, raw terminal logs, pacing countdowns, event category filters (`all`, `send`, `pacing`, `error`, `system`), freeze/pause stream controls, log clear (`/api/clear-events`), and export as `.json` or `.log`/`.txt`.
-- **Suppression List Management**: Add opt-outs to **Suppression list**. Operators can also remove/unsuppress addresses (`/api/unsuppress`); removals automatically synchronize with the shared team coordinator.
+- **Suppression List Management**: Add opt-outs to **Suppression list**. Operators can also remove/unsuppress addresses (`/api/unsuppress`); shared removals require coordinator acknowledgment, and pending additions must finish syncing first. Source-derived and captured opt-out protections cannot be cleared through this action.
 - **Send History & Audit**: Searchable, paginated send history with full message details, inspector drawer, open telemetry badges, bounce diagnostics, and recovery action center. **Export full history** exports all saved attempts, tracking metadata, and events as JSON.
 
-Uncertain sends never retry automatically. Check the Sent folder and record the outcome in Activity. Workbook updates can be repaired without another send. Add opt-outs to **Do not contact**. Optional IMAP monitoring records confidently correlated DSN bounces and suppresses permanent failures; automatic opt-out reply interpretation is not implemented. These rules and conservative pacing do not guarantee inbox placement or bypass provider controls.
+Uncertain sends never retry automatically. Check the Sent folder and record the outcome in Activity. Workbook updates can be repaired without another send. Add opt-outs to **Do not contact**. Optional IMAP monitoring records confidently correlated DSN bounces and suppresses permanent failures; carrier capture separately interprets explicit opt-outs, with manual review for ambiguous wording. These rules and conservative pacing do not guarantee inbox placement or bypass provider controls.
 
 ## Shared team server
 
@@ -236,7 +236,7 @@ Run `FC_BROWSER_TESTS=1 npm test` on macOS (PowerShell: `$env:FC_BROWSER_TESTS='
 
 Metrics include confirmed sends, first-seen signals, seen/confirmed-send percentage, tracking coverage, average/median/fastest confirmed-send-to-first-image-request intervals, sample/exclusion counts and manually reviewed replies. Missing tracking is shown separately from a tracked message with no signal. Timing requires a valid confirmed-send timestamp and a first signal at or after it. Remote image requests can come from previews or scanners; they do not prove human reading. Reply state and reasons are entered manually after inspecting the mailbox; the app does not infer replies or why someone has not replied.
 
-Use **Filtered CSV**, **Filtered JSON**, **Stats CSV** or the existing **Full history backup**. CSV includes recipients, mailbox/campaign/template, send timestamps, first/last seen, retained hourly signal count, delay in seconds, bounce evidence and manual reply notes. Stats CSV uses `Ms` suffixes for duration metrics and percentages for rate metrics. CSV cells protect spreadsheet formulas. Full JSON keeps the prior backup sections; filtered JSON includes only matching send/tracking records.
+Use **Filtered CSV**, **Filtered JSON**, **Stats CSV** or the existing **Export all send history**. CSV includes recipients, mailbox/campaign/template, send timestamps, first/last seen, retained hourly signal count, delay in seconds, bounce evidence and manual reply notes. Stats CSV uses `Ms` suffixes for duration metrics and percentages for rate metrics. CSV cells protect spreadsheet formulas. Full JSON keeps the prior backup sections; filtered JSON includes only matching send/tracking records.
 
 **Version Catalog** shows the installed internal build, searchable development checkpoints and milestones, and an expandable manual update guide. No public releases are recorded. Original 1.x/2.x/rc labels are retained inside historical entries for traceability; they were internal identifiers. The current numbering starts at **0.1.0-alpha.1**; use alpha.2, alpha.3, etc. for new packaged test builds. Export catalog JSON includes this classification. Local release-note editing remains removed, while existing saved notes remain untouched in data/state.json. See [CHANGELOG.md](CHANGELOG.md) and [docs/VERSIONING.md](docs/VERSIONING.md).
 

@@ -4,7 +4,7 @@ import { openDrawer, closeDrawer } from '../../design-system/overlays';
 import { Icon, Trash2 } from '../../design-system/icons';
 import { Button } from '../../design-system/primitives';
 import { uiScope } from '../../shared/lifecycle';
-import { renderRegion } from '../../shared/regions';
+import { renderStableRegion } from '../../shared/regions';
 import { displayText } from '../../shared/utils';
 import { eventElement } from '../../shared/dom';
 import { errorMessage } from '../../shared/utils';
@@ -34,7 +34,7 @@ export function renderTemplatesTable() {
   const summary = document.getElementById('templateLibrarySummary');
   if (summary)
     summary.textContent = `Showing ${filtered.length} of ${entries.length} · ${enabled} enabled · ${entries.length - enabled} disabled`;
-  renderRegion(
+  renderStableRegion(
     tbody,
     filtered.length ? (
       filtered.map(([key, template]) => (

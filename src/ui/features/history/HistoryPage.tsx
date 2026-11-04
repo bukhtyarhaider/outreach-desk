@@ -40,7 +40,7 @@ export function HistoryPage() {
               {'Stats CSV'}
             </ActionLink>
             <ActionLink className={'button secondary'} href={'/api/export-history'}>
-              {'Full history backup'}
+              {'Export all send history'}
             </ActionLink>
           </div>
         </div>

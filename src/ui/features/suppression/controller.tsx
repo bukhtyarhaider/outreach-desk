@@ -4,7 +4,7 @@ import { openDrawer } from '../../design-system/overlays';
 import { Icon, Shield } from '../../design-system/icons';
 import { Button } from '../../design-system/primitives';
 import { uiScope } from '../../shared/lifecycle';
-import { renderRegion } from '../../shared/regions';
+import { renderStableRegion } from '../../shared/regions';
 import { displayText, errorMessage } from '../../shared/utils';
 import { eventElement } from '../../shared/dom';
 import { session } from '../../shared/session';
@@ -42,7 +42,7 @@ export function renderSuppressionList() {
     scopeNote.textContent = session.state.settings.team.enabled
       ? 'This list includes local and loaded coordinator records. Protection applies across campaigns; coordinator availability and shared holds are checked separately before sending.'
       : 'These records protect outreach on this PC across campaigns and workbooks. Other PCs need a configured team coordinator for shared protection.';
-  renderRegion(
+  renderStableRegion(
     $('suppressionList'),
     filtered.length ? (
       filtered.map(([email, reason]) => {

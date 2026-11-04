@@ -30,11 +30,17 @@ function normalize(content: ReactNode): ReactNode {
   );
 }
 /** React portals own dynamic feature regions. Replacing a region retains the original replacement/focus semantics. */
-export function renderRegion(target: Element | null, content: ReactNode): void {
+export function renderRegion(target: Element | null, content: ReactNode, stable = false): void {
   if (!target?.isConnected) return;
   for (const [element] of regions)
     if (element !== target && target.contains(element)) regions.delete(element);
   const previous = regions.get(target);
+  if (
+    stable &&
+    previous &&
+    regionSignature(previous.content) === regionSignature(normalize(content))
+  )
+    return;
   if (!previous) target.replaceChildren();
   regions.set(target, {
     target,
@@ -43,6 +49,10 @@ export function renderRegion(target: Element | null, content: ReactNode): void {
     id: previous?.id ?? ++nextId,
   });
   flushSync(publish);
+}
+/** Stable list regions use delegated actions; unchanged data must retain keyboard focus. */
+export function renderStableRegion(target: Element | null, content: ReactNode): void {
+  renderRegion(target, content, true);
 }
 export function insertRegion(target: Element, position: InsertPosition, content: ReactNode): void {
   const prior = regions.get(target)?.content ?? captureContent(target);

@@ -1,4 +1,4 @@
-import { spawn, spawnSync } from "node:child_process";
+import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import fs from "node:fs";
@@ -32,9 +32,10 @@ function openBrowser(targetUrl) {
 
 async function checkDeskHealth(targetUrl) {
   try {
-    const res = await fetch(targetUrl, { signal: AbortSignal.timeout(1200) });
-    const text = await res.text();
-    return text.includes("Outreach Desk");
+    const endpoint = new URL('/api/instance', targetUrl);
+    const res = await fetch(endpoint, { signal: AbortSignal.timeout(1200) });
+    const identity = await res.json();
+    return res.ok && identity.pid === getLockPid(lockPath);
   } catch {
     return false;
   }
@@ -74,25 +75,8 @@ async function stopPid(pid, file) {
     return;
   }
 
-  try {
-    if (process.platform === "win32") {
-      try {
-        spawnSync("taskkill", ["/PID", String(pid), "/F", "/T"], {
-          stdio: "ignore",
-        });
-      } catch {
-        try {
-          process.kill(pid);
-        } catch {}
-      }
-    } else {
-      process.kill(pid, "SIGTERM");
-    }
-  } catch (e) {
-    if (e.code === "ESRCH") return;
-  }
-
-  for (let i = 0; i < 30; i++) {
+  await fetch(new URL('/api/shutdown', url), { method: 'POST', headers: { 'X-FC-Request': '1' }, signal: AbortSignal.timeout(2000) });
+  for (let i = 0; i < 300; i++) {
     await new Promise((r) => setTimeout(r, 100));
     try {
       process.kill(pid, 0);
@@ -101,20 +85,9 @@ async function stopPid(pid, file) {
     }
   }
 
-  try {
-    process.kill(pid, "SIGKILL");
-  } catch {}
+  if (isPidAlive(pid)) throw new Error('Shutdown is still in progress. Wait for the original app; no force termination was attempted.');
 
-  for (let i = 0; i < 5; i++) {
-    await new Promise((r) => setTimeout(r, 100));
-    try {
-      process.kill(pid, 0);
-    } catch {
-      break;
-    }
-  }
-
-  if (file && fs.existsSync(file)) {
+  if (file && getLockPid(file) === pid) {
     try {
       fs.unlinkSync(file);
     } catch {}
@@ -220,8 +193,8 @@ async function run() {
     console.log(
       `\nNotice: An instance (PID ${lockPid}) holds data/app.lock but is not responding at ${url}.`,
     );
-    console.log("Terminating unresponsive process and starting fresh server...\n");
-    await stopPid(lockPid, lockPath);
+    console.log("Workspace lock requires manual verification.\n");
+    throw new Error("Cannot verify the process holding this workspace lock. Close the original app manually; no process was terminated.");
   } else if (lockPid) {
     try {
       fs.unlinkSync(lockPath);

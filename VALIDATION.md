@@ -1,3 +1,19 @@
+# Phase 1 integrity and reliability — November 4, 2026
+
+Internal working changes on `feat/bauhaus-saas-ui-revamp`, based on audit commit `3aca754f4f3e9dcd8ad6d7c9247e961da50af46a`; application package remains `0.1.0-alpha.1`. This validation does not identify a newly distributed package.
+
+- Final `FC_BROWSER_TESTS=1 node scripts/test.mjs` under a temporary **Node 22.23.4** runtime: **237/237 JavaScript tests and 12/12 Python tests passed**, zero failures/skips. Includes Chrome against synthetic fixtures. JavaScript duration approximately 174 seconds.
+- New regression coverage verifies affirmative and mixed-sentence opt-outs, negation, patched nested-comment address parsing, IMAP missing-fetch cursor retention, reviewed-import order before source-campaign deletion, durable cross-campaign protection, retained workbooks, paused restoration, write-failure behavior, manual minimum-interval enforcement, local-only outbox removal, coordinator-outage protection, startup reporting-failure recovery, stable table focus and preservation of an unverified live PID.
+- `npm run check:ui` passed strict TypeScript, formatting and production bundle generation. Changed server/parser/launcher syntax checks, package/lockfile metadata consistency and `git diff --check` passed.
+- Locked mailparser is **3.14.1**, with its patched nodemailer chain. Fresh production npm audit reports **8 moderate affected package entries**, **0 high/critical**, in Firebase/Google/uuid chains. These are retained for compatibility/reachability triage; no forced downgrade or untested override was applied.
+- Node **22/24/26 LTS**, Python **3.11+** are now the declared baseline; only Node 22.23.4 and Python 3.11.4 were exercised in this validation. The temporary runtime did not replace the machine's default Node installation.
+- Campaign deletion is logical retained Trash, with a Restore action that keeps campaigns paused. Working files are retained in the data folder; there is no automatic purge. Source protection is additive and cannot be removed by campaign/row cleanup or generic unsuppression.
+- Launcher uses instance-PID verification and cooperative HTTP shutdown, preserving unknown live lock owners and avoiding forced termination. An older running build lacking the instance endpoint must be stopped manually before upgrade.
+
+No real emails, live mailbox connections, production configuration/state mutations, system-runtime replacement, commit, push, remote deployment or existing release-ZIP replacement was performed. Native Windows/Edge, live provider acceptance and other-PC installation remain unverified for these changes. Full snapshot/restore and broader team/launch-policy work remain in Phase 2. See `docs/PHASE-1-IMPLEMENTATION.md` for scope and upgrade notes.
+
+---
+
 # UI rendering and visual follow-up — 2026-10-30
 
 ## Mailbox & Settings layout follow-up — 2026-10-30
