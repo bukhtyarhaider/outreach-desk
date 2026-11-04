@@ -24,7 +24,7 @@ Compatibility boundary: old local `/api/start` and `/api/batch` endpoints remain
 
 Follow the audit dependencies rather than treating this increment as the whole phase:
 
-1. Coverage/freshness-gated proactive follow-up and due/overdue work (A11/A23).
+1. Coverage/freshness-gated proactive follow-up (A11) is addressed by the later [reliability increment](FOLLOW-UP-COVERAGE.md); due/overdue manual reminder queues (A23) were added in Phase 3. Provider acceptance remains unverified; these increments do not establish complete mailbox history.
 2. Entity-version conflict handling and consistent draft protection/recovery (remaining A10, A21/A22).
 3. Full backup/restore with post-backup send reconciliation, readiness and component health (A14/A26/A32).
 4. Automatic team outcome synchronization (A30).

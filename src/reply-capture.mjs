@@ -1,3 +1,4 @@
+import { completedCoverage } from './follow-up-coverage.mjs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { randomUUID } from 'node:crypto';
@@ -25,7 +26,7 @@ export function replyCaptureConfig(env = process.env, clock = Date.now) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(since) || !Number.isFinite(Date.parse(since)) || new Date(since).toISOString().slice(0,10) !== since || Date.parse(since) > clock()) throw new Error('Use a valid reply backfill start date in the past.');
   const batch = Number(env.FC_EXPERIMENT_REPLY_BATCH || 50);
   if (!Number.isInteger(batch) || batch < 1 || batch > 100) throw new Error('Reply batch must be from 1 to 100 messages per folder/check.');
-  return { mailboxes, since, batch, pages, allHistory, allFolders, enabled: env.FC_EXPERIMENT_REPLY_CAPTURE_ENABLED === '1', auto: env.FC_EXPERIMENT_REPLY_AUTO === '1' };
+  return { generation: env.FC_EXPERIMENT_REPLY_CONFIG_GENERATION || null, mailboxes, since, batch, pages, allHistory, allFolders, enabled: env.FC_EXPERIMENT_REPLY_CAPTURE_ENABLED === '1', auto: env.FC_EXPERIMENT_REPLY_AUTO === '1' };
 }
 export class ReplyCapture {
   constructor({ replies, env = process.env, clientFactory = (opts) => new ImapFlow(opts), clock = Date.now }) {
@@ -112,7 +113,7 @@ export class ReplyCapture {
         if(history){history.pass=pass;history.beforeReferences=before;await this.replies.transaction((s)=>{saveHistory(s);});}
         for(const c of config.mailboxes){
           if(this.stopped)break;
-          const state=await this.replies.load(),previous=state.monitors[c.id]||{};
+          const mailboxStarted=this.clock(),state=await this.replies.load(),previous=state.monitors[c.id]||{},observedScope=captureScopeSignature(state,c.email,false);
           if(!config.historical&&previous.nextAt&&Date.parse(previous.nextAt)>this.clock())continue;
           let client,folders=[];
           if(native&&!toolReferenceIndex(state,c.email).roots.length){await this.replies.transaction((s)=>{s.monitors[c.id]={status:'No tool-sent emails',folders:[],message:'No confirmed emails sent by this tool for this mailbox; no unrelated Inbox mail was fetched.'};});continue;}
@@ -134,18 +135,20 @@ export class ReplyCapture {
                   const page=task.page++;
                   if(this.stopped)throw new Error('Capture stopped.');
                   if(config.historical&&this.clock()-started>15*60*1000){incomplete=true;throw new Error('Continue from saved cursors.');}
-                  await this.replies.transaction((s)=>{s.monitors[c.id]={status:'Checking',folders,checkedAt:previous.checkedAt||null};if(history)saveHistory(s,{currentMailbox:c.email,currentFolder:folder});});
+                  await this.replies.transaction((s)=>{s.monitors[c.id]={status:'Checking',folders,checkedAt:previous.checkedAt||null,coverage:sent&&!partial?(previous.coverage||null):null,sentUnavailable:!sent};if(history)saveHistory(s,{currentMailbox:c.email,currentFolder:folder});});
                   const result=await this.scanFolder(client,c,folder,folder===sent,config,snapshot,scope,ceiling);ceiling=result.highWater;count+=result.processed;task.ceiling=ceiling;task.count=count;
                   const progress={...result,processed:count,pages:page+1},index=folders.findIndex((f)=>f.folder===folder);if(index<0)folders.push(progress);else folders[index]=progress;
-                  await this.replies.transaction((s)=>{s.monitors[c.id]={status:'Checking',checkedAt:previous.checkedAt||null,folders,sentUnavailable:!sent,attemptedAt:new Date(this.clock()).toISOString()};if(history)saveHistory(s,{currentMailbox:c.email,currentFolder:folder});});
+                  await this.replies.transaction((s)=>{s.monitors[c.id]={status:'Checking',checkedAt:previous.checkedAt||null,coverage:sent&&!partial?(previous.coverage||null):null,sentUnavailable:!sent,folders,attemptedAt:new Date(this.clock()).toISOString()};if(history)saveHistory(s,{currentMailbox:c.email,currentFolder:folder});});
                   if(!result.more){task.done=true;break;}
                   await new Promise((resolve)=>setTimeout(resolve,0));
                 }
-              }catch{task.done=true;if(this.stopped)throw new Error('Capture stopped.');partial=true;const p=folders.find((f)=>f.folder===folder);if(p)Object.assign(p,{error:true,more:true});else folders.push({folder,processed:0,error:true,more:true});}
+              }catch{task.done=true;if(this.stopped)throw new Error('Capture stopped.');partial=true;const p=folders.find((f)=>f.folder===folder);if(p)Object.assign(p,{error:true,more:true});else folders.push({folder,processed:0,error:true,more:true});await this.replies.transaction(s=>{if(s.monitors[c.id]){s.monitors[c.id].coverage=null;s.monitors[c.id].status='Needs attention';}});}
             }
             }while(config.historical&&tasks.some(t=>!t.done)&&!this.stopped);
             incomplete||=partial;
-            await this.replies.transaction((s)=>{s.monitors[c.id]={status:partial?'Needs attention':folders.some((f)=>f.more)?'Backfill in progress':sent?'Checked':'Inbox checked; Sent unavailable',sentUnavailable:!sent,checkedAt:partial?(previous.checkedAt||null):new Date(this.clock()).toISOString(),attemptedAt:new Date(this.clock()).toISOString(),folders,failures:partial?(previous.failures||0)+1:0,message:partial?'Partial capture. A folder, listing, or time limit needs attention. Successful pages are saved; run the scan again to resume.':null,nextAt:new Date(this.clock()+(partial?120000:60000)).toISOString()};});
+            await this.replies.transaction((s)=>{const checked=this.clock();const proof=!partial&&!folders.some(f=>f.more||f.error)&&sent&&config.allHistory&&config.allFolders&&captureScopeSignature(s,c.email,false)===observedScope
+              ? completedCoverage(s,replyCaptureConfig(this.env,this.clock),c,previous,checked,{historical:!!config.historical,observedAt:mailboxStarted}):null;
+              s.monitors[c.id]={coverage:proof,status:partial?'Needs attention':folders.some((f)=>f.more)?'Backfill in progress':sent?'Checked':'Inbox checked; Sent unavailable',sentUnavailable:!sent,checkedAt:partial?(previous.checkedAt||null):new Date(this.clock()).toISOString(),attemptedAt:new Date(this.clock()).toISOString(),folders,failures:partial?(previous.failures||0)+1:0,message:partial?'Partial capture. A folder, listing, or time limit needs attention. Successful pages are saved; run the scan again to resume.':null,nextAt:new Date(this.clock()+(partial?120000:60000)).toISOString()};});
           }catch{
             incomplete=true;const failures=Math.min((previous.failures||0)+1,10);
             await this.replies.transaction((s)=>{s.monitors[c.id]={status:this.stopped?'Stopped':'Needs attention',checkedAt:previous.checkedAt||null,attemptedAt:new Date(this.clock()).toISOString(),failures,folders,message:this.stopped?'Stopped. Saved pages and cursors are retained.':'Read-only check failed. Check credentials, folders and connectivity. Failed fetches/storage do not advance the failed cursor.',nextAt:new Date(this.clock()+(this.stopped?0:Math.min(3600000,60000*2**failures))).toISOString()};});

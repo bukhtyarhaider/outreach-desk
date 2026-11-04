@@ -59,6 +59,13 @@ export interface CarrierField {
   candidates: CarrierCandidate[];
 }
 export interface AssistantContext {
+  followUpCoverage: {
+    ready: boolean;
+    reason: string;
+    checkedAt: string | null;
+    expiresAt: string | null;
+    epoch: string | null;
+  };
   version: string;
   account: string;
   replyTo: string;

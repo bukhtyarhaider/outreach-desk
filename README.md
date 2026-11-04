@@ -257,3 +257,11 @@ In **Unibox → a carrier → Details**, use **Prepare a carrier handoff**. Save
 The JSON file contains operator-reviewed carrier-stated facts, their message references, missing/conflicting qualification fields, saved workflow, contact holds and your next step. It covers locally captured evidence rather than proving complete mailbox history. It excludes raw message bodies, credentials, tracking secrets and reply drafts. Sharing it and accepting the handoff remain manual; exporting does not establish shared ownership, a signed agreement or permission to contact. Retained source opt-out/decline/bounce/uncertainty holds also remain visible to the reply/handoff context after source cleanup.
 
 Seed image requests remain image-request telemetry only. Legacy Inbox placement inferred solely from an image signal is withdrawn to Awaiting with a retained migration event. Explicit manual or IMAP folder evidence remains intact.
+
+## Proactive follow-up capture coverage
+
+Preparing or copying a no-response follow-up requires read-only capture enabled for that sending mailbox and a successful full-history scan of all available folders, including Inbox and Sent. Coverage must be less than 15 minutes old, measured from the start of the successful mailbox scan. In Unibox, use **Scan previous replies** if the assistant reports missing or stale coverage. A historical “Complete” label from an older build does not grant eligibility after upgrade. A lengthy backfill may need a subsequent fresh scan.
+
+Healthy incremental scans that exhaust the same full folder scope renew coverage without invalidating an otherwise unchanged approval. Scan failures, expired coverage, capture configuration changes and changes to that mailbox's tool-contact scope require fresh coverage and a new review of affected follow-ups. Saved manual reminders do not grant follow-up permission. Replies to captured human messages continue through the existing evidence and hold checks.
+
+Coverage reflects the messages available to the configured account and local tool-contact matching; it cannot prove complete provider retention or human silence. No automatic sending or manual coverage override is introduced. See [follow-up coverage implementation and limits](docs/FOLLOW-UP-COVERAGE.md).

@@ -1,3 +1,4 @@
+import { healthyCapture } from './fixtures/healthy-capture.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { workspace } from './fixtures/carrier-workspace.mjs';
@@ -5,7 +6,7 @@ import { eml,account,recipient,originalId } from './fixtures/replies.mjs';
 import { sharedReplyHold } from '../src/conversation-assistant.mjs';
 import { carrierIntent,extractCarrierDetails } from '../src/carrier-intelligence.mjs';
 const now=Date.parse('2026-11-06T13:00:00Z');
-async function setup(t,text=null){const f=await workspace(t);f.ops.assistant.clock=()=>now;f.ops.replies.clock=()=>now;if(text)await f.ops.replies.ingest(eml({text}),account);const rows=await f.ops.assistant.list(),root=rows.rows.find((r)=>r.type==='conversation');const get=()=>f.ops.assistant.detail(root.id,'conversation');return {...f,desk:f.ops.assistant,root,get};}
+async function setup(t,text=null,withCoverage=true){const f=await workspace(t);f.ops.assistant.clock=()=>now;f.ops.replies.clock=()=>now;if(text)await f.ops.replies.ingest(eml({text}),account);if(!text&&withCoverage)await healthyCapture(f,now);const rows=await f.ops.assistant.list(),root=rows.rows.find((r)=>r.type==='conversation');const get=()=>f.ops.assistant.detail(root.id,'conversation');return {...f,desk:f.ops.assistant,root,get};}
 async function suggest(f,extra={}){const d=await f.get();return f.desk.draft({rootId:f.root.id,expectedContext:d.assistant.version,requestId:'request-'+crypto.randomUUID(),...extra});}
 async function approve(f,draft){const d=await f.get();return f.desk.approve({id:draft.id,expectedVersion:draft.version,expectedContext:d.assistant.version,confirm:true,note:'Reviewed exact recipient, wording and evidence'});}
 

@@ -1,3 +1,4 @@
+import { healthyCapture } from './fixtures/healthy-capture.mjs';
 import test from 'node:test';import assert from 'node:assert/strict';
 import {workspace} from './fixtures/carrier-workspace.mjs';import {eml,account,recipient,originalId} from './fixtures/replies.mjs';
 const list=(f,params={})=>f.ops.assistant.list(new URLSearchParams({group:'carriers',...params}));
@@ -68,15 +69,18 @@ test('a later captured incoming reply with the same header second as an outgoing
 test('dashboard excludes follow-up-only carriers while Unibox retains their follow-up work',async(t)=>{
  const f=await workspace(t);f.ops.assistant.clock=()=>Date.parse('2026-11-02T12:00:00Z');
  await f.ops.replies.transaction(s=>{const original=Object.values(s.roots)[0];original.sentAt='2026-10-01T12:00:00Z';for(let i=0;i<30;i++){const id=String(i+1).padStart(64,'0');s.roots[id]={...original,id,recipient:`recent-${i}@example.com`,sentAt:'2026-11-01T12:00:00Z',messageIds:[]};}});
+ await healthyCapture(f);
  const first=await list(f);assert.equal(first.rows.some(r=>r.recipient===recipient),false);const dashboard=await f.ops.assistant.dashboard();assert.equal(dashboard.summary.followUpReady,1);assert(!dashboard.highlights.some(r=>r.recipient===recipient));assert.equal((await list(f,{work:'follow_up'})).rows.some(r=>r.recipient===recipient),true);
 });
 test('recent native outgoing contact history postpones follow-up even without thread references',async(t)=>{
  const f=await workspace(t);f.ops.assistant.clock=()=>Date.parse('2026-10-31T13:00:00Z');await f.ops.replies.transaction(s=>{Object.values(s.roots)[0].sentAt='2026-10-01T12:00:00Z';});
  await f.ops.replies.ingest(eml({from:account,to:recipient,reference:null,id:'<recent-independent-out@example.com>',text:'Are you available next week?'}),account);
+ await healthyCapture(f);
  const row=(await list(f)).rows[0],d=await f.ops.assistant.detail(row.id,'conversation');assert.equal(d.assistant.followUpReady,false);assert.equal(d.assistant.dueAt,'2026-11-01T12:00:00.000Z');await assert.rejects(f.ops.assistant.draft({rootId:row.id,expectedContext:d.assistant.version,requestId:'too-soon-after-independent-out'}),/not eligible/);
 });
 test('native outgoing contact history counts toward the follow-up limit without requiring thread references',async(t)=>{
  const f=await workspace(t);f.ops.assistant.clock=()=>Date.parse('2026-11-10T12:00:00Z');await f.ops.replies.ingest(eml({from:account,to:recipient,reference:null,id:'<independent-followup@example.com>',text:'Checking whether dispatch support is useful.'}),account);
+ await healthyCapture(f);
  const row=(await list(f)).rows[0],d=await f.ops.assistant.detail(row.id,'conversation');assert.equal(d.assistant.followUps,1);assert.equal(d.assistant.followUpReady,false);await assert.rejects(f.ops.assistant.draft({rootId:row.id,expectedContext:d.assistant.version,requestId:'repeat-native-followup'}),/not eligible/);
 });
 test('closing or signing a carrier clears its reply task until another incoming message arrives',async(t)=>{

@@ -1,6 +1,19 @@
+# Follow-up capture coverage reliability — November 4, 2026
+
+Phase 4's first increment is committed as `a191abe` on `feat/product-quality-roadmap`. The subsequent A11 coverage changes are committed as a separate reliability increment.
+
+- Final Node 22.23.4/Chrome suite: **251/251 JavaScript tests and 12/12 Python tests passed**, zero failures/skips (approximately 180 seconds for JavaScript).
+- Final focused assistant/inbox/coverage and Chrome suite: **64/64 passed**. New cases exercise the actual capture worker with mock IMAP, per-mailbox configuration and contact scope, failed Sent scans, recovery with approval invalidation, healthy renewal preserving approval, expiry/future timestamps, slow-scan observation time, contacts added during a scan, ordinary human-response drafting, manual-reminder separation and visible disabled follow-up actions.
+- Strict TypeScript, frontend formatting, production UI build, module syntax and diff checks passed. Generated frontend assets are included.
+- All mail/capture/browser fixtures were synthetic. No actual email, live mailbox access, production-state/configuration changes, external handoff, remote push or deployment occurred. Native Windows/Edge and provider acceptance remain unverified. Coverage does not establish complete provider history or human silence.
+
+See `docs/FOLLOW-UP-COVERAGE.md` for behavior, upgrade instructions, limits and remaining roadmap work.
+
+---
+
 # Phase 4 first increment — November 4, 2026
 
-Phase 3 is committed as `538e51a` on `feat/product-quality-roadmap`; Phase 4 is a separate uncommitted working increment. Full Node 22.23.4/Chrome verification passed **246/246 JavaScript and 12/12 Python tests**, zero failures/skips (approximately 219 seconds for JavaScript). Focused handoff/assistant/tracking checks passed **36/36**. Strict TypeScript, formatting, production UI build, module/server syntax and diff checks passed.
+Phase 3 is committed as `538e51a` on `feat/product-quality-roadmap`; Phase 4 is a separate increment, subsequently committed as `a191abe`. Full Node 22.23.4/Chrome verification passed **246/246 JavaScript and 12/12 Python tests**, zero failures/skips (approximately 219 seconds for JavaScript). Focused handoff/assistant/tracking checks passed **36/36**. Strict TypeScript, formatting, production UI build, module/server syntax and diff checks passed.
 
 New checks cover an actual synthetic browser download of a source-backed handoff, text-edit acknowledgement reset, stale conversation/workflow rejection, no ownership/read/draft mutation, protection retention, allowlisted export without fixture secrets, image-request/placement separation and idempotent withdrawal of legacy image-only Inbox inference. No actual email, live mailbox, production-state/configuration change, external handoff, remote push or deployment occurred. Shared ownership/acceptance, provider adapters, controlled experiments and outstanding earlier-phase dependencies are not claimed complete. See `docs/PHASE-4-PROGRESS.md`.
 

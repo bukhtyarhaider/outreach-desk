@@ -232,9 +232,19 @@ export function mountConversationAssistant() {
                 : c.needsReply
                   ? 'A matched human response needs your attention.'
                   : c.noReply
-                    ? `No captured human reply. ${c.followUpReady ? 'Follow-up is eligible for a reviewed draft.' : 'Next eligible follow-up: ' + esc(date(c.dueAt)) + '. Check capture coverage first.'}`
+                    ? `No captured human reply. ${c.followUpReady ? 'Follow-up is eligible for a reviewed draft.' : !c.followUpCoverage?.ready ? esc(c.followUpCoverage?.reason || 'Run a full capture scan before following up.') : 'Waiting period ends: ' + esc(date(c.dueAt))}`
                     : 'Outbound activity or an operator report follows the latest carrier response.'}
           </p>
+          {c.noReply && (
+            <p className="hint">
+              {c.followUpCoverage?.checkedAt
+                ? 'Capture coverage checked: ' + esc(date(c.followUpCoverage.checkedAt)) + '.'
+                : 'No completed capture coverage is available.'}
+              {c.followUpCoverage?.ready
+                ? ' Valid until ' + esc(date(c.followUpCoverage.expiresAt)) + '.'
+                : ' Use Scan previous replies after configuring read-only capture.'}
+            </p>
+          )}
           <p>
             {c.unread
               ? 'New/unread carrier evidence.'
@@ -342,7 +352,9 @@ export function mountConversationAssistant() {
             : c.pendingReviewCount
               ? 'Resolve the conversation match before drafting.'
               : c.noReply && !c.followUpReady
-                ? 'Follow-up is not eligible yet. Check capture coverage and contact details.'
+                ? c.followUpCoverage?.ready
+                  ? 'Follow-up is not eligible yet. Review the waiting period and contact details.'
+                  : c.followUpCoverage?.reason || 'Run a full capture scan before following up.'
                 : 'Write freely. Review your reply before approving it.';
       if ($('mailroomApprovalRecipient') && !reviewingSnapshot()) {
         $('mailroomApprovalRecipient').textContent =

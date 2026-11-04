@@ -70,7 +70,7 @@ export class CarrierWorkspace {
     this.replies = new CarrierReplies({ imports: this.imports, contacts, accountsAllowed: () => [...new Set([...(state.profiles || []).map((p) => p.email?.toLowerCase()), ...this.configuredAccounts()])].filter(Boolean), onCommit: (s) => this.applyProtections(s), onFailure: () => { this.error='Carrier reply storage failed. Restore its health before sending.'; } });
     this.capture = new ReplyCapture({ replies: this.replies, env: this.captureEnv(), clientFactory });
     this.holds = new Map(); this.error = null;
-    this.assistant = new ConversationAssistant({ replies:this.replies, state, guard:(email)=>this.guard(email)||replyGuard(email), contacts });
+    this.assistant = new ConversationAssistant({ replies:this.replies, state, captureConfig:()=>replyCaptureConfig(this.capture.env), guard:(email)=>this.guard(email)||replyGuard(email), contacts });
     this.inbox = new CarrierInbox({replies:this.replies,assistant:this.assistant,state});this.assistant.inbox=this.inbox;
   }
   captureEnv(config = this.state.replyCapture) {
@@ -85,6 +85,7 @@ export class CarrierWorkspace {
     if (!config && this.env.FC_REPLY_PAGES === undefined) environment.FC_EXPERIMENT_REPLY_PAGES='5';
     if (config) {
       Object.assign(environment, {
+        FC_EXPERIMENT_REPLY_CONFIG_GENERATION: config.generation || '',
         FC_EXPERIMENT_REPLY_CAPTURE_ENABLED: config.enabled ? '1' : '0',
         FC_EXPERIMENT_REPLY_AUTO: config.auto ? '1' : '0',
         FC_EXPERIMENT_REPLY_MAILBOXES: JSON.stringify(config.mailboxes),
@@ -160,7 +161,7 @@ export class CarrierWorkspace {
       if (m.authMode === 'oauth' && !m.accessTokenEnv) throw fail('Enter the OAuth token environment-variable name.');
       return copy(m);
     });
-    const config = { enabled: input.enabled === true, auto: input.auto === true, since: input.since, batch: Number(input.batch), allHistory:input.allHistory===true, allFolders:input.allFolders===true, pages:Number(input.pages||5), mailboxes };
+    const config = { generation: randomUUID(), enabled: input.enabled === true, auto: input.auto === true, since: input.since, batch: Number(input.batch), allHistory:input.allHistory===true, allFolders:input.allFolders===true, pages:Number(input.pages||5), mailboxes };
     replyCaptureConfig(this.captureEnv(config));
     if(config.enabled&&!config.mailboxes.length)throw fail('Add at least one authorized mailbox before enabling capture.');
     const old = this.state.replyCapture;
