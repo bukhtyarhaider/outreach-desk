@@ -1,3 +1,4 @@
+import { downloadJson } from '../../shared/runtime';
 import { StatValue } from '../../design-system/StatValue';
 import type { SourceHistoryResponse } from '../../shared/types/api';
 import { Button } from '../../design-system/primitives';
@@ -455,6 +456,25 @@ export function mountConversations() {
       renderRegion($('mailroomThreadHistory'), [originals, messages.map(message)]);
       $('carrierRecord').hidden = !history;
       $('carrierStatusPanel').hidden = !history;
+      const handoffPanel = $('carrierHandoffPanel');
+      if (handoffPanel) {
+        handoffPanel.hidden = !history;
+        const handoffVersion = history
+          ? detail!.assistant.version + ':' + history.statusVersion
+          : '';
+        if (handoffPanel.dataset.context !== handoffVersion) {
+          $('carrierHandoffConfirm').checked = false;
+          if (handoffPanel.dataset.carrier !== history?.carrierInboxId) {
+            $('carrierHandoffOwner').value = '';
+            $('carrierHandoffNextStep').value = '';
+          }
+          handoffPanel.dataset.context = handoffVersion;
+          handoffPanel.dataset.root = data.root?.id || '';
+          handoffPanel.dataset.conversationVersion = data.assistant?.version || '';
+          handoffPanel.dataset.workflowVersion = history?.statusVersion || '';
+          handoffPanel.dataset.carrier = history?.carrierInboxId || '';
+        }
+      }
       if (history) {
         const names: Record<string, string> = {
           in_review: 'In review',
@@ -1301,6 +1321,31 @@ export function mountConversations() {
           });
           $('carrierStatusReload').hidden = false;
         });
+      for (const id of ['carrierHandoffOwner', 'carrierHandoffNextStep'])
+        uiScope.handler($(id), 'oninput', () => {
+          $('carrierHandoffConfirm').checked = false;
+        });
+      uiScope.handler($('carrierHandoffExport'), 'onclick', () =>
+        action($('carrierHandoffExport'), async () => {
+          const h = detail!.carrierHistory;
+          if (carrierStatusDrafts.has(h.carrierInboxId))
+            throw new Error('Save or reload carrier workflow edits before exporting a handoff.');
+          const result = await request<{ handoff: unknown; filename: string }>(
+            '/api/conversations/handoff',
+            {
+              rootId: detail!.root.id,
+              expectedContext: detail!.assistant.version,
+              expectedStatusVersion: h.statusVersion,
+              intendedOwner: $('carrierHandoffOwner').value,
+              nextStep: $('carrierHandoffNextStep').value,
+              confirm: $('carrierHandoffConfirm').checked,
+            },
+          );
+          downloadJson(result.handoff, result.filename);
+          $('carrierHandoffConfirm').checked = false;
+          return 'Carrier handoff downloaded. Share it manually; acceptance is not recorded.';
+        }),
+      );
       uiScope.handler($('carrierStatusSave'), 'onclick', () =>
         action($('carrierStatusSave'), async () => {
           const h = detail!.carrierHistory,

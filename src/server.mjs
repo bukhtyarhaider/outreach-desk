@@ -939,6 +939,7 @@ const server = http.createServer(async (req, res) => {
           if (action === "stop-capture") {carriers.capture.stop();return response(res,{ok:true,message:"Stopping read-only capture; saved cursors/messages remain."});}
           if (action === "config" && PREVIEW_MODE && input.enabled) throw new Error("Sample preview: live capture cannot be enabled.");
           if (action === "config") return response(res, await carriers.configure(input));
+          if (action === "handoff") { await syncTeam(); return response(res, await carriers.assistant.handoff(input)); }
           if (action === "carrier-status") return response(res,await carriers.inbox.update(input));
           if (action === "carrier-seen") return response(res,await carriers.inbox.seen(input));
           if (action === "history") return response(res, await carriers.replies.refreshHistory());

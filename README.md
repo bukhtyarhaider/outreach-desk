@@ -249,3 +249,11 @@ Template import validates the whole batch before publishing it. Unknown or malfo
 In Unibox, open **Filters → Work** for **Overdue reminders**, **Reminders due later today**, or **Upcoming reminders**. These queues use manually saved Follow up dates and the browser timezone, shown in the scope note. They display carrier history, sort by due time and exclude protected contacts. They never schedule or authorize an email. Automatic no-response eligibility and capture completeness remain separate safeguards.
 
 Keyboard users can use **Skip to main content** without changing the current route. Sidebar keyboard navigation focuses the destination heading, and browser titles identify the current page.
+
+## Source-backed carrier handoff
+
+In **Unibox → a carrier → Details**, use **Prepare a carrier handoff**. Save workflow changes first, enter the intended owner and reviewed next step, confirm the evidence/holds, then choose **Download carrier handoff**. Editing the text or receiving changed evidence clears the review acknowledgement. Stale evidence or workflow versions require a new review.
+
+The JSON file contains operator-reviewed carrier-stated facts, their message references, missing/conflicting qualification fields, saved workflow, contact holds and your next step. It covers locally captured evidence rather than proving complete mailbox history. It excludes raw message bodies, credentials, tracking secrets and reply drafts. Sharing it and accepting the handoff remain manual; exporting does not establish shared ownership, a signed agreement or permission to contact. Retained source opt-out/decline/bounce/uncertainty holds also remain visible to the reply/handoff context after source cleanup.
+
+Seed image requests remain image-request telemetry only. Legacy Inbox placement inferred solely from an image signal is withdrawn to Awaiting with a retained migration event. Explicit manual or IMAP folder evidence remains intact.

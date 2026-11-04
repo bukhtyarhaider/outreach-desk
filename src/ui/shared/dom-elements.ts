@@ -1,5 +1,10 @@
 /** IDs retained as the UI compatibility contract; types reflect the rendered native elements. */
 export interface UIElements {
+  carrierHandoffPanel: HTMLElement;
+  carrierHandoffOwner: HTMLInputElement;
+  carrierHandoffNextStep: HTMLTextAreaElement;
+  carrierHandoffConfirm: HTMLInputElement;
+  carrierHandoffExport: HTMLButtonElement;
   settingsDetails: HTMLDetailsElement;
   profileEditor: HTMLDialogElement;
   templateEditor: HTMLDialogElement;

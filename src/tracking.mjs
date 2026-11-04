@@ -27,6 +27,10 @@ export function initTracking(state) {
     syncRecord(r, item);
   }
   for (const r of Object.values(t.records)) {
+    if (r.seedId && r.placement?.source === 'open_signal') {
+      addEvent(r, 'seed_placement_inference_withdrawn', { previousPlacement: { ...r.placement } });
+      r.placement = { status: 'awaiting', source: 'migration', evidence: 'Legacy image-based inference withdrawn; inspect the seed mailbox folder.', checkedAt: now() };
+    }
     if (r.sendStatus === "send_attempted") {
       r.sendStatus = "delivery_unknown";
       addEvent(r, "delivery_unknown", { reason: "Process restarted before confirmation" });
@@ -92,9 +96,6 @@ export function recordOpenHash(t, digest, enabled = true, at = now()) {
   if (!r.firstOpenAt || at < r.firstOpenAt) r.firstOpenAt = at;
   if (!r.lastOpenAt || at > r.lastOpenAt) r.lastOpenAt = at;
   addEvent(r, "open_detected", { signal: "Remote image request; human reading unverified" }, at);
-  if (r.seedId && (!r.placement || r.placement.status === "awaiting")) {
-    recordPlacement(r, "inbox", "Remote open signal received from seed recipient", "open_signal");
-  }
   return true;
 }
 export function correlateBounce(t, dsn, sender) {

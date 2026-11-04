@@ -233,3 +233,15 @@ test("seed config rejects duplicate recipients and inline credentials; report fi
   assert.equal(report(t).summary.delivery_unknown, 0);
   assert.equal(report(t, new URLSearchParams({ campaign: 'other' })).total, 0);
 });
+
+test('seed image requests never assert Inbox placement; legacy inferences are withdrawn once',()=>{
+ const state={history:{}},t=initTracking(state);
+ const {record:r,pixelUrl}=createRecord(t,{to:recipient,subject:'Seed'},{sender,seedId:'test'},{openEnabled:true,consent:true,publicUrl:'https://tracking.example.com'});
+ r.attemptedAt='2026-11-04T10:00:00Z';r.confirmedAt=r.attemptedAt;r.sendStatus='webmail_sent';r.placement={status:'awaiting',source:'manual'};
+ const token=/\/o\/(.+)\.gif/.exec(pixelUrl)[1];
+ recordOpen(t,token,true,'2026-11-04T11:00:00Z');assert.equal(r.placement.status,'awaiting');assert.equal(report(t).summary.inbox,0);
+ r.placement={status:'inbox',source:'open_signal',evidence:'Old image inference'};
+ initTracking(state);assert.equal(r.placement.status,'awaiting');const count=r.events.filter(e=>e.type==='seed_placement_inference_withdrawn').length;assert.equal(count,1);
+ initTracking(state);assert.equal(r.events.filter(e=>e.type==='seed_placement_inference_withdrawn').length,1);
+ r.placement={status:'spam',source:'imap',evidence:'Observed seed folder'};initTracking(state);assert.equal(r.placement.status,'spam');
+});

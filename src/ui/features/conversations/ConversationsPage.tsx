@@ -401,6 +401,25 @@ export function ConversationsPage() {
               }
             </p>
           </section>
+          <section id="carrierHandoffPanel" hidden>
+            <h3>Prepare a carrier handoff</h3>
+            <p className="hint">
+              Download reviewed facts and their evidence references for a manual handoff. This does
+              not assign shared ownership, record acceptance or authorize contact. Save workflow
+              edits first.
+            </p>
+            <label htmlFor="carrierHandoffOwner">Intended owner</label>
+            <Input id="carrierHandoffOwner" maxLength={100} />
+            <label htmlFor="carrierHandoffNextStep">Reviewed next step</label>
+            <Textarea id="carrierHandoffNextStep" rows={3} maxLength={2000} />
+            <label className="check">
+              <Input id="carrierHandoffConfirm" type="checkbox" />I reviewed this carrier’s
+              evidence, holds and next step.
+            </label>
+            <Button id="carrierHandoffExport" className="secondary">
+              Download carrier handoff
+            </Button>
+          </section>
           <p id={'mailroomReplyHistory'} className={'hint'}></p>
           <details>
             <summary>{'Full thread & message evidence'}</summary>

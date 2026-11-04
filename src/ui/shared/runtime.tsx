@@ -14,8 +14,6 @@ import { refresh } from '../app/runtime/refresh';
 import { loadLeads } from '../features/leads/controller';
 import { loadHistory } from '../features/history/controller';
 import { updateControls } from '../app/runtime/controls';
-import type { Template } from './types/domain';
-import type { Dictionary } from './types/utilities';
 
 export function waitDuration(seconds: number) {
   const total = Math.max(0, Math.ceil(seconds) || 0);
@@ -133,10 +131,7 @@ export async function copyToClipboard(text: string | undefined) {
   }
 }
 
-export function downloadJson(
-  data: { exportedAt?: string; templates?: Dictionary<Template> },
-  filename: string,
-) {
+export function downloadJson(data: unknown, filename: string) {
   const blob = new Blob([JSON.stringify(data, null, 2)], {
     type: 'application/json',
   });

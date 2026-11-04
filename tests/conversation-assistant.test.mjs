@@ -104,3 +104,22 @@ test('material original-message recovery invalidates exact reply approval withou
  await assert.rejects(f.desk.approved(made.draft.id),/review again/);
  const saved=await f.ops.replies.load();assert(saved.assistant.drafts[made.draft.id].approvedAt);
 });
+
+test('carrier handoff exports an allowlisted reviewed snapshot and rejects stale context or workflow',async(t)=>{
+ const f=await setup(t,'I am interested. My phone is 8175550199.');
+ let detail=await f.get();
+ const phone=detail.assistant.fields.phone.candidates[0];
+ await f.desk.confirmDetails({rootId:f.root.id,expectedContext:detail.assistant.version,confirm:true,fields:[{field:'phone',value:phone.value,messageId:phone.messageId}],note:'Reviewed source phone'});
+ detail=await f.get();
+ const request={rootId:f.root.id,expectedContext:detail.assistant.version,expectedStatusVersion:detail.carrierHistory.statusVersion,intendedOwner:'Dispatch manager',nextStep:'Confirm equipment and preferred lanes with this carrier.',confirm:true};
+ const before=await f.ops.replies.load();const {handoff}=await f.desk.handoff(request);assert.equal(handoff.qualification.fields.phone.status,'operator_reviewed_carrier_statement');assert.equal(handoff.qualification.fields.phone.evidence.messageId,phone.messageId);assert.equal(handoff.handoff.acceptance,'not_recorded');
+ const serialized=JSON.stringify(handoff);for(const secret of ['PRIVATE_TEAM_SECRET','PRIVATE_TOKEN_HASH','What are your fees?','Original introduction.'])assert(!serialized.includes(secret));
+ assert.deepEqual(await f.ops.replies.load(),before,'export must not mutate ownership, drafts or read state');
+ await assert.rejects(f.desk.handoff({...request,confirm:false}),/confirm/);
+ await f.ops.inbox.update({carrierInboxId:detail.carrierHistory.carrierInboxId,expectedVersion:detail.carrierHistory.statusVersion,stage:'signed',note:'Operator workflow only'});
+ await assert.rejects(f.desk.handoff(request),/workflow changed/);
+ detail=await f.get();request.expectedStatusVersion=detail.carrierHistory.statusVersion;
+ await f.ops.replies.ingest(eml({id:'<handoff-new@example.com>',text:'My equipment changed to reefer.'}),account);await assert.rejects(f.desk.handoff(request),/evidence or workflow changed/);
+ detail=await f.get();f.state.sourceProtections={[recipient]:'Workbook opt-out / declined / bounce'};await assert.rejects(f.desk.handoff({...request,expectedContext:detail.assistant.version,expectedStatusVersion:detail.carrierHistory.statusVersion}),/changed/);
+ detail=await f.get();const protectedExport=await f.desk.handoff({...request,expectedContext:detail.assistant.version,expectedStatusVersion:detail.carrierHistory.statusVersion});assert(protectedExport.handoff.protection.hold);assert.equal(protectedExport.handoff.protection.outreachPermission,'not_granted_by_handoff');
+});
