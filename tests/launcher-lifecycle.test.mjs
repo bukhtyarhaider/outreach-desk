@@ -108,7 +108,7 @@ test("server lock prevents duplicate instances and allows graceful restart", asy
   });
 
   // Server 1 should exit
-  await until(() => s1.child.exitCode !== null, 6000);
+  await until(() => s1.child.exitCode !== null || s1.child.signalCode !== null, 6000);
 
   // Server 3 should acquire lock and bind port1
   await until(async () => {
@@ -125,7 +125,7 @@ test("server lock prevents duplicate instances and allows graceful restart", asy
 
   // Clean shutdown s3
   s3.child.kill("SIGTERM");
-  await until(() => s3.child.exitCode !== null, 6000);
+  await until(() => s3.child.exitCode !== null || s3.child.signalCode !== null, 6000);
 });
 
 test("launcher handles active instance, --close, and stale locks", async (t) => {

@@ -85,6 +85,7 @@ test('send insights and version catalog UI support filters, exports, review and 
   await page.locator('#historyReviewStatus').selectOption('no_reply');
   await page.locator('#historyReviewNote').fill('Checked manually; no reply yet');
   await page.locator('#historyRefresh').click();
+  await page.waitForFunction(() => !document.querySelector('#historyRefresh').disabled);
   assert.equal(await page.locator('#historyReviewNote').inputValue(), 'Checked manually; no reply yet');
   await page.locator('#historySaveReview').click();
   await page.waitForFunction(() => document.querySelector('#notice').textContent === 'Manual reply review saved.');
