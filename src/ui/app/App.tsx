@@ -24,10 +24,26 @@ export function App() {
   const viewportRef = useStickyHeaders();
   return (
     <>
+      <a
+        className="skip-to-content"
+        href="#main-content"
+        onClick={(event) => {
+          event.preventDefault();
+          const destination =
+            document.querySelector<HTMLElement>('.view-page.active h1') ||
+            document.getElementById('main-content');
+          if (destination) {
+            destination.tabIndex = -1;
+            destination.focus();
+          }
+        }}
+      >
+        Skip to main content
+      </a>
       <div className="app-shell">
         <div className="app-container">
           <Sidebar />
-          <main className="app-viewport" ref={viewportRef}>
+          <main className="app-viewport" id="main-content" tabIndex={-1} ref={viewportRef}>
             <Titlebar />
             <WorkspaceContext />
             <p id="releasePreviewBanner" className="carrier-preview-banner" hidden>

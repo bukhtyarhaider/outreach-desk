@@ -153,7 +153,7 @@ export function render(lead, template, business = {}) {
   };
   const expand = (text) =>
     text.replace(/\{\{(\w+)\}\}/g, (_, key) => {
-      if (!(key in values)) throw new Error(`Unknown template field: ${key}`);
+      if (!Object.hasOwn(values, key)) throw new Error(`Unknown template field: ${key}`);
       return values[key];
     });
   if (typeof template.subject !== "string" || typeof template.body !== "string")

@@ -82,3 +82,14 @@ test('native outgoing contact history counts toward the follow-up limit without 
 test('closing or signing a carrier clears its reply task until another incoming message arrives',async(t)=>{
  for(const stage of ['closed','signed']){const f=await workspace(t);await f.ops.replies.ingest(eml({text:'I am interested.'}),account);const row=(await list(f)).rows[0];await f.ops.inbox.update({carrierInboxId:row.carrierInboxId,expectedVersion:row.statusVersion,stage});assert.equal((await list(f,{work:'needs_reply'})).total,0);await f.ops.replies.ingest(eml({id:`<new-after-${stage}@example.com>`,text:'One more question.'}),account);assert.equal((await list(f,{work:'needs_reply'})).total,1);}
 });
+
+test('scheduled carrier reminders are sorted by due time and filter without authorizing sends',async(t)=>{
+ const f=await workspace(t);await f.ops.replies.ingest(eml({text:'Interested in details.'}),account);
+ f.ops.inbox.clock=()=>Date.parse('2026-11-04T12:00:00Z');
+ let row=(await list(f)).rows[0];
+ await f.ops.inbox.update({carrierInboxId:row.carrierInboxId,expectedVersion:row.statusVersion,stage:'follow_up',followUpAt:'2026-11-04T11:00:00Z',note:'Review manually'});
+ const due=await list(f,{work:'follow_up_overdue',timeZone:'Asia/Karachi'});assert.equal(due.total,1);assert.equal(due.summary.followUpOverdue,1);assert.equal(due.timeZone,'Asia/Karachi');
+ assert.equal((await list(f,{work:'follow_up_today',timeZone:'Asia/Karachi'})).total,0);
+ assert.equal((await list(f,{work:'follow_up_invalid'})).total,0);
+ assert.equal(f.state.automation.enabled,false);
+});

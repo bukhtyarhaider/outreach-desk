@@ -621,14 +621,23 @@ export function mountConversations() {
       if (entries.some((a) => a.email === value) || !value) $<HTMLSelectElement>(id).value = value;
     }
     async function load() {
+      if (mailroom && $('replyWork').value.startsWith('follow_up_'))
+        $('replyGrouping').value = 'carriers';
       const sequence = ++loadSequence;
       const params = new URLSearchParams({
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         mode: $('replyMode').value,
         mailbox: $('replyMailbox').value,
         category: $('replyCategory').value,
         q: $('replySearch').value,
         work: production ? $('replyWork').value : 'all',
-        ...(mailroom ? { group: $('replyGrouping').value } : {}),
+        ...(mailroom
+          ? {
+              group: $('replyWork').value.startsWith('follow_up_')
+                ? 'carriers'
+                : $('replyGrouping').value,
+            }
+          : {}),
         offset: String(offset),
       });
       const value = await request<ConversationReport>('/api/experiment/replies?' + params);

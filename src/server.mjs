@@ -16,6 +16,7 @@ import {
   EMAIL,
   pickTemplate,
 } from "./core.mjs";
+import { validateTemplate } from "./template-validation.mjs";
 import { deliver } from "./delivery.mjs";
 import { upgrade, validateSettings, DEFAULTS } from "./config.mjs";
 import { quota, nextPause, requiredWait, pacingHistory } from "./pacing.mjs";
@@ -1337,18 +1338,8 @@ const server = http.createServer(async (req, res) => {
                   .filter(Boolean)
               : [],
           };
-          if (!Number.isInteger(t.weight) || t.weight < 1 || t.weight > 100)
-            throw new Error("Template weight must be from 1 to 100.");
-          const sampleMsg = render(
-            activeData().leads[0] || {
-              company: "Example Company",
-              email: "person@example.com",
-              fields: {},
-            },
-            t,
-            business(),
-          );
-          const warnings = assess(sampleMsg, state.settings.templateChecks);
+          if (['__proto__', 'constructor', 'prototype'].includes(key)) throw new Error('Use a nonreserved template key.');
+          const warnings = validateTemplate(t, { lead: activeData().leads[0], business: business(), checks: state.settings.templateChecks });
           state.templates[key] = t;
           event(
             `Saved template ${t.name}.${warnings.length ? " Review note: " + warnings.join(" ") : ""}`,
@@ -1378,46 +1369,33 @@ const server = http.createServer(async (req, res) => {
           const incoming = input.templates || input;
           let entries = [];
           if (Array.isArray(incoming)) {
-            entries = incoming.map((t) => [t.key || randomUUID(), t]);
+            entries = incoming.map((t) => [t?.key || randomUUID(), t]);
           } else if (typeof incoming === "object" && incoming !== null) {
             entries = Object.entries(incoming);
           }
           if (!entries.length)
             throw new Error("Provide valid template definitions to import.");
-          let importedCount = 0;
-          for (const [rawKey, item] of entries) {
-            if (!item || typeof item !== "object") continue;
-            const subject = String(item.subject || "").trim();
-            const body = String(item.body || "").trim();
-            if (!subject || !body) continue;
-            const key = state.templates[rawKey]
-              ? randomUUID()
-              : rawKey || randomUUID();
-            const weight = Number(item.weight ?? 1);
-            const t = {
-              name: String(item.name || "Imported template").slice(0, 100),
-              subject,
-              body,
-              enabled: item.enabled !== false,
-              weight:
-                Number.isInteger(weight) && weight >= 1 && weight <= 100
-                  ? weight
-                  : 1,
-              requiredFields: Array.isArray(item.requiredFields)
-                ? item.requiredFields
-                    .map((field) => String(field).trim().toLowerCase())
-                    .filter(Boolean)
-                : [],
-            };
-            state.templates[key] = t;
-            importedCount++;
+          const pending = [], errors = [], reserved = new Set(Object.keys(state.templates));
+          for (const [index, [rawKey, item]] of entries.entries()) {
+            try {
+              if (!item || typeof item !== 'object') throw new Error('Expected a template object.');
+              const key = typeof rawKey === 'string' && rawKey && !reserved.has(rawKey) && !['__proto__', 'constructor', 'prototype'].includes(rawKey) ? rawKey : randomUUID();
+              const t = {
+                name: String(item.name || 'Imported template').slice(0, 100),
+                subject: item.subject, body: item.body, enabled: item.enabled !== false,
+                weight: Number(item.weight ?? 1),
+                requiredFields: Array.isArray(item.requiredFields) ? item.requiredFields.map(field => String(field).trim().toLowerCase()).filter(Boolean) : [],
+              };
+              validateTemplate(t, { lead: activeData().leads[0], business: business(), checks: state.settings.templateChecks });
+              reserved.add(key); pending.push([key, t]);
+            } catch (error) { errors.push(`Template ${index + 1}: ${error.message}`); }
           }
-          if (!importedCount)
-            throw new Error(
-              "No valid templates with subject and body found in imported file.",
-            );
+          if (errors.length) return response(res, { error: 'No templates imported. Correct the listed definitions and retry.', errors }, 400);
+          const previous = state.templates, previousEvents = [...state.events];
+          state.templates = { ...previous, ...Object.fromEntries(pending) };
+          const importedCount = pending.length;
           event(`Imported ${importedCount} template variant(s).`);
-          await persist();
+          try { await persist(); } catch (error) { state.templates = previous; state.events = previousEvents; throw error; }
           return response(res, {
             ok: true,
             count: importedCount,

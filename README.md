@@ -241,3 +241,11 @@ Use **Filtered CSV**, **Filtered JSON**, **Stats CSV** or the existing **Export 
 **Version Catalog** shows the installed internal build, searchable development checkpoints and milestones, and an expandable manual update guide. No public releases are recorded. Original 1.x/2.x/rc labels are retained inside historical entries for traceability; they were internal identifiers. The current numbering starts at **0.1.0-alpha.1**; use alpha.2, alpha.3, etc. for new packaged test builds. Export catalog JSON includes this classification. Local release-note editing remains removed, while existing saved notes remain untouched in data/state.json. See [CHANGELOG.md](CHANGELOG.md) and [docs/VERSIONING.md](docs/VERSIONING.md).
 
 For the next internal test package, follow [docs/VERSIONING.md](docs/VERSIONING.md): update package.json/package-lock.json together, record the new build in src/release-catalog.mjs, validate, rebuild, and bundle. The sidebar, catalog, exports and ZIP use the same package version. This manual workflow does not publish a public release, install another PC, or reset data/schema versions. Preserve each PC's own .env and data when updating.
+
+## Template import and daily reminder quality
+
+Template import validates the whole batch before publishing it. Unknown or malformed placeholders, invalid weights and message-size errors are listed by template number; fix the definitions and retry. A failed validation imports nothing. Optional authoring checks continue to use the configured warning policy.
+
+In Unibox, open **Filters → Work** for **Overdue reminders**, **Reminders due later today**, or **Upcoming reminders**. These queues use manually saved Follow up dates and the browser timezone, shown in the scope note. They display carrier history, sort by due time and exclude protected contacts. They never schedule or authorize an email. Automatic no-response eligibility and capture completeness remain separate safeguards.
+
+Keyboard users can use **Skip to main content** without changing the current route. Sidebar keyboard navigation focuses the destination heading, and browser titles identify the current page.

@@ -1,4 +1,10 @@
-import { resolveView, isTrackingSection, isSettingsSection, navigationParent } from './routes';
+import {
+  routeLabels,
+  resolveView,
+  isTrackingSection,
+  isSettingsSection,
+  navigationParent,
+} from './routes';
 import { uiScope } from '../shared/lifecycle';
 import { errorMessage } from '../shared/utils';
 import { session } from '../shared/session';
@@ -17,6 +23,7 @@ export function revealTrackingSection(value: string) {
 // Navigation View Routing
 export function navigate(viewName: string) {
   const target = resolveView(viewName);
+  document.title = `${routeLabels[target]} · Outreach Desk`;
   if (isSettingsSection(viewName) || viewName === 'settings')
     document.querySelector<HTMLElement>('.app-viewport')?.scrollTo(0, 0);
   if (document.querySelector('.view-page.active')?.id !== `view-${target}`) {
@@ -57,7 +64,15 @@ export function navigate(viewName: string) {
 
 export function mountNavigation() {
   uiScope.listen(window, 'hashchange', () => {
+    const fromNavigation = document.activeElement?.closest('.nav-link');
     navigate(location.hash.replace('#', ''));
+    if (fromNavigation) {
+      const heading = document.querySelector<HTMLElement>('.view-page.active h1');
+      if (heading) {
+        heading.tabIndex = -1;
+        heading.focus({ preventScroll: true });
+      }
+    }
   });
   // Ensure mouse click removes focus ring
   document.querySelectorAll<HTMLElement>('.nav-link').forEach((link) => {

@@ -1,3 +1,16 @@
+# Phase 3 quality first increment — November 4, 2026
+
+Phase 2's reviewed-launch/approval increment is committed as `abb6c40` on `feat/product-quality-roadmap`. Phase 3 begins as a separate uncommitted working increment; broader Phase 2 and Phase 3 backlogs remain explicit in their progress notes.
+
+- Full Node 22.23.4/Chrome suite: **243/243 JavaScript tests and 12/12 Python tests passed**, zero failures/skips (approximately 177 seconds for JavaScript).
+- Focused quality/carrier/user-feature suite: **27/27 passed**. Coverage includes shared template validation, atomic rejection with per-template diagnostics, supported imports, protected/date/timezone reminder filters, unchanged send permission, active-route skip navigation, keyboard destination focus and browser titles. A final boundary case verifies the repeated daylight-saving hour by absolute instant.
+- `npm run check:ui` passed strict TypeScript, formatting and production UI bundle generation. Server/carrier-inbox syntax and diff checks passed.
+- No live mailbox, real mail, production-state mutation, system-runtime replacement, remote push or deployment. Native screen-reader conformance, Windows/Edge, large-volume performance and remaining audit work are not claimed by these checks.
+
+See `docs/PHASE-3-PROGRESS.md` for implemented scope and remaining work.
+
+---
+
 # Phase 2 first increment — November 4, 2026
 
 On `feat/product-quality-roadmap`, Phase 1 is retained as commit `b36efa9`; Phase 2 is a separate increment, committed at the user’s request before Phase 3 starts. Full Node 22.23.4/Chrome verification passed **239/239 JavaScript and 12/12 Python tests**, zero failures/skips (approximately 172 seconds for JavaScript). Strict TypeScript, formatting, UI build, server syntax and diff checks passed.

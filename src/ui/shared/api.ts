@@ -16,7 +16,10 @@ export async function requestJson<T = ActionResult>(url: string, data?: unknown)
   if (!response.ok)
     throw new Error(
       value && typeof value === 'object' && 'error' in value
-        ? String(value.error)
+        ? String(value.error) +
+            ('errors' in value && Array.isArray(value.errors)
+              ? '\n' + value.errors.map(String).join('\n')
+              : '')
         : 'Request failed.',
     );
   return value as T;

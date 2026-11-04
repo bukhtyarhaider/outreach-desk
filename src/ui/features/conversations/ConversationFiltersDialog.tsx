@@ -38,7 +38,10 @@ export function ConversationFiltersDialog() {
             <option value={'all'}>{'All tool-sent conversations'}</option>
             <option value={'replied'}>{'Carriers who replied'}</option>
             <option value={'no_reply'}>{'No captured carrier reply'}</option>
-            <option value={'follow_up'}>{'Follow-up eligible'}</option>
+            <option value={'follow_up'}>{'Follow-ups and reminders'}</option>
+            <option value="follow_up_overdue">Overdue reminders</option>
+            <option value="follow_up_today">Reminders due later today</option>
+            <option value="follow_up_upcoming">Upcoming reminders</option>
             <option value={'unread'}>{'New / unread'}</option>
             <option value={'approval'}>{'Needs draft approval'}</option>
             <option value={'interested'}>{'Interested'}</option>
