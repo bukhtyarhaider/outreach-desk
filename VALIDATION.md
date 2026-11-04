@@ -1,3 +1,35 @@
+# UI rendering and visual follow-up — 2026-10-30
+
+## Mailbox & Settings layout follow-up — 2026-10-30
+
+- Fixed intrinsic table sizing that compressed the pacing column, aligned settings in paired rows, and added narrow-screen wrapping for form actions and system information.
+- Visually inspected desktop, tablet, mobile and expanded CDP states; details and local screenshot names are in `docs/UI-VISUAL-QA.md`.
+- Expanded responsive settings assertions across ten widths (320–1440px), with long profile names/emails and expanded CDP fields.
+- Final `FC_BROWSER_TESTS=1 npm test`: **215 Node tests + 12 Python tests passed**, zero failures/skips. Strict TypeScript, formatting, production build and diff checks passed.
+
+- Fixed migration regressions in the sidebar shell and event-message rendering, plus responsive action rows, event cards, tracking/seed panels, native checkbox alignment, tracking section anchors and drawer footer controls.
+- Manually inspected all 12 main screens at desktop/mobile sizes, tablet activity, conversation details/inbox navigation and the lead drawer. Used synthetic data for interaction tests; confirmed the reported fixes on the running app without modifying customer data or sending mail.
+- Final `FC_BROWSER_TESTS=1 npm test`: **215 Node tests + 12 Python tests passed; zero failures/skips**. This includes event content, simultaneous records, filters, pause/clear behavior, all-route shell geometry/internal overflow at 1440/1024/768/390px, direct tracking section URLs and drawer action bounds.
+- `npm run check:ui`, generated production assets and diff checks passed. See `docs/UI-VISUAL-QA.md` for the step-by-step visual review, repairs, local screenshots and limits.
+
+---
+
+# React / TypeScript UI migration — 2026-10-30
+
+Branch: `feat/react-typescript-ui`. The package remains `2.2.0-rc.9`; this branch is not a new deployed release.
+
+- `npm run check:ui`: strict TypeScript, unused-binding/override checks, formatting and all three production bundles passed.
+- `FC_BROWSER_TESTS=1 npm test`: 213 Node tests passed with zero skips/failures, followed by all 12 Python tests. Includes desktop/mobile Chrome coverage, all 539 original main-app control IDs, all 12 routes, retained form drafts, native primitives, resource teardown/remount, imports/activation/undo, conversations, stale approvals, read markers, tracking, Firebase settings, reporting and wait reset.
+- The exact-draft review snapshot was verified by all 12 carrier-release integration/browser tests after fixing a background-refresh timing case. Backend approval validation remains unchanged.
+- Desktop/mobile screenshots from the synthetic browser suite were inspected. Both standalone workspaces retain their shared styles and original body class.
+- A validation ZIP was built separately under `/tmp`; TypeScript configuration, architecture documentation, React sources and generated assets are included. Existing private-data exclusion checks pass. No release ZIP or installed PC was replaced.
+- Dependency audit: 10 moderate advisories in existing backend dependency chains (`firebase-admin`/Google dependencies and `mailparser`/`nodemailer`/`uuid`), also present in the original lockfile. No additional frontend advisories; no high/critical findings. Backend dependency remediation is outside this UI migration.
+- No backend business module, HTTP endpoint, local state file or credential file changed. No real outreach, live-mailbox acceptance test, Windows/Edge installation or multi-PC deployment was performed. Synthetic coverage does not prove every real provider corner case.
+
+Architecture, ownership boundaries and developer commands are documented in `docs/UI-ARCHITECTURE.md`.
+
+---
+
 # Outreach Desk 2 validation
 
 ## Dismiss read dashboard messages — 2.2.0-rc.9 — October 30, 2026
@@ -230,3 +262,7 @@ Validated on macOS with Node 20.20.2 and Python 3 using isolated temporary works
 The first restricted run could not bind local test ports. The complete successful run used local-server/browser execution permission. An initial synthetic composer fixture lacked visible recipient-chip text; the fixture was corrected before the final all-green run.
 
 Live Namecheap Sent-header/marker retention, real DSN behavior, seed-provider credentials/OAuth, public HTTPS tracking reachability, real domain authentication/alignment, and Windows execution remain unverified. Monitoring/open tracking default to disabled. OAuth token provisioning/refresh and external hosting require operator infrastructure. See `TRACKING.md` and `.env.example` for setup, the full changed-file manifest, and the designated-recipient end-to-end checklist.
+
+## Lucide React icons — 2026-10-30
+
+Replaced 131 hand-authored inline SVGs and decorative emoji status/timeline icons with `lucide-react@1.65.0`, using the typed shared icon primitive. Preserved native controls, event handlers, IDs and existing sizes. The native-select arrow is generated from Lucide React at build time and served by an explicit SVG asset route; this route requires restarting already-running app processes. Isolated asset verification returned HTTP 200 with the correct SVG MIME type and Lucide markup. The running main app contained 165 Lucide SVGs and zero custom SVGs after reload. Strict TypeScript, formatting and production build passed. Full regression passed 215 Node tests and 12 Python tests. Local screenshot: `outputs/ui-qa-lucide/settings.png`.
