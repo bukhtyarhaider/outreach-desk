@@ -1,3 +1,4 @@
+import { pathToFileURL } from 'node:url';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
@@ -14,7 +15,7 @@ test('connection preferences persist; optional password and startup restore resp
     if (child?.exitCode === null) { const exited = once(child, 'exit'); child.kill('SIGTERM'); await exited; }
   }
   async function start(saved = true) {
-    child = spawn(process.execPath, ['--import', path.resolve('tests/fixtures/fake-mail.mjs'), path.resolve('src/server.mjs')], {
+    child = spawn(process.execPath, ['--import', pathToFileURL(path.resolve('tests/fixtures/fake-mail.mjs')).href, path.resolve('src/server.mjs')], {
       env: { ...process.env, FC_DATA_DIR: dir, PORT: String(port), TEST_SAVED_PROFILE: saved ? '1' : '0', FC_MONITOR_ENABLED: '0', FC_OPEN_TRACKING_ENABLED: '0' },
       stdio: ['ignore', 'ignore', 'pipe'],
     });

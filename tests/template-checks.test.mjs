@@ -1,3 +1,4 @@
+import { pathToFileURL } from 'node:url';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
@@ -57,7 +58,7 @@ async function fixture(t, port) {
     throw new Error('Expected template-check state not reached');
   }
   async function start() {
-    child = spawn(process.execPath, ['--import', path.resolve('tests/fixtures/fake-mail.mjs'), path.resolve('src/server.mjs')], {
+    child = spawn(process.execPath, ['--import', pathToFileURL(path.resolve('tests/fixtures/fake-mail.mjs')).href, path.resolve('src/server.mjs')], {
       env: { ...process.env, FC_DATA_DIR: dir, PORT: String(port), TEST_SEND_LOG: path.join(dir, 'sends.jsonl'), FC_MONITOR_ENABLED: '0', FC_OPEN_TRACKING_ENABLED: '0' },
       stdio: ['ignore', 'ignore', 'pipe'],
     });

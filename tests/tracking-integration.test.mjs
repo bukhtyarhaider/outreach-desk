@@ -1,3 +1,4 @@
+import { pathToFileURL } from 'node:url';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
@@ -24,7 +25,7 @@ test('tracking HTTP workflow: durable hooks, public pixel isolation, seed idempo
   state.settings.eligibility.requireNoOutOfService = false;
   await fs.writeFile(path.join(dir, 'state.json'), JSON.stringify(state));
   const start = async () => {
-    child = spawn(process.execPath, ['--import', path.join(root, 'tests/fixtures/fake-mail.mjs'), path.join(root, 'src/server.mjs')], {
+    child = spawn(process.execPath, ['--import', pathToFileURL(path.join(root, 'tests/fixtures/fake-mail.mjs')).href, path.join(root, 'src/server.mjs')], {
       cwd: root, env: { ...process.env, FC_DATA_DIR: dir, PORT: String(port), TEST_SEND_LOG: path.join(dir, 'sends.jsonl'),
         FC_MONITOR_ENABLED: '0', FC_OPEN_TRACKING_ENABLED: '1', FC_OPEN_TRACKING_CONSENT: '1',
         FC_TRACKING_PUBLIC_URL: 'https://tracking.example.invalid', FC_PIXEL_PORT: String(pixelPort), FC_PIXEL_HOST: '127.0.0.1',
