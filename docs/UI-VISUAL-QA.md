@@ -50,7 +50,7 @@ Screens were inspected in the in-app browser using synthetic workbooks, sent his
 | 8 | Send history | Summary cards and filters fit; exports remain available. |
 | 9 | Tracking | Responsive cards and seed configuration inspected; section links stay in Tracking. |
 | 10 | Do Not Contact | Form and list heading/search wrap inside their panels. |
-| 11 | Version catalog | Metrics, notes and release entries fit their columns. |
+| 11 | Version catalog | Installed build summary, searchable expandable internal build entries and upgrade guide fit desktop and mobile. |
 | 12 | Mailbox/settings | Panels, profile table and form controls inspected; native checkbox alignment repaired. |
 | 13 | Lead drawer | All four footer actions remain within the drawer, including at 390px. |
 | 14 | Conversation details dialog | Status controls, evidence and close action fit; reply text is retained. |

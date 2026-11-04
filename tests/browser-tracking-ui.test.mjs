@@ -45,16 +45,24 @@ test('tracking dashboard filters, displays evidence and fits desktop/mobile with
   page.on('pageerror', (e) => errors.push(e.message));
   await page.goto(`http://127.0.0.1:${port}/#tracking`);
   await page.locator('#trackingRows tr').nth(1).waitFor();
+  await page.locator('#trackingRefresh').click();
+  await page.waitForFunction(()=>!document.querySelector('#trackingRefresh').disabled);
+  assert.equal(await page.locator('#trackingRefresh svg').count(),1,'Async actions retain their Lucide icons');
   assert.equal(await page.locator('#trackingRows tr').count(), 2);
   assert.match(await page.locator('#trackingConfig').innerText(), /disabled/);
-  assert.match(await page.locator('#trackingRows').innerText(), /hard_bounced/);
+  assert.match(await page.locator('#trackingRows').innerText(), /Hard Bounce/);
+  assert.match(await page.locator('#trackingRows').innerText(), /Webmail confirmed/);
+  assert.doesNotMatch(await page.locator('#trackingRows').innerText(), /Clean Delivery|Unopened/);
   await page.locator('#trackingStatus').selectOption('hard_bounced');
   await page.waitForFunction(() => document.querySelector('#trackingRows').querySelectorAll('tr').length === 1);
   assert.match(await page.locator('#trackingRows').innerText(), /bounce@example.com/);
   await page.locator('#trackingRows button').first().click();
   assert.match(await page.locator('#trackingDetail').innerText(), /550 mailbox unavailable/);
+  await page.locator('#closeTrackingDrawer').click();
   await page.locator('#trackingStatus').selectOption('');
   await page.waitForFunction(() => document.querySelector('#trackingRows').querySelectorAll('tr').length === 2);
+  await page.getByRole('tab', { name: 'Messages', exact: true }).click();
+  assert(await page.locator('#trackingMetrics').evaluate(el => el.getBoundingClientRect().top >= document.querySelector('.tracking-section-nav').getBoundingClientRect().bottom), 'Message stats clear the sticky tab bar');
   if (process.env.FC_UI_SCREENSHOT_DIR) {
     await fs.mkdir(process.env.FC_UI_SCREENSHOT_DIR, { recursive: true });
     await page.screenshot({ path: path.join(process.env.FC_UI_SCREENSHOT_DIR, 'tracking-desktop.png'), fullPage: true });
@@ -65,6 +73,7 @@ test('tracking dashboard filters, displays evidence and fits desktop/mobile with
   assert(widths.content <= widths.screen + 1, JSON.stringify(widths));
   await page.locator('#trackingRefresh').scrollIntoViewIfNeeded();
   if (process.env.FC_UI_SCREENSHOT_DIR) await page.screenshot({ path: path.join(process.env.FC_UI_SCREENSHOT_DIR, 'tracking-mobile.png') });
+  await page.getByRole('tab', { name: 'Domain Health', exact: true }).click();
   await page.locator('#domainForm').scrollIntoViewIfNeeded();
   assert(await page.locator('#domainForm button').isVisible());
   assert.deepEqual(errors, []);

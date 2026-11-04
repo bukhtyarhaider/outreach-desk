@@ -1,6 +1,6 @@
-> **2.2.0-rc.9 candidate:** reviewed import activation/recovery and the Mailroom conversation workspace are integrated into the normal sidebar. See [Import and conversation release guide](IMPORTS-AND-CONVERSATIONS.md). Team work is excluded; production rollout is pending review.
+> **Internal testing — 0.1.0-alpha.1.** No public releases have been made. Earlier 1.x/2.x and rc labels were internal development checkpoints, not stable releases. See [build numbering and release stages](docs/VERSIONING.md) and [the import/conversation guide](IMPORTS-AND-CONVERSATIONS.md). Team work remains excluded.
 
-# Outreach Desk 2.2.0-rc.9
+# Outreach Desk — internal alpha
 
 A configurable local email sales tool for teams using Private Email. Each PC has its own mailbox profiles and browser session. An optional shared coordinator prevents duplicate recipient claims across PCs and enforces team mailbox allowances.
 
@@ -14,7 +14,7 @@ The earlier `feat/sales-experiments` branch is preserved for later research. Tea
 
 ## Install on Windows and macOS
 
-1. Extract `Outreach-Desk-2.2.0-rc.9.zip` to a permanent folder on each PC. Give every OS user their own installation/data folder.
+1. Extract `Outreach-Desk-0.1.0-alpha.1.zip` to a permanent folder on each PC. Give every OS user their own installation/data folder.
 2. Install [Node.js 20+](https://nodejs.org/), [Python 3.9+](https://www.python.org/downloads/), and Google Chrome or Microsoft Edge. On Windows select **Add Python to PATH** during installation.
 3. Windows: open `Setup-Windows.cmd` once, then `Start-Windows.cmd`. macOS: open `Setup-Mac.command` once, then `Start-Mac.command`. If macOS strips execute permission from the archive, run `chmod +x *.command` in that folder. Setup installs the locked npm dependencies from the npm registry.
 4. The launcher opens http://127.0.0.1:4317. Keep its terminal open while using the tool. Closing it stops the local server. Linux also works with `npm ci` then `npm run launch`.
@@ -40,9 +40,15 @@ The launcher (`scripts/launch.mjs`) manages process lifecycles and enforces sing
 
 ## Configure a mailbox and campaign
 
-Open **Mailbox & settings** and enter the email, profile name, sender name, business name, legal name, postal address, and services your team actually offers. Choose a **Browser Connection Method** and save the profile. Use **New profile** to create another account. On the dashboard, choose **Connect mailbox**. The password field is optional: you can sign in directly in the browser. Passwords entered in the dashboard are passed to the local application and the mailbox's login form, and are not saved by the application. Browser login sessions are now saved locally.
+Open **Accounts → New profile** and enter the email, profile name, sender name, business name, legal name, postal address, and services your team actually offers. Choose a **Browser Connection Method** and save the profile. Use **New profile** to create another account. On the dashboard, choose **Connect mailbox**. The password field is optional: you can sign in directly in the browser. Passwords entered in the dashboard are passed to the local application and the mailbox's login form, and are not saved by the application. Browser login sessions are now saved locally.
 
 Select Chrome or Edge and, if necessary, change the webmail URL. The current transport adapter supports the inspected Private Email webmail interface, including its Composer iframe and existing signature. Other webmail providers need an adapter implementation; changing the URL alone does not make their UI compatible.
+
+### Working with Settings
+
+Settings is separated into Sending pace, Eligibility & checks, Firebase sync, Team coordination, Appearance and About. Use **Find a setting** to jump to a field, including advanced fields in collapsed sections. Mailbox profiles and sign-in belong in Accounts.
+
+Configuration edits remain in place while switching tabs or pages. A count in the header and affected tabs identifies unfinished edits. **Review edits** shows the values originally loaded beside your changes; credential values remain hidden. Save all pending configuration edits from the page header or review drawer. Only edited fields are applied to the latest known server settings; this does not provide an atomic cross-window conflict lock. Failed saves retain the draft and identify invalid fields. **Discard edits** requires confirmation and returns configuration fields to the latest loaded saved values. Appearance preferences save automatically in this browser and are kept when configuration edits are discarded. Leaving/reloading the browser warns about unsaved configuration edits.
 
 ### Saved Browser Profile
 
@@ -185,7 +191,7 @@ Outreach Desk provides two methods for open tracking:
 1. **Local GIF Pixel Listener** (`src/pixel-server.mjs`): Runs an isolated HTTP listener on port 4319 serving 1×1 transparent GIFs for opaque 256-bit hashed tokens. Requires an external HTTPS reverse proxy (nginx/caddy) mapped to `FC_TRACKING_PUBLIC_URL` and requires the local workstation to remain online.
 2. **24/7 Firebase Cloud Telemetry Sync** (`src/firebase-sync.mjs`): Eliminates the need for local port forwarding, ngrok tunnels, or keeping the PC on 24/7. When emails are opened while your PC is asleep or off, a cloud worker logs open events into Firebase Realtime Database or Cloud Firestore. When Outreach Desk runs, `FirebaseSync` pages through cloud opens, matches original local tokens, saves hourly-coalesced open signals locally, and only then acknowledges them. Bounded scans resume across runs and revisit acknowledged events to recover older sync failures.
    - **Credentials auto-discovery**: Automatically detects `data/firebase-service-account.json`, or environment variables (`FC_FIREBASE_CREDENTIALS_PATH`, `FC_FIREBASE_SERVICE_ACCOUNT_KEY`, `GOOGLE_APPLICATION_CREDENTIALS`).
-   - **Sync modes**: Configurable in **Settings → Email Tracking Telemetry** as **Automatic** (periodic background sync) or **Manual** (operator triggers on demand via the **Sync Firebase** button in Email Tracking).
+   - **Sync modes**: Configurable in **Settings → Firebase sync** as **Automatic** (periodic background sync) or **Manual** (operator triggers on demand via the **Sync Firebase** button in Email Tracking).
    - **PC identity and diagnostics**: Settings shows the effective PC ID/source, tracking URL, project/database, credential source (keys hidden), data folder, mode, last checks, errors and scan counters. Save a unique PC ID and matching tracking URL on each workstation; Settings values override the environment. Events require an original local token match before cloud acknowledgement.
    - **Truthful sync results**: Select RTDB, Firestore or both in Settings. Failures, incomplete scans, missing local tokens and PC-ID mismatches are shown explicitly. See [the four-PC repair guide](SYNC-REPAIR.md) for the verified October 2026 diagnosis and rollout steps.
 
@@ -224,7 +230,7 @@ Run `npm run check:ui` before committing frontend changes. `npm test` and `npm r
 Run `FC_BROWSER_TESTS=1 npm test` on macOS (PowerShell: `$env:FC_BROWSER_TESTS='1'; npm test`) to run the complete suite including real Chrome tests against synthetic local inboxes and temporary profiles: persistent cookies, restart reuse, profile locks, manual challenge recovery, wrong-account detection, expiry, CDP attach/detach, discovery, tracking dashboard filters, and desktop/mobile responsiveness. Set `FC_TEST_BROWSER_CHANNEL=msedge` to exercise Edge instead. No live Cloudflare/Namecheap outcome is claimed by synthetic tests.
 
 
-## Send insights and version catalog (2.1.0)
+## Send insights and internal Version Catalog
 
 **Send History & Audit** now filters by recipient/subject/note search, outcome, seen signal, mailbox, campaign, template, UTC send-date range (confirmation time, or attempt date when unconfirmed) and manual reply-review status. Sort by send dates, first/last seen activity, or fastest/slowest first-seen interval. Counts and filtered exports cover every matching row across pages, using only this PC's history. Refresh is explicit and the open history view also refreshes every 15 seconds while preserving unsaved review notes.
 
@@ -232,6 +238,6 @@ Metrics include confirmed sends, first-seen signals, seen/confirmed-send percent
 
 Use **Filtered CSV**, **Filtered JSON**, **Stats CSV** or the existing **Full history backup**. CSV includes recipients, mailbox/campaign/template, send timestamps, first/last seen, retained hourly signal count, delay in seconds, bounce evidence and manual reply notes. Stats CSV uses `Ms` suffixes for duration metrics and percentages for rate metrics. CSV cells protect spreadsheet formulas. Full JSON keeps the prior backup sections; filtered JSON includes only matching send/tracking records.
 
-**Version Catalog** shows the installed package version, verified numbered releases, historical updates, upgrade steps and your own editable local release notes. Catalog notes live in `data/state.json` on this PC and survive application-file replacement. Export the catalog as JSON. Earlier updates often retained package 2.0.0; the historical Git label V1.1.0 is explained rather than assigned an invented package version. See [CHANGELOG.md](CHANGELOG.md).
+**Version Catalog** shows the installed internal build, searchable development checkpoints and milestones, and an expandable manual update guide. No public releases are recorded. Original 1.x/2.x/rc labels are retained inside historical entries for traceability; they were internal identifiers. The current numbering starts at **0.1.0-alpha.1**; use alpha.2, alpha.3, etc. for new packaged test builds. Export catalog JSON includes this classification. Local release-note editing remains removed, while existing saved notes remain untouched in data/state.json. See [CHANGELOG.md](CHANGELOG.md) and [docs/VERSIONING.md](docs/VERSIONING.md).
 
-To publish a future version: update `package.json` and the root package entries in `package-lock.json`, add the new release to `src/release-catalog.mjs`, record validation, rebuild the UI, run the regression suite, then run `npm run bundle`. The ZIP filename reads the package version automatically. The title bar reads the same version from the running server. On each PC, stop the app, back up and retain `.env`/`data` (and `team-data` for a coordinator), replace application files, run Setup if dependencies changed, restart/reload, and check the catalog and sync diagnostics. This is a manual distribution workflow, not an online update service.
+For the next internal test package, follow [docs/VERSIONING.md](docs/VERSIONING.md): update package.json/package-lock.json together, record the new build in src/release-catalog.mjs, validate, rebuild, and bundle. The sidebar, catalog, exports and ZIP use the same package version. This manual workflow does not publish a public release, install another PC, or reset data/schema versions. Preserve each PC's own .env and data when updating.

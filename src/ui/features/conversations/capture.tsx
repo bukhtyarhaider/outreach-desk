@@ -7,11 +7,7 @@ import type { CaptureMailbox, SetupCandidate } from '../../shared/types/conversa
 import { eventElement } from '../../shared/dom';
 import { errorMessage } from '../../shared/utils';
 import { element as $ } from '../../shared/dom';
-import { session } from '../../shared/session';
 import { notice, api } from '../../shared/runtime';
-import { refresh } from '../../app/runtime/refresh';
-import { fillCampaign } from '../campaigns/controller';
-import { loadLeads } from '../leads/controller';
 import { closePreviewDrawer } from '../drawer/controller';
 
 export function mountCarrierWorkspace() {
@@ -22,9 +18,19 @@ export function mountCarrierWorkspace() {
       saving = false,
       mailboxes: CaptureMailbox[] = [],
       setupCandidates: SetupCandidate[] = [];
-    const field = (key: string, label: string, value: string | number = '', type = 'text') => (
+    const field = (
+      key: string,
+      label: string,
+      value: string | number = '',
+      type = 'text',
+      help?: string,
+    ) => (
       <>
-        <label>
+        <label
+          data-config-auth={
+            key === 'passwordEnv' ? 'password' : key === 'accessTokenEnv' ? 'oauth' : undefined
+          }
+        >
           {label}
           <Input
             data-config-field={key}
@@ -32,78 +38,149 @@ export function mountCarrierWorkspace() {
             defaultValue={displayText(value)}
             {...{ min: key === 'port' ? 1 : undefined, max: key === 'port' ? 65535 : undefined }}
           />
+          {help && <small className="hint">{help}</small>}
         </label>
       </>
     );
+    const providerHelp = (provider?: string) =>
+      provider === 'outlook'
+        ? 'Outlook capture in this app requires a provider-authorized OAuth token reference.'
+        : ['gmail', 'yahoo'].includes(provider || '')
+          ? 'For Gmail or Yahoo, choose OAuth or a provider-approved app password.'
+          : 'Use the sign-in method authorized by your provider. This app requires TLS port 993.';
     function renderMailboxes() {
       renderRegion(
         $('replyConfigMailboxes'),
         contentOr(
           mailboxes.map((c, index) => (
-            <>
-              <article className={'reply-config-mailbox'} data-config-index={index}>
-                <h3>
-                  {'Mailbox '}
-                  {index + 1}
-                </h3>
-                <div className={'reply-config-grid'}>
-                  {field('id', 'Unique mailbox ID', c.id)}
-                  {field('email', 'Sending identity / email', c.email, 'email')}
-                  {field('host', 'IMAP host', c.host)}
-                  {field('user', 'Login user (blank uses email)', c.user)}
-                  {field('port', 'TLS port', c.port || 993, 'number')}
-                  {field('inboxFolder', 'Inbox folder', c.inboxFolder || 'INBOX')}
-                  {field('sentFolder', 'Sent folder (blank auto-detects)', c.sentFolder)}
-                  {field('passwordEnv', 'Password environment variable', c.passwordEnv)}
-                  {field('accessTokenEnv', 'OAuth token environment variable', c.accessTokenEnv)}
-                  <label>
-                    {'Provider'}
-                    <Select data-config-field={'provider'}>
-                      {[
-                        ['custom', 'Private Email / other'],
-                        ['gmail', 'Gmail'],
-                        ['yahoo', 'Yahoo'],
-                        ['outlook', 'Outlook'],
-                      ].map(([v, l]) => (
-                        <>
-                          <option value={v} {...{ selected: (c.provider || 'custom') === v }}>
-                            {l}
-                          </option>
-                        </>
-                      ))}
-                    </Select>
-                  </label>
-                  <label>
-                    {'Authentication'}
-                    <Select data-config-field={'authMode'}>
-                      {[
-                        ['password', 'Provider password'],
-                        ['app_password', 'Provider app password'],
-                        ['oauth', 'OAuth token'],
-                      ].map(([v, l]) => (
-                        <>
-                          <option value={v} {...{ selected: (c.authMode || 'password') === v }}>
-                            {l}
-                          </option>
-                        </>
-                      ))}
-                    </Select>
-                  </label>
+            <article
+              key={c.id || index}
+              className="reply-config-mailbox"
+              data-config-index={index}
+              data-auth-mode={c.authMode || (c.accessTokenEnv ? 'oauth' : 'password')}
+            >
+              <div className="mailbox-config-heading">
+                <div>
+                  <span className="page-eyebrow">Mailbox {index + 1}</span>
+                  <h3>{c.email || 'New mailbox connection'}</h3>
                 </div>
-                <Button type={'button'} className={'secondary'} data-config-remove={index}>
-                  {'Remove from capture configuration'}
+                <Button type="button" size="sm" variant="ghost" data-config-remove={index}>
+                  Remove
                 </Button>
-                <p className={'hint'}>
-                  {
-                    'Removing configuration retains captured messages and opt-outs. Gmail/Yahoo password access requires an approved app password; Outlook requires OAuth. Tokens must be enrolled/refreshed through the provider.'
-                  }
+              </div>
+              <div className="reply-config-grid">
+                {field(
+                  'email',
+                  'Mailbox email',
+                  c.email,
+                  'email',
+                  'The sending identity whose replies you want in Unibox.',
+                )}
+                {field(
+                  'host',
+                  'IMAP server',
+                  c.host,
+                  'text',
+                  'The incoming-mail server supplied by your email provider.',
+                )}
+                <label>
+                  Provider
+                  <Select
+                    data-config-field="provider"
+                    defaultValue={c.provider === 'privateemail' ? 'custom' : c.provider || 'custom'}
+                  >
+                    {[
+                      ['custom', 'Private Email / other'],
+                      ['gmail', 'Gmail'],
+                      ['yahoo', 'Yahoo'],
+                      ['outlook', 'Outlook'],
+                    ].map(([value, label]) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
+                  </Select>
+                </label>
+                <label>
+                  How this mailbox signs in
+                  <Select
+                    data-config-field="authMode"
+                    defaultValue={c.authMode || (c.accessTokenEnv ? 'oauth' : 'password')}
+                  >
+                    {[
+                      ['password', 'Provider password'],
+                      ['app_password', 'Provider app password'],
+                      ['oauth', 'OAuth token'],
+                    ].map(([value, label]) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
+                  </Select>
+                </label>
+                <p className="mailbox-provider-help hint" data-config-provider-help>
+                  {providerHelp(c.provider)}
                 </p>
-              </article>
-            </>
+                {field(
+                  'passwordEnv',
+                  'Password variable name',
+                  c.passwordEnv,
+                  'text',
+                  'Enter a variable name, for example REPLY_PASSWORD—not the password. Its value must already be configured in this PC’s .env file.',
+                )}
+                {field(
+                  'accessTokenEnv',
+                  'OAuth token variable name',
+                  c.accessTokenEnv,
+                  'text',
+                  'Enter the variable name holding the provider token—not the token itself. Provider enrollment and token refresh are managed separately.',
+                )}
+              </div>
+              <details className="mailbox-tools-advanced">
+                <summary>Login, folders & connection details</summary>
+                <div className="reply-config-grid">
+                  {field(
+                    'user',
+                    'Login username',
+                    c.user,
+                    'text',
+                    'Leave blank to use the mailbox email.',
+                  )}
+                  {field(
+                    'port',
+                    'TLS port',
+                    c.port || 993,
+                    'number',
+                    'TLS is required; use the port supplied by your provider.',
+                  )}
+                  {field('inboxFolder', 'Inbox folder', c.inboxFolder || 'INBOX')}
+                  {field(
+                    'sentFolder',
+                    'Sent folder',
+                    c.sentFolder,
+                    'text',
+                    'Leave blank to detect the Sent folder automatically.',
+                  )}
+                  {field(
+                    'id',
+                    'Connection ID',
+                    c.id,
+                    'text',
+                    'A unique internal name for this capture connection.',
+                  )}
+                </div>
+              </details>
+              <p className="hint">
+                Removing this connection changes the draft only. Captured messages and opt-out
+                protections are retained.
+              </p>
+            </article>
           )),
           <>
             <p className={'hint'}>
-              {'No live mailboxes configured. You can still import an authorized EML export.'}
+              {
+                'No mailbox added yet. Choose a saved connection above or add a mailbox manually. You can also import one exported reply without connecting a provider.'
+              }
             </p>
           </>,
         ),
@@ -126,6 +203,24 @@ export function mountCarrierWorkspace() {
     }
     uiScope.listen(window, 'fc-capture-status', ({ detail }) => {
       const shared = detail.sharedProtection;
+      const nextTitle = document.getElementById('mailroomNextStepTitle');
+      const nextText = document.getElementById('mailroomNextStepText');
+      if (nextTitle)
+        nextTitle.textContent = detail.running
+          ? 'A mailbox check is in progress'
+          : detail.configurationError ||
+              detail.captureError ||
+              detail.mailboxes.some((mailbox) => mailbox.status === 'Needs attention')
+            ? 'Review the connection that needs attention'
+            : detail.enabled
+              ? 'Capture is enabled'
+              : 'Set up read-only reply capture';
+      if (nextText)
+        nextText.textContent = detail.running
+          ? 'You can close this window. Progress remains visible in Unibox, and saved scan progress can be resumed.'
+          : detail.enabled
+            ? 'Review the connection status below. Close these tools and use Scan previous replies to check available history; automatic checks run while the app is open if enabled.'
+            : 'First add an authorized mailbox in Set up capture. Already have an exported reply? Import a reply works without a provider connection.';
       setupCandidates = detail.setupCandidates || [];
       const selected = $('replyExistingMailbox').value;
       renderRegion(
@@ -171,8 +266,12 @@ export function mountCarrierWorkspace() {
         return;
       }
       mailboxes = readMailboxes();
-      if (mailboxes.some((m) => m.email?.toLowerCase() === c.email)) {
+      if (mailboxes.some((m) => m.email?.toLowerCase() === c.email.toLowerCase())) {
         notice('That mailbox is already in the capture settings.');
+        return;
+      }
+      if (mailboxes.length >= 20) {
+        notice('Up to 20 mailboxes are supported.');
         return;
       }
       const { name, credentialsConfigured, ...config } = c;
@@ -205,9 +304,22 @@ export function mountCarrierWorkspace() {
         notice('Up to 20 mailboxes are supported.');
         return;
       }
-      mailboxes.push({ id: 'mailbox' + (mailboxes.length + 1) });
+      mailboxes.push({ id: 'mailbox-' + crypto.randomUUID().slice(0, 8) });
       dirty = true;
       renderMailboxes();
+    });
+    uiScope.listen($('replyConfigMailboxes'), 'change', (event) => {
+      const target = eventElement(event);
+      if (target.dataset.configField === 'provider') {
+        const help = target
+          .closest('[data-config-index]')
+          ?.querySelector('[data-config-provider-help]');
+        if (help) help.textContent = providerHelp((target as HTMLSelectElement).value);
+      }
+      if (target.dataset.configField === 'authMode') {
+        const card = target.closest<HTMLElement>('[data-config-index]');
+        if (card) card.dataset.authMode = (target as HTMLSelectElement).value;
+      }
     });
     uiScope.handler($('replyConfigMailboxes'), 'onclick', (event) => {
       const b = eventElement(event).closest<HTMLElement>('[data-config-remove]');
@@ -221,6 +333,10 @@ export function mountCarrierWorkspace() {
       if (saving) return;
       saving = true;
       const b = $('replyConfigSave');
+      const fields = document.getElementById('mailroomConfigFields');
+      if (fields instanceof HTMLFieldSetElement) fields.disabled = true;
+      const feedback = document.getElementById('mailroomConfigFeedback');
+      if (feedback) feedback.textContent = 'Saving capture settings…';
       b.textContent = 'Saving…';
       b.disabled = true;
       try {
@@ -232,36 +348,30 @@ export function mountCarrierWorkspace() {
           allHistory: $('replyConfigAll').checked,
           allFolders: $('replyConfigAllFolders').checked,
           pages: Number($('replyConfigPages').value),
-          mailboxes: readMailboxes(),
+          mailboxes: readMailboxes().map((mailbox) => {
+            const active = { ...mailbox };
+            if (active.authMode === 'oauth') delete active.passwordEnv;
+            else delete active.accessTokenEnv;
+            return active;
+          }),
           confirmReadOnly: $('replyConfigConfirm').checked,
         });
         loaded = false;
         dirty = false;
         $('replyConfigConfirm').checked = false;
         window.dispatchEvent(new Event('fc-conversation-view'));
+        if (feedback)
+          feedback.textContent = 'Capture settings saved. Secret values were not stored.';
         notice('Read-only capture configuration saved. Secret values were not stored.');
       } catch (e) {
+        if (feedback) feedback.textContent = errorMessage(e) + ' Your settings draft is retained.';
         notice(errorMessage(e));
-        $('replyConfigNote').textContent = errorMessage(e) + ' Your settings draft is retained.';
       } finally {
         saving = false;
+        if (fields instanceof HTMLFieldSetElement) fields.disabled = false;
         b.textContent = 'Save capture settings';
         b.disabled = false;
       }
-    });
-    uiScope.handler($('openImportReview'), 'onclick', () => {
-      location.hash = 'imports';
-      window.dispatchEvent(
-        new CustomEvent('fc-import-view', { detail: session.state.activeCampaign }),
-      );
-    });
-    uiScope.listen(window, 'fc-import-activated', async () => {
-      session.selected.clear();
-      session.previewId = null;
-      session.offset = 0;
-      await refresh();
-      fillCampaign();
-      await loadLeads();
     });
     uiScope.listen(document, 'click', (event) => {
       const button = eventElement(event).closest<HTMLElement>('[data-conversation-email]');

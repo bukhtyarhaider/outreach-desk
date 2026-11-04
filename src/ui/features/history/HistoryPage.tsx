@@ -1,4 +1,4 @@
-import { Button, Input, Textarea, Select } from '../../design-system/primitives';
+import { ActionLink, Button, Input, Panel, Select, Textarea } from '../../design-system/primitives';
 export function HistoryPage() {
   return (
     <>
@@ -18,30 +18,30 @@ export function HistoryPage() {
             <Button id={'historyRefresh'} className={'secondary'}>
               {'Refresh'}
             </Button>
-            <a
+            <ActionLink
               className={'button secondary'}
               id={'historyExportCsv'}
               href={'/api/export-history?scope=filtered&format=csv'}
             >
               {'Filtered CSV'}
-            </a>
-            <a
+            </ActionLink>
+            <ActionLink
               className={'button secondary'}
               id={'historyExportJson'}
               href={'/api/export-history?scope=filtered'}
             >
               {'Filtered JSON'}
-            </a>
-            <a
+            </ActionLink>
+            <ActionLink
               className={'button secondary'}
               id={'historyExportStats'}
               href={'/api/export-history?scope=stats&format=csv'}
             >
               {'Stats CSV'}
-            </a>
-            <a className={'button secondary'} href={'/api/export-history'}>
+            </ActionLink>
+            <ActionLink className={'button secondary'} href={'/api/export-history'}>
               {'Full history backup'}
-            </a>
+            </ActionLink>
           </div>
         </div>
         <div id={'recovery'}></div>
@@ -57,7 +57,7 @@ export function HistoryPage() {
             '“Seen” is a recorded remote image request, which can include previews or automated scanners. No signal does not prove an email was unread. Replies and reasons are recorded through your manual review below.'
           }
         </p>
-        <div className={'panel history-panel'}>
+        <Panel as="div" className={'panel history-panel'}>
           <div className={'panel-head'}>
             <h2 className={'panel-title'}>{'Recorded sends & attempts'}</h2>
             <span id={'historyLoadStatus'} className={'hint'} role={'status'}></span>
@@ -207,7 +207,7 @@ export function HistoryPage() {
             <Button id={'historySaveReview'}>{'Save review'}</Button>
             <span id={'historyReviewSaved'} className={'hint'} role={'status'}></span>
           </section>
-        </div>
+        </Panel>
       </section>
     </>
   );

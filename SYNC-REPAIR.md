@@ -20,7 +20,7 @@ The local checkout inspected during the audit uses PC ID **1**, URL `https://www
 ## Install on each PC
 
 1. Stop Outreach Desk on that PC. Back up its `.env` and entire `data` folder before updating.
-2. Extract the new `Outreach-Desk-2.1.0.zip` into the application folder, replacing application files. **Keep that PC's existing `.env` and `data` folder.** The archive contains no customer data or Firebase credentials. Do not copy another PC's `data/state.json` over it: tracking tokens belong to that PC's original emails.
+2. Extract the new `Outreach-Desk-0.1.0-alpha.1.zip` into the application folder, replacing application files. **Keep that PC's existing `.env` and `data` folder.** The archive contains no customer data or Firebase credentials. Do not copy another PC's `data/state.json` over it: tracking tokens belong to that PC's original emails.
 3. Run the normal Setup launcher if needed, then Start. Reload the browser page so the new JavaScript is loaded.
 4. Open **Settings → Firebase Open Telemetry Sync**. Save the appropriate PC ID and its public endpoint URL:
 
@@ -64,3 +64,17 @@ It prints only aggregate counts by PC, the old 100-record window, payload shapes
 Regression tests cover pagination past unrelated events, restart/continuation, recovery of acknowledged events, wrong-PC token matching, hash-only events, malformed data, save-before-acknowledgement, disk and cloud-write failures, timeouts, partial database failure, manual/concurrent requests, and durable replay deduplication. Browser tests exercise settings warnings, save/reload, failed-sync feedback, preserved unsaved inputs and responsive layout. See `VALIDATION.md` for this build's final test result.
 
 This package was built and checked locally. Installation, end-to-end syncing and native Windows operation on the other PCs require applying the update there and checking their diagnostics.
+
+## Recovery hardening — 2026-10-31
+
+Temporary network failures, service unavailability and throttling retry at most twice per request with exponential backoff and jitter. Permission/authentication failures remain visible for correction. Cloud requests time out, and each run has a 60-second cloud-work budget; page checkpoints allow the next automatic/manual run to continue. A local disk save must finish before acknowledgement and is not abandoned on a timer. Timed-out SDK requests may finish later; acknowledgements are idempotent and durable local receipts prevent duplicate open application.
+
+A settings change during a scan stops further processing/acknowledgement under stale configuration. Invalid PC IDs/backends stop before querying. Malformed timestamps are counted without blocking later events. Failed checkpoint saves restore the previous cursor, and a failed final status save cannot advance the last completed scan time. Scans cap pages at 250 records to keep Firestore acknowledgements within a bounded batch.
+
+Email Tracking now displays current sync status and a direct Settings link. Settings includes per-backend retries and the run budget. Both sync buttons clearly report rejected/failed results. Existing token ownership, save-before-acknowledgement, pagination and replay protections remain in place. Regression tests use SDK doubles and synthetic local workspaces; this does not establish live connectivity or deployment on another PC.
+
+### When sync runs but open signals are missing
+
+Run the read-only audit against that PC's original data. Its `recovery` section distinguishes recoverable open-signal buckets from newly opened messages, identifies paused automatic polling and matching events carrying a different PC ID, and flags a selected database that cannot be read. `complete` and `scope` describe coverage: recovery counts cover RTDB only; Firestore is checked for accessibility. This is a dry run, not a repair or acknowledgement.
+
+If matching signals are recoverable, restart the installed app after updating its worker code, then use **Sync Firebase** to apply eligible events through the app's normal persistence safeguards. In Manual mode, future events require another explicit sync. Choose Automatic only if that is the intended configuration. If an unused database fails, verify which database the cloud tracking endpoint actually writes before changing the selected backend. A PC-label mismatch requires checking installation identity; do not replace tokens or copy another PC's data to force a match.

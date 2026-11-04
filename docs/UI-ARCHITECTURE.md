@@ -1,6 +1,6 @@
 # React / TypeScript UI architecture
 
-This branch migrates the complete browser UI to React and TypeScript. It preserves the current product design and local-server protocol. Server modules, sending, pacing, suppression, workbook processing, Firebase synchronization, and saved customer data keep their existing implementations.
+This branch migrates the complete browser UI to React and TypeScript. The Bauhaus branch adds a campaign-centered paper UI while preserving the local-server protocol. Server modules, sending, pacing, suppression, workbook processing, Firebase synchronization, and saved customer data keep their existing implementations.
 
 ## Source ownership
 
@@ -16,7 +16,7 @@ src/ui/
     runtime/                       Bootstrap state rendering, controls and polling
   features/
     campaigns/                     Upload and campaign configuration
-    catalog/                       Release catalog and local notes
+    catalog/                       Internal build catalog and manual upgrade guide
     conversations/                 Inbox, capture setup, reply assistant, mailroom
     dashboard/                     Overview and carrier activity
     drawer/                        Lead and tracking inspector interactions
@@ -77,7 +77,7 @@ Build output keeps `/app.js`, `/style.css`, `/experiment.js`, `/experiment.css`,
 
 ## Regression evidence
 
-`tests/fixtures/ui-contract.json` records the original main UI's control IDs and twelve routes. `tests/ui-react.test.mjs` and `tests/live-activity-ui.test.mjs` verify that inventory, native primitives, safe text rendering, teardown/remount resource ownership, absence of legacy rendering paths, and retained edits across all routes and desktop/mobile widths. The existing integration/browser tests remain the behavior baseline, including import repairs, conversations, stale approvals, read markers, tracking, Firebase diagnostics, send insights, mailbox recovery and wait reset.
+`tests/fixtures/ui-contract.json` retains the original main UI's control IDs and lists fifteen current views, including separate campaign creation and editing. Legacy campaign-review/source aliases resolve to local editor tabs. `tests/ui-react.test.mjs` and `tests/live-activity-ui.test.mjs` verify that inventory, native primitives, safe text rendering, teardown/remount resource ownership, absence of legacy rendering paths, and retained edits across all routes and desktop/mobile widths. The existing integration/browser tests remain the behavior baseline, including import repairs, conversations, stale approvals, read markers, tracking, Firebase diagnostics, send insights, mailbox recovery and wait reset.
 
 Synthetic tests cannot establish that every possible real mailbox/provider state is covered. This branch does not deploy, send customer email, migrate customer state or change installed PCs. Rollout requires the usual per-PC backups, retained `.env`/`data`, dependency installation and real-environment verification.
 
@@ -86,3 +86,5 @@ The visual follow-up and regression repairs are recorded in [UI visual QA](UI-VI
 ### Icons
 
 All application icons use `lucide-react` through `design-system/icons.tsx`. Import curated named components and render `<Icon icon={Mail} size={16} />`. Lucide hides decorative icons from assistive technology; label icon-only buttons on the button itself. Preserve native control IDs and existing sizing. The build renders the native-select chevron from Lucide React into `public/icons/chevron-down.svg`; no custom SVG geometry is maintained. Tracking timeline icons store Lucide components, and clipboard feedback captures/restores React icon content.
+
+The Bauhaus component boundaries, typed navigation configuration, presentation store and verification workflow are described in [Frontend development guide](UI-DX.md).

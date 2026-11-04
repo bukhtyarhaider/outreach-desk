@@ -14,6 +14,9 @@ class UISession {
   selected = new Set<string>();
   pending = false;
   configLoaded = false;
+  templateEditKey = null as string | null;
+  templateEditorInitialized = false;
+  templateBaseline = '';
   profileEditId = null as string | null;
   livePaused = false;
   liveViewMode = 'visual';

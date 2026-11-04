@@ -29,7 +29,9 @@ import { historyReport, historyCsv, csv, saveFollowUp } from "./history-report.m
 import { StateFile } from "./state-file.mjs";
 import { CarrierWorkspace } from "./carrier-workspace.mjs";
 import { sharedReplyHold } from './conversation-assistant.mjs';
-import { APP_VERSION, releaseCatalog, saveReleaseNote } from "./release-catalog.mjs";
+import { leadReport } from "./lead-report.mjs";
+import { APP_BUILD_LABEL } from "./app-version.mjs";
+import { APP_VERSION, releaseCatalog } from "./release-catalog.mjs";
 
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const DATA = path.resolve(process.env.FC_DATA_DIR || path.join(ROOT, "data"));
@@ -907,9 +909,7 @@ const server = http.createServer(async (req, res) => {
           return response(res, { ok: true, review });
         }
         if (pathname === "/api/catalog/note") {
-          const note = saveReleaseNote(state, input, randomUUID());
-          await persist();
-          return response(res, { ok: true, note });
+          return response(res, { error: "Local release notes are no longer supported." }, 410);
         }
         if (pathname === "/api/tracking/manual-placement") {
           const record = state.tracking.records[input.trackingId];
@@ -1231,6 +1231,8 @@ const server = http.createServer(async (req, res) => {
           });
         }
         if (pathname === "/api/delete-leads") {
+          if (input.campaignId && input.campaignId !== state.activeCampaign)
+            throw new Error("The active campaign changed. Reload leads and review your selection before deleting.");
           if (state.automation.enabled || prepared)
             throw new Error(
               "Stop outreach and close compose before deleting leads.",
@@ -1540,6 +1542,7 @@ const server = http.createServer(async (req, res) => {
       return response(res, {
         version: 2,
         appVersion: APP_VERSION,
+        appBuildLabel: APP_BUILD_LABEL,
         previewMode: PREVIEW_MODE,
         workbook: activeCampaign()?.workbook,
         sheets: activeData().sheets,
@@ -1670,28 +1673,10 @@ const server = http.createServer(async (req, res) => {
       );
     }
     if (pathname === "/api/leads") {
-      let leads = candidates();
-      if (url.searchParams.get("sheet"))
-        leads = leads.filter((l) => l.sheet === url.searchParams.get("sheet"));
-      if (url.searchParams.get("filter") === "ready")
-        leads = leads.filter((l) => !l.blocked);
-      if (url.searchParams.get("filter") === "excluded")
-        leads = leads.filter((l) => l.blocked);
-      const q = (url.searchParams.get("q") || "").toLowerCase();
-      if (q)
-        leads = leads.filter((l) =>
-          `${l.company} ${l.email} ${l.fields["owner / principal"] || ""}`
-            .toLowerCase()
-            .includes(q),
-        );
-      const offset = Math.max(0, Number(url.searchParams.get("offset")) || 0);
-      return response(res, {
-        total: leads.length,
-        leads: leads.slice(offset, offset + 50),
-      });
+      return response(res, { ...leadReport(candidates(), url.searchParams), campaignId: state.activeCampaign || null });
     }
     if (pathname === "/api/catalog" || pathname === "/api/export-catalog") {
-      const catalog = releaseCatalog(state);
+      const catalog = releaseCatalog();
       if (pathname === "/api/catalog") return response(res, catalog);
       res.writeHead(200, { "Content-Type": "application/json", "Content-Disposition": `attachment; filename="outreach-catalog-${APP_VERSION}.json"`, "Cache-Control": "no-store" });
       return res.end(JSON.stringify({ exportedAt: new Date().toISOString(), ...catalog }, null, 2));
@@ -1773,17 +1758,23 @@ const server = http.createServer(async (req, res) => {
       "/app.js": "app.js",
       "/style.css": "style.css",
       "/icons/chevron-down.svg": "icons/chevron-down.svg",
+      "/fonts/Manrope.ttf": "fonts/Manrope.ttf",
+      "/brand/outreach-desk.png": "brand/outreach-desk.png",
     };
     if (!files[pathname]) return response(res, { error: "Not found" }, 404);
     const file = files[pathname];
     res.writeHead(200, {
-      "Content-Type": file.endsWith(".svg")
-        ? "image/svg+xml"
-        : file.endsWith(".css")
-        ? "text/css"
-        : file.endsWith(".js")
-          ? "text/javascript"
-          : "text/html",
+      "Content-Type": file.endsWith(".png")
+        ? "image/png"
+        : file.endsWith(".ttf")
+        ? "font/ttf"
+        : file.endsWith(".svg")
+          ? "image/svg+xml"
+          : file.endsWith(".css")
+            ? "text/css"
+            : file.endsWith(".js")
+              ? "text/javascript"
+              : "text/html",
       "Cache-Control": "no-store",
       "Content-Security-Policy":
         "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'",

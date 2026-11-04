@@ -1,10 +1,11 @@
+import { workbookLabel } from '../../shared/workspace-store';
 import { Button } from '../../design-system/primitives';
 import { renderRegion } from '../../shared/regions';
 import { displayText } from '../../shared/utils';
 import type { AppState } from '../../shared/types/api';
 import { session } from '../../shared/session';
 import { api, $, syncOptions, waitDuration } from '../../shared/runtime';
-import { fillTemplate, renderTemplatesTable } from '../../features/templates/controller';
+import { renderTemplatesTable } from '../../features/templates/controller';
 import {
   fillSettings,
   fillProfile,
@@ -16,9 +17,18 @@ import { renderLiveActivityView } from '../../features/live-activity/controller'
 import { renderSuppressionList } from '../../features/suppression/controller';
 import { updateControls } from './controls';
 export async function refresh() {
+  const previousCampaign = session.state?.activeCampaign;
+  const hadState = !!session.state;
   session.state = await api<AppState>('/api/state');
+  if (hadState && previousCampaign !== session.state.activeCampaign) {
+    session.selected.clear();
+    session.previewId = null;
+    session.offset = 0;
+    if ($('sheet')) $('sheet').value = '';
+  }
   if ($('releasePreviewBanner')) $('releasePreviewBanner').hidden = !session.state.previewMode;
-  if ($('appVersion')) $('appVersion').textContent = `Desktop v${session.state.appVersion}`;
+  if ($('appVersion'))
+    $('appVersion').textContent = `${session.state.appBuildLabel} · v${session.state.appVersion}`;
   for (const key of ['total', 'ready', 'excluded', 'sent']) {
     const el = $(key);
     if (el) el.textContent = session.state.counts[key].toLocaleString();
@@ -33,7 +43,7 @@ export async function refresh() {
   }
   const wbName = $('workbookName');
   if (wbName) {
-    wbName.textContent = session.state.workbook?.name || 'No workbook imported.';
+    wbName.textContent = workbookLabel(session.state);
   }
   const options = JSON.stringify(session.state.sheets);
   const sheetSelect = $('sheet');
@@ -72,7 +82,6 @@ export async function refresh() {
     );
     if (session.state.templates[v]) tempSelect.value = v;
     tempSelect.dataset.options = templateOptions;
-    fillTemplate();
   }
   const quotaEl = $('quota');
   if (quotaEl) {

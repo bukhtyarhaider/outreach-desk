@@ -1,0 +1,165 @@
+.campaign-library-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-end;
+  margin-bottom: 20px;
+}
+.campaign-library-toolbar label {
+  min-width: 0;
+  flex: 1 1 220px;
+  margin: 0;
+}
+.campaign-library-toolbar label:nth-child(2) {
+  flex: 0 1 210px;
+}
+.campaign-library-toolbar input,
+.campaign-library-toolbar select {
+  margin-top: 8px;
+}
+.campaign-overview small {
+  display: block;
+  font-size: 10px;
+  color: var(--text-muted);
+  margin: 5px 0 7px;
+  overflow-wrap: anywhere;
+}
+#view-campaigns .campaign-overview .table-wrap {
+  max-height: 560px;
+  min-height: 0;
+}
+#view-campaign-edit .campaign-audience .ui-metric-group {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+#view-campaign-edit .campaign-audience .ui-metric {
+  border-right: 1px solid var(--border-subtle);
+  border-bottom: 0;
+}
+#view-campaign-edit .campaign-audience .ui-metric:last-child {
+  border-right: 0;
+}
+#view-campaign-edit .campaign-audience .table-wrap {
+  min-height: 0;
+  margin-top: 16px;
+}
+.campaign-create-source {
+  text-align: center;
+  padding: 44px 28px;
+  max-width: 100%;
+}
+.campaign-create-source > .ui-icon {
+  color: var(--accent-blue);
+  margin: 0 0 20px;
+}
+.campaign-create-source h2 {
+  font-size: 30px;
+  letter-spacing: -1px;
+  line-height: 1.2;
+}
+.campaign-create-source > p:not(.page-eyebrow) {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  max-width: 60ch;
+  margin: 14px auto 22px;
+}
+.campaign-create-source > .hint {
+  max-width: 70ch;
+  font-size: 11px !important;
+  margin-bottom: 0 !important;
+}
+.campaign-create-guide {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 26px;
+  margin-top: 30px;
+}
+.campaign-create-guide > div {
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 18px;
+}
+.campaign-create-guide span {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--accent-blue);
+}
+.campaign-create-guide h3 {
+  font-size: 15px;
+  margin: 10px 0 8px;
+}
+.campaign-create-guide p {
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+.campaign-settings-footer,
+.campaign-related-tools {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+  border-top: 1px solid var(--border-subtle);
+  margin-top: 24px;
+  padding-top: 20px;
+}
+.campaign-related-tools p {
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  margin-top: 6px;
+  max-width: 70ch;
+}
+.campaign-related-tools h3 {
+  font-size: 16px;
+}
+.campaign-scope {
+  max-width: 900px;
+}
+.campaign-scope > .form-group {
+  margin-top: 22px;
+}
+.campaign-source-name {
+  font-size: 17px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+.campaign-headers {
+  font: 12px/1.7 var(--font-mono);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  padding: 16px;
+  background: var(--bg-surface-elevated);
+  max-height: 220px;
+  overflow: auto;
+}
+.campaign-audience {
+  margin-bottom: 0;
+}
+@media (max-width: 680px) {
+  .campaign-create-guide {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+  .campaign-create-source {
+    padding: 30px 18px;
+  }
+  .campaign-create-source h2 {
+    font-size: 25px;
+  }
+  #view-campaign-edit .campaign-audience .ui-metric {
+    padding: 14px 10px;
+  }
+  #view-campaign-edit .campaign-audience .ui-metric dd {
+    font-size: 26px;
+  }
+  #view-campaign-edit .campaign-audience .ui-metric dt {
+    font-size: 10px;
+  }
+}
+.campaign-name-action {
+  justify-content: flex-start !important;
+  text-align: left !important;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}

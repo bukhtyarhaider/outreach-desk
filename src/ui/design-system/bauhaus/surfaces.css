@@ -1,0 +1,139 @@
+/* Feature surfaces inherit the same paper, ink, spacing and state vocabulary. */
+.stats-grid {
+  gap: 0;
+  background: transparent;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.stat-card {
+  border: 0;
+  border-radius: 0;
+  border-right: 1px solid var(--border-subtle);
+  padding: 18px 24px;
+  background: transparent;
+}
+.stat-card:last-child {
+  border-right: 0;
+}
+.stat-card::before,
+.tracking-kpi-card::before {
+  display: none;
+}
+.stat-value {
+  font-size: 38px;
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -1px;
+}
+.stat-label {
+  font-size: 11px;
+  letter-spacing: 0.5px;
+}
+.stat-hint {
+  color: var(--text-muted);
+}
+.toolbar,
+.table-container {
+  background: var(--bg-surface);
+  box-shadow: none;
+}
+th {
+  background: #f2efe7;
+  color: #4f514d;
+  text-transform: none;
+  font-size: 11px;
+  letter-spacing: 0.3px;
+}
+td {
+  color: var(--text-primary);
+  font-size: 12px;
+  padding: 15px 16px;
+}
+tr:hover td {
+  background: #f2efe7;
+}
+.table-wrap {
+  min-width: 0;
+}
+.toolbar {
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 14px;
+}
+.drawer,
+.drawer-panel,
+.modal-card,
+dialog {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+}
+.drawer-header,
+.drawer-footer,
+.drawer-tabs {
+  background: var(--bg-app);
+}
+.drawer-title,
+.lead-hero-company,
+.lead-details-title {
+  color: var(--text-primary);
+}
+.mailroom-page {
+  background: var(--bg-app);
+}
+.mailroom-workspace,
+.mailroom-list-pane,
+.mailroom-reader,
+.mailroom-reader-stage,
+.mailroom-subject-bar,
+.mailroom-toolbar,
+.mailroom-list,
+.mailroom-thread,
+.mailroom-header {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+}
+.mailroom-card,
+.mailroom-message,
+.mailroom-composer,
+.mailroom-empty {
+  background: var(--bg-surface);
+  color: var(--text-primary);
+}
+.mailroom-card[aria-selected='true'],
+.mailroom-card.active {
+  background: #fbe7df;
+}
+.tracking-kpi-card,
+.seed-config-card,
+.seed-preview-card,
+.domain-health-card,
+.pacing-presets-section,
+.pacing-preset-card {
+  background: var(--bg-surface);
+  box-shadow: none;
+}
+.pacing-preset-card.active {
+  border-color: var(--accent-blue);
+  background: #edf1fd;
+  box-shadow: none;
+}
+.preset-card-name,
+.pacing-presets-title {
+  color: var(--text-primary);
+}
+.live-terminal-wrap,
+.live-terminal-header,
+.live-terminal-output {
+  background: #20201d;
+  color: #f8f6ed;
+}
+.live-event-card {
+  background: var(--bg-surface);
+}
+
+@media (max-width: 820px) {
+  .stat-card {
+    padding: 14px;
+  }
+  .stat-value {
+    font-size: 28px;
+  }
+}

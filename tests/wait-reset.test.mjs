@@ -1,3 +1,4 @@
+import { pathToFileURL } from 'node:url';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
@@ -51,7 +52,7 @@ async function fixture(t, port, configure = () => {}, extraEnv = {}) {
     throw new Error(`Queue did not reach expected state: ${JSON.stringify((await api('state')).job)}`);
   }
   async function start() {
-    child = spawn(process.execPath, ['--import', path.resolve('tests/fixtures/fake-mail.mjs'), path.resolve('src/server.mjs')], {
+    child = spawn(process.execPath, ['--import', pathToFileURL(path.resolve('tests/fixtures/fake-mail.mjs')).href, path.resolve('src/server.mjs')], {
       env: { ...process.env, FC_DATA_DIR: dir, PORT: String(port), TEST_SEND_LOG: path.join(dir, 'sends.jsonl'), FC_MONITOR_ENABLED: '0', FC_OPEN_TRACKING_ENABLED: '0', ...extraEnv },
       stdio: ['ignore', 'ignore', 'pipe'],
     });
@@ -190,8 +191,7 @@ test('settings hard reset works on desktop/mobile and disables after resetting',
     const sizes = await page.evaluate(() => [innerWidth, document.documentElement.scrollWidth]);
     assert(sizes[1] <= sizes[0] + 1, sizes.join('/'));
   }
-  page.once('dialog', (dialog) => dialog.accept());
-  await button.click();
+  await button.click(); await page.locator('.ui-confirmation').getByRole('button', { name: /Confirm/ }).click();
   await page.waitForFunction(() => document.querySelector('#resetWait').disabled && document.querySelector('#settingsWaitStatus').textContent.startsWith('No scheduled wait.'));
   assert.equal((await api('state')).job.sincePause, 0);
   assert.match(await page.locator('#notice').innerText(), /Hard reset complete/);
@@ -210,13 +210,13 @@ test('settings warns before overriding a long minimum/quota wait; cancel preserv
   const button = page.getByRole('button', { name: 'Hard reset wait & quotas', exact: true });
   const before = (await api('state')).job.nextAt;
   let warning;
-  page.once('dialog', async (dialog) => { warning = dialog.message(); await dialog.dismiss(); });
   await button.click();
+  warning = await page.locator('#confirmationDescription').innerText();
+  await page.locator('.ui-confirmation').getByRole('button', { name: 'Cancel', exact: true }).click();
   assert.match(warning, /active queue may send immediately/);
   assert.match(warning, /Provider-enforced limits still apply/);
   assert.equal((await api('state')).job.nextAt, before);
-  page.once('dialog', (dialog) => dialog.accept());
-  await button.click();
+  await button.click(); await page.locator('.ui-confirmation').getByRole('button', { name: /Confirm/ }).click();
   await page.waitForFunction(() => document.querySelector('#notice').textContent.includes('Hard reset complete'));
   assert.match(await page.locator('#settingsWaitStatus').innerText(), /No scheduled wait/);
   const after = await api('state');

@@ -19,7 +19,8 @@ export interface Profile {
   business: Business;
 }
 export interface Workbook {
-  name: string;
+  name?: string;
+  file?: string;
   path?: string;
 }
 export interface Sheet {
@@ -30,9 +31,10 @@ export interface Sheet {
 }
 export interface Campaign {
   id: string;
+  reviewRequired?: boolean;
   name: string;
   enabled: boolean;
-  sheets: string[];
+  sheets?: string[];
   mapping: Dictionary<JsonValue>;
   workbook?: Workbook;
   templateKeys?: string[];
@@ -144,6 +146,7 @@ import type { FirebaseDiagnostics } from './firebase';
 export interface AppState {
   version: number;
   appVersion: string;
+  appBuildLabel: string;
   previewMode: boolean;
   workbook?: Workbook;
   sheets: Sheet[];
@@ -232,8 +235,9 @@ export interface HistorySummary {
 }
 export interface CatalogEntry {
   id: string;
-  kind: string;
-  version: string;
+  kind: 'build' | 'checkpoint' | 'milestone';
+  version?: string;
+  legacyVersion?: string;
   date: string;
   title: string;
   changes: string[];
@@ -241,10 +245,11 @@ export interface CatalogEntry {
 }
 export interface Catalog {
   installedVersion: string;
-  packageVersions: number;
+  buildLabel: string;
+  publicReleaseCount: number;
+  internalBuilds: number;
   milestones: number;
-  notes: CatalogEntry[];
-  releases: CatalogEntry[];
+  entries: CatalogEntry[];
   upgradeSteps: string[];
 }
 export interface TrackingRecord {

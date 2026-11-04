@@ -1,3 +1,4 @@
+import { confirmAction } from '../../shared/confirmation';
 import { uiScope } from '../../shared/lifecycle';
 import { session } from '../../shared/session';
 import { $, action, notice, api } from '../../shared/runtime';
@@ -5,15 +6,16 @@ import { refresh } from '../../app/runtime/refresh';
 import { loadLeads } from '../leads/controller';
 export async function deleteActiveCampaign(btn: HTMLButtonElement) {
   if (!session.state.activeCampaign) return;
-  const c = session.state.campaigns.find((c) => c.id === session.state.activeCampaign);
+  const campaignId = session.state.activeCampaign;
+  const c = session.state.campaigns.find((c) => c.id === campaignId);
   if (
-    !confirm(
+    !(await confirmAction(
       `Are you sure you want to delete workspace "${c?.name || 'Current'}" and all its leads?`,
-    )
+    ))
   )
     return;
   action(btn, async () => {
-    await api('/api/delete-campaign', { id: session.state.activeCampaign });
+    await api('/api/delete-campaign', { id: campaignId });
     session.selected.clear();
     session.previewId = null;
     session.offset = 0;
@@ -42,7 +44,34 @@ export function fillCampaign() {
   }
 }
 
+/** Shared campaign switching owns selection cleanup and audience refresh. */
+export async function selectCampaign(id: string) {
+  if (id === session.state.activeCampaign) return;
+  await api('/api/select-campaign', { id });
+  session.selected.clear();
+  session.previewId = null;
+  session.offset = 0;
+  await refresh();
+  fillCampaign();
+  await loadLeads();
+}
+
 export function mountCampaigns() {
+  uiScope.handler($('openImportReview'), 'onclick', async () => {
+    location.hash = 'imports';
+    window.dispatchEvent(
+      new CustomEvent('fc-import-view', { detail: session.state.activeCampaign }),
+    );
+  });
+  uiScope.listen(window, 'fc-import-activated', async () => {
+    session.selected.clear();
+    session.previewId = null;
+    session.offset = 0;
+    await refresh();
+    fillCampaign();
+    await loadLeads();
+  });
+
   if ($('upload'))
     uiScope.handler($('upload'), 'onchange', () =>
       action($('reload'), async () => {
@@ -84,12 +113,7 @@ export function mountCampaigns() {
   if ($('campaignSelect'))
     uiScope.handler($('campaignSelect'), 'onchange', () =>
       action($('reload'), async () => {
-        await api('/api/select-campaign', { id: $('campaignSelect').value });
-        session.selected.clear();
-        session.previewId = null;
-        session.offset = 0;
-        await refresh();
-        fillCampaign();
+        await selectCampaign($('campaignSelect').value);
       }),
     );
   if ($('saveCampaign'))

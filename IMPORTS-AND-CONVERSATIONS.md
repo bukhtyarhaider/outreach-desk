@@ -1,7 +1,7 @@
-# Outreach Desk 2.2.0-rc.9 — reviewed imports and carrier conversations
+# Outreach Desk internal alpha — reviewed imports and carrier conversations
 
 Feature branch: `feat/import-repairs-carrier-conversations`.
-Previous stable build: 2.1.0. This is a release candidate for review, not an automatically approved production deployment. Experiments 01–03 are integrated into the normal app; Team work remains on `feat/sales-experiments` and is excluded from this candidate.
+Current internal build: **0.1.0-alpha.1**. No public release has been made. Earlier 2.1.0 and 2.2.0-rc labels identify internal checkpoints, not stable releases or release candidates. See [versioning guidance](docs/VERSIONING.md). Experiments 01–03 are integrated into the normal app; Team work remains on `feat/sales-experiments` and is excluded.
 
 ## What is integrated
 
@@ -17,7 +17,7 @@ Run the normal launcher or `npm start`; use the normal sidebar. There is no sepa
 
 ## First-use walkthrough
 
-1. Back up this PC as described below, then start the candidate against the intended workspace after review approval. Existing campaigns need no automatic conversion.
+1. Back up this PC as described below, then start the internal build against the intended workspace after review approval. Existing campaigns need no automatic conversion.
 2. Upload a workbook from Leads Workspace, or open Import review and select an existing campaign.
 3. Choose **Review saved mapping**. Inspect raw headers/samples and any layout/missing-status issues. Choose columns, optionally add a new Status header, then **Preview changes**.
 4. Enter where the leads came from; keep acquisition/permission unknown if not established. Check the save acknowledgement and **Save reviewed revision**. This saves a copy only.
@@ -70,7 +70,7 @@ An opt-out must remain held unless its underlying permission/evidence has been d
 
 All new production state lives under the existing PC’s data folder. `data/carrier-workspace/` contains immutable workbook revisions, mapping/source records, identity registry, captured plain-text messages, read-only cursors, reply templates, drafts/approval versions, carrier-stated detail confirmations, read markers and review events. Normal `data/state.json` retains campaign pointers, capture settings, suppression and coordinator retry acknowledgements. Secret values remain in `.env`; browser sessions stay in their existing PC-specific folder. The old `experiment-data/` workspace is preserved separately and is not silently imported into production. Re-review an experiment proposal or import an authorized EML through the normal UI when needed.
 
-Before updating, click **Stop outreach**, wait for the current operation to finish and close any prepared message. Then stop this PC’s app and back up **the entire data folder and its own .env**. Retain `team-data` if it hosts the coordinator. Extract the versioned ZIP over application sources, preserve private data/configuration, run Setup when dependencies changed, start and verify the candidate version in Version Catalog. Never copy another PC’s state, browser profile or credentials. No other PC is installed or verified by this package.
+Before updating, click **Stop outreach**, wait for the current operation to finish and close any prepared message. Then stop this PC’s app and back up **the entire data folder and its own .env**. Retain `team-data` if it hosts the coordinator. Extract the versioned ZIP over application sources, preserve private data/configuration, run Setup when dependencies changed, start and verify the internal build version in Version Catalog. Never copy another PC’s state, browser profile or credentials. No other PC is installed or verified by this package.
 
 To undo a workbook activation, use the in-app action while stopped. To roll back the application version, stop it, restore the matching pre-upgrade data backup and previous application package together. Keep a separate copy of any newer send/reply evidence for reconciliation; never discard post-backup attempts and then restart sending. Immutable revision downloads help recover mappings/source copies; a missing/corrupt current workbook or altered archive needs backup recovery before activation. A failed publication leaves the previous campaign pointer in place; retained files may include an unreferenced interrupted copy, which is never auto-sent.
 
@@ -80,7 +80,7 @@ No shared filesystem service, public/LAN listener, account/ownership workflow, a
 
 ## Release checks
 
-Automated results and package inspection are recorded in VALIDATION.md after the final run. Synthetic/local checks do not verify provider authorization, folder retention, native Windows behavior or another PC’s installation. Before approving a rollout, use one designated authorized mailbox to check its Inbox/Sent mapping, real reference headers, quoted opt-outs and recovery behavior. Live mailbox access requires explicit authorization and configured read-only capture. No carrier email is sent during release checks.
+Automated results and package inspection are recorded in VALIDATION.md after the final run. Synthetic/local checks do not verify provider authorization, folder retention, native Windows behavior or another PC’s installation. Before approving a rollout, use one designated authorized mailbox to check its Inbox/Sent mapping, real reference headers, quoted opt-outs and recovery behavior. Live mailbox access requires explicit authorization and configured read-only capture. No carrier email is sent during internal build checks.
 
 ## Carrier history and daily workflow (rc.6)
 

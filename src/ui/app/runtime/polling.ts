@@ -23,10 +23,15 @@ export async function mountBoot() {
   // Background polling loop
   uiScope.interval(async () => {
     try {
+      const previousCampaign = session.state.activeCampaign;
       const previous = session.state.job.current;
       const previousAttempts = session.state.attemptCount;
       await refresh();
-      if (session.state.job.current !== previous) await loadLeads();
+      if (
+        session.state.job.current !== previous ||
+        session.state.activeCampaign !== previousCampaign
+      )
+        await loadLeads();
       if (
         session.state.attemptCount !== previousAttempts ||
         (location.hash === '#activity' && Date.now() - session.lastHistoryRefresh > 15000)

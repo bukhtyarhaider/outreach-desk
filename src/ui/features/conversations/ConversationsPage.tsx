@@ -1,21 +1,43 @@
-import { Button, Input, Textarea, Select, Dialog } from '../../design-system/primitives';
+import { ConversationFiltersDialog } from './ConversationFiltersDialog';
+import { MailboxToolsDialog } from './MailboxToolsDialog';
+import {
+  Icon,
+  Inbox,
+  Search,
+  SlidersHorizontal,
+  Settings,
+  RefreshCw,
+  ArrowRight,
+  ShieldCheck,
+} from '../../design-system/icons';
+import { StatusBadge } from '../../design-system/layout';
+import {
+  ActionLink,
+  Button,
+  Dialog,
+  Input,
+  Select,
+  Textarea,
+} from '../../design-system/primitives';
 export function ConversationsPage() {
   return (
     <>
       <section className={'view-page mailroom-page'} id={'view-conversations'}>
         <header className={'page-header mailroom-header'}>
           <div>
-            <p className={'page-eyebrow'}>{'CARRIER EMAIL'}</p>
-            <h1 className={'page-title'}>{'Conversations'}</h1>
+            <p className={'page-eyebrow'}>{'CONVERSATION WORKSPACE'}</p>
+            <h1 className={'page-title'}>{'Unibox'}</h1>
           </div>
           <label className={'mailroom-mailbox'}>
-            <span className={'sr-only'}>{'Mailbox'}</span>
+            <span className={'mailroom-field-label'}>{'Mailbox'}</span>
             <Select id={'replyMailbox'}>
               <option value={''}>{'All mailboxes'}</option>
             </Select>
           </label>
           <label className={'mailroom-search'}>
-            <span className={'sr-only'}>{'Search conversations'}</span>
+            <span className={'mailroom-field-label'}>
+              <Icon icon={Search} size={12} /> Search conversations
+            </span>
             <Input
               id={'replySearch'}
               type={'search'}
@@ -25,51 +47,86 @@ export function ConversationsPage() {
         </header>
         <div className={'mailroom-toolbar'}>
           <nav className={'mailroom-tabs'} aria-label={'Conversation queues'}>
-            <Button type={'button'} data-mailroom-work={'active'} aria-pressed={'false'}>
+            <Button size="sm" type={'button'} data-mailroom-work={'active'} aria-pressed={'false'}>
               {'Active '}
               <span id={'mailroomActiveCount'}>{'0'}</span>
             </Button>
-            <Button type={'button'} data-mailroom-work={'needs_reply'} aria-pressed={'true'}>
+            <Button
+              size="sm"
+              type={'button'}
+              data-mailroom-work={'needs_reply'}
+              aria-pressed={'true'}
+            >
               {'Needs reply '}
               <span id={'mailroomNeedsCount'}>{'0'}</span>
             </Button>
-            <Button type={'button'} data-mailroom-work={'all'} aria-pressed={'false'}>
+            <Button size="sm" type={'button'} data-mailroom-work={'all'} aria-pressed={'false'}>
               {'All '}
               <span id={'mailroomAllCount'}>{'0'}</span>
             </Button>
-            <Button type={'button'} data-mailroom-work={'no_reply'} aria-pressed={'false'}>
+            <Button
+              size="sm"
+              type={'button'}
+              data-mailroom-work={'no_reply'}
+              aria-pressed={'false'}
+            >
               {'Waiting '}
               <span id={'mailroomWaitingCount'}>{'0'}</span>
             </Button>
-            <Button type={'button'} data-mailroom-work={'in_review'} aria-pressed={'false'}>
+            <Button
+              size="sm"
+              type={'button'}
+              data-mailroom-work={'in_review'}
+              aria-pressed={'false'}
+            >
               {'In review '}
               <span id={'mailroomReviewCount'}>{'0'}</span>
             </Button>
           </nav>
           <div className={'mailroom-tools'}>
-            <Button id={'replyScan'} className={'secondary'} disabled={true}>
-              {'Scan previous replies'}
+            <Button type="button" id="mailroomResetFilters" variant="ghost" size="sm" hidden>
+              Clear filters
             </Button>
-            <Button id={'replyStopCapture'} className={'secondary'} disabled={true} hidden={true}>
+            <Button size="sm" id={'replyScan'} className={'secondary'} disabled={true}>
+              <Icon icon={RefreshCw} size={14} /> Scan previous replies
+            </Button>
+            <Button
+              size="sm"
+              id={'replyStopCapture'}
+              className={'secondary'}
+              disabled={true}
+              hidden={true}
+            >
               {'Stop scan'}
             </Button>
-            <Button id={'mailroomFiltersOpen'} className={'secondary'}>
-              {'Filters'}
+            <Button size="sm" id={'mailroomFiltersOpen'} className={'secondary'}>
+              <Icon icon={SlidersHorizontal} size={14} /> Filters
             </Button>
-            <Button id={'mailroomToolsOpen'} className={'secondary'}>
-              {'Mailbox tools'}
+            <Button size="sm" id={'mailroomToolsOpen'} className={'secondary'}>
+              <Icon icon={Settings} size={14} /> Mailbox tools
             </Button>
           </div>
         </div>
-        <p
-          id={'replyScanProgress'}
-          className={'mailroom-scan-note'}
-          role={'status'}
-          aria-live={'polite'}
-        ></p>
+        <StatusBadge id="mailroomQueueLabel" tone="info" hidden />
+        <div className="mailroom-sync-bar">
+          <Icon icon={ShieldCheck} size={15} />
+          <p
+            id={'replyScanProgress'}
+            className={'mailroom-scan-note'}
+            role={'status'}
+            aria-live={'polite'}
+          ></p>
+          <Button type="button" variant="ghost" size="sm" data-mailroom-setup>
+            Capture settings <Icon icon={ArrowRight} size={12} />
+          </Button>
+        </div>
         <p id={'replyError'} className={'experiment-error'} role={'alert'} hidden={true}></p>
         <div className={'mailroom-workspace'} id={'mailroomWorkspace'} data-thread-open={'false'}>
           <aside className={'mailroom-list-pane'} aria-label={'Carrier conversations'}>
+            <div className="mailroom-list-heading">
+              <strong>Conversations</strong>
+              <small>Select a carrier to continue</small>
+            </div>
             <div
               id={'mailroomList'}
               className={'mailroom-list'}
@@ -87,8 +144,18 @@ export function ConversationsPage() {
           </aside>
           <div className={'mailroom-reader-stage'}>
             <div id={'mailroomEmpty'} className={'mailroom-empty'}>
+              <Icon icon={Inbox} size={36} />
+              <p className="ui-eyebrow">YOUR CONVERSATION DESK</p>
               <h2>{'Choose a conversation'}</h2>
-              <p>{'Read a carrier’s message and write your reply here.'}</p>
+              <p>
+                Choose a carrier from the inbox to read their history, review the evidence and
+                prepare your next reply.
+              </p>
+              <ol className="mailroom-workflow">
+                <li>Read the conversation</li>
+                <li>Write and review your reply</li>
+                <li>Continue in your mailbox</li>
+              </ol>
               <Button className={'secondary'} id={'mailroomEmptyTools'}>
                 {'Set up mailbox capture'}
               </Button>
@@ -98,14 +165,14 @@ export function ConversationsPage() {
             </p>
             <section id={'replyInspector'} className={'mailroom-reader'} hidden={true}>
               <header className={'mailroom-subject-bar'}>
-                <Button id={'replyClose'} className={'secondary mailroom-back'}>
+                <Button size="sm" id={'replyClose'} className={'secondary mailroom-back'}>
                   {'Back to inbox'}
                 </Button>
                 <h2 id={'replyThreadTitle'}>{'Conversation'}</h2>
-                <Button id={'replyThreadRefresh'} className={'secondary'}>
+                <Button size="sm" id={'replyThreadRefresh'} className={'secondary'}>
                   {'Refresh'}
                 </Button>
-                <Button id={'mailroomDetailsOpen'} className={'secondary'}>
+                <Button size="sm" id={'mailroomDetailsOpen'} className={'secondary'}>
                   {'Details'}
                 </Button>
               </header>
@@ -114,7 +181,7 @@ export function ConversationsPage() {
                   <strong id={'carrierRecordLabel'}></strong>
                   <p id={'carrierHistoryNote'} className={'hint'}></p>
                 </div>
-                <Button id={'carrierManage'} className={'secondary'}>
+                <Button size="sm" id={'carrierManage'} className={'secondary'}>
                   {'Carrier status'}
                 </Button>
               </div>
@@ -135,11 +202,11 @@ export function ConversationsPage() {
                 <div className={'assistant-draft'}>
                   <div className={'mailroom-compose-heading'}>
                     <h3>
-                      {'Your reply '}
+                      {'Compose reply '}
                       <span>{'(draft)'}</span>
                     </h3>
                     <p id={'assistantDraftBasis'} className={'hint'}></p>
-                    <Button id={'mailroomCarrierDetails'} className={'secondary'}>
+                    <Button id={'mailroomCarrierDetails'} className={'secondary'} hidden>
                       {'Details'}
                     </Button>
                   </div>
@@ -183,6 +250,7 @@ export function ConversationsPage() {
                       </div>
                     </details>
                     <Button
+                      variant="primary"
                       id={'assistantReviewOpen'}
                       className={'primary mailroom-review-primary'}
                     >
@@ -225,7 +293,7 @@ export function ConversationsPage() {
                     <Button id={'assistantCopy'} className={'secondary'}>
                       {'Copy approved reply'}
                     </Button>
-                    <a
+                    <ActionLink
                       id={'assistantMailbox'}
                       className={'button secondary'}
                       target={'_blank'}
@@ -233,7 +301,7 @@ export function ConversationsPage() {
                       hidden={true}
                     >
                       {'Open my mailbox'}
-                    </a>
+                    </ActionLink>
                   </div>
                   <p className={'hint'}>
                     {
@@ -281,216 +349,8 @@ export function ConversationsPage() {
             </section>
           </div>
         </div>
-        <Dialog
-          id={'mailroomFiltersDialog'}
-          className={'mailroom-dialog'}
-          aria-label={'Conversation filters'}
-        >
-          <div className={'mailroom-dialog-heading'}>
-            <h2>{'Conversation filters'}</h2>
-            <Button className={'secondary'} data-close-mailroom={'mailroomFiltersDialog'}>
-              {'Close filters'}
-            </Button>
-          </div>
-          <div className={'reply-filters'}>
-            <label>
-              {'View'}
-              <Select id={'replyGrouping'}>
-                <option value={'carriers'}>{'Carriers with full email history'}</option>
-                <option value={'threads'}>{'Individual tool threads'}</option>
-              </Select>
-            </label>
-            <label hidden={true} htmlFor={'replyMode'}>
-              {'Data'}
-              <Select id={'replyMode'}>
-                <option value={'real'}>{'Real replies'}</option>
-                <option value={'demo'}>{'Sample replies'}</option>
-              </Select>
-            </label>
-            <label htmlFor={'replyWork'}>
-              {'Work queue'}
-              <Select id={'replyWork'} defaultValue={'needs_reply'}>
-                <option value={'active'}>{'Active conversations'}</option>
-                <option value={'in_review'}>{'Carriers in review'}</option>
-                <option value={'signed'}>{'Signed carriers'}</option>
-                <option value={'closed'}>{'Closed carriers'}</option>
-                <option value={'needs_reply'}>{'Needs my reply'}</option>
-                <option value={'all'}>{'All tool-sent conversations'}</option>
-                <option value={'replied'}>{'Carriers who replied'}</option>
-                <option value={'no_reply'}>{'No captured carrier reply'}</option>
-                <option value={'follow_up'}>{'Follow-up eligible'}</option>
-                <option value={'unread'}>{'New / unread'}</option>
-                <option value={'approval'}>{'Needs draft approval'}</option>
-                <option value={'interested'}>{'Interested'}</option>
-                <option value={'positive'}>{'Positive engagement'}</option>
-                <option value={'negative'}>{'Negative / opt-out'}</option>
-                <option value={'missing_details'}>{'Missing carrier details'}</option>
-              </Select>
-            </label>
-            <label htmlFor={'replyCategory'}>
-              {'Category'}
-              <Select id={'replyCategory'}>
-                <option value={''}>{'All categories'}</option>
-                <option value={'needs_match'}>{'Needs conversation match'}</option>
-                <option value={'ignored'}>{'Ignored review items'}</option>
-              </Select>
-            </label>
-            <Button id={'replyRefresh'} className={'secondary'}>
-              {'Refresh inbox'}
-            </Button>
-          </div>
-          <p className={'hint'}>
-            {
-              'Queues use captured local evidence. Waiting means no captured human reply, rather than proof of silence.'
-            }
-          </p>
-        </Dialog>
-        <Dialog
-          id={'mailroomToolsDialog'}
-          className={'mailroom-dialog mailroom-wide'}
-          aria-label={'Mailbox tools'}
-        >
-          <div className={'mailroom-dialog-heading'}>
-            <h2>{'Mailbox tools'}</h2>
-            <Button className={'secondary'} data-close-mailroom={'mailroomToolsDialog'}>
-              {'Close mailbox tools'}
-            </Button>
-          </div>
-          <p id={'replyStatus'} className={'hint'} role={'status'} aria-live={'polite'}>
-            {'Loading…'}
-          </p>{' '}
-          <details id={'replyCaptureTools'} className={'panel reply-tools'}>
-            <summary id={'replyCaptureSummary'}>{'Capture & mailbox setup'}</summary>
-            <div className={'experiment-result-heading'}>
-              <h2>{'Capture replies'}</h2>
-              <div className={'experiment-buttons'}>
-                <Button id={'replyHistory'} className={'secondary'}>
-                  {'Load local sent history'}
-                </Button>
-                <Button hidden={true} id={'replyDemo'} className={'secondary'}>
-                  {'Load sample inbox'}
-                </Button>
-              </div>
-            </div>
-            <p id={'replyCaptureNote'} className={'hint'}></p>
-            <p id={'replyCoverage'} className={'hint'}></p>
-            <div id={'replyMonitor'}></div>
-            <details id={'replyConfigPanel'}>
-              <summary>{'Read-only mailbox capture settings'}</summary>
-              <p className={'hint'}>
-                {
-                  'Choose mailboxes you are authorized to read. Passwords/tokens stay in this PC’s .env file; enter their environment-variable names here. TLS is required. Captured coverage and errors remain visible below.'
-                }
-              </p>
-              <div className={'reply-config-grid'}>
-                <label>
-                  {'Capture enabled'}
-                  <Input id={'replyConfigEnabled'} type={'checkbox'} />
-                </label>
-                <label>
-                  {'Check automatically'}
-                  <Input id={'replyConfigAuto'} type={'checkbox'} />
-                </label>
-                <label className={'check'}>
-                  <Input id={'replyConfigAll'} type={'checkbox'} />
-                  {'Read all available history'}
-                </label>
-                <label className={'check'}>
-                  <Input id={'replyConfigAllFolders'} type={'checkbox'} />
-                  {'Include archive and other available folders (excluding Drafts)'}
-                </label>
-                <label>
-                  {'Automatic pages per folder/check'}
-                  <Input
-                    id={'replyConfigPages'}
-                    type={'number'}
-                    min={'1'}
-                    max={'10'}
-                    defaultValue={'5'}
-                  />
-                </label>
-                <label>
-                  {'Automatic sync from'}
-                  <Input id={'replyConfigSince'} type={'date'} />
-                </label>
-                <label>
-                  {'Messages per page'}
-                  <Input
-                    id={'replyConfigBatch'}
-                    type={'number'}
-                    min={'1'}
-                    max={'100'}
-                    defaultValue={'50'}
-                  />
-                </label>
-              </div>
-              <div className={'reply-config-reuse'}>
-                <label>
-                  {'Existing mailbox credentials'}
-                  <Select id={'replyExistingMailbox'}>
-                    <option value={''}>{'Choose a saved mailbox setup…'}</option>
-                  </Select>
-                </label>
-                <Button id={'replyUseExistingMailbox'} className={'secondary'} type={'button'}>
-                  {'Use existing mailbox setup'}
-                </Button>
-                <p id={'replyExistingMailboxNote'} className={'hint'}>
-                  {
-                    'Reuses environment-variable references only. Save and authorize read-only capture separately.'
-                  }
-                </p>
-              </div>
-              <div id={'replyConfigMailboxes'}></div>
-              <Button id={'replyConfigAdd'} className={'secondary'}>
-                {'Add mailbox'}
-              </Button>
-              <label className={'check'}>
-                <Input id={'replyConfigConfirm'} type={'checkbox'} />
-                {'I authorize read-only access to these configured mailboxes.'}
-              </label>
-              <Button id={'replyConfigSave'}>{'Save capture settings'}</Button>
-              <p id={'replyConfigNote'} className={'hint'}></p>
-              <Button id={'replyBackfill'} className={'secondary'}>
-                {'Restart reply backfill'}
-              </Button>
-              <p className={'hint'}>
-                {
-                  'Retains captured messages, reviews and opt-out protections. Folder cursors are restarted only.'
-                }
-              </p>
-            </details>
-            <details>
-              <summary>{'Import one exported reply (.eml)'}</summary>
-              <div className={'reply-import-form'}>
-                <label htmlFor={'replyImportAccount'}>
-                  {'Receiving/sending mailbox'}
-                  <Select id={'replyImportAccount'}></Select>
-                </label>
-                <label htmlFor={'replyEml'}>
-                  {'Exported message'}
-                  <Input id={'replyEml'} type={'file'} accept={'.eml,message/rfc822'} />
-                </label>
-                <Button id={'replyImport'} className={'secondary'}>
-                  {'Import EML'}
-                </Button>
-              </div>
-              <p className={'hint'}>
-                {
-                  'Use an authorized exported message, up to 2 MB. The mailbox needs a confirmed tool-sent email; imported contacts alone are excluded. Unknown contacts/references are not retained. Imported messages receive the same matching and review rules as IMAP capture.'
-                }
-              </p>
-            </details>
-          </details>
-          <p
-            id={'replyProtection'}
-            className={'reply-protection'}
-            role={'status'}
-            hidden={true}
-          ></p>
-          <p id={'replyProtectionDelivery'} className={'hint'} role={'status'}></p>
-          <div id={'replyMetrics'} className={'experiment-metrics'}></div>
-          <p id={'replyMetricNote'} className={'hint'}></p>
-        </Dialog>
+        <ConversationFiltersDialog />
+        <MailboxToolsDialog />
         <Dialog
           id={'mailroomDetailsDialog'}
           className={'mailroom-dialog mailroom-wide'}
@@ -498,7 +358,7 @@ export function ConversationsPage() {
         >
           <div className={'mailroom-dialog-heading'}>
             <h2>{'Conversation details'}</h2>
-            <Button className={'secondary'} data-close-mailroom={'mailroomDetailsDialog'}>
+            <Button size="sm" className={'secondary'} data-close-mailroom={'mailroomDetailsDialog'}>
               {'Close details'}
             </Button>
           </div>
@@ -649,7 +509,7 @@ export function ConversationsPage() {
         >
           <div className={'mailroom-dialog-heading'}>
             <h2>{'Saved replies'}</h2>
-            <Button className={'secondary'} data-close-mailroom={'mailroomLibraryDialog'}>
+            <Button size="sm" className={'secondary'} data-close-mailroom={'mailroomLibraryDialog'}>
               {'Close saved replies'}
             </Button>
           </div>{' '}
@@ -755,7 +615,11 @@ export function ConversationsPage() {
         >
           <div className={'mailroom-dialog-heading'}>
             <h2>{'Review this reply'}</h2>
-            <Button className={'secondary'} data-close-mailroom={'mailroomApprovalDialog'}>
+            <Button
+              size="sm"
+              className={'secondary'}
+              data-close-mailroom={'mailroomApprovalDialog'}
+            >
               {'Close review'}
             </Button>
           </div>
@@ -786,7 +650,9 @@ export function ConversationsPage() {
               <Input id={'assistantApproveConfirm'} type={'checkbox'} />
               {'I reviewed this exact text, recipient, sending account and message evidence.'}
             </label>
-            <Button id={'assistantApprove'}>{'Approve this exact draft'}</Button>
+            <Button variant="primary" id={'assistantApprove'}>
+              {'Approve this exact draft'}
+            </Button>
           </details>
         </Dialog>
       </section>

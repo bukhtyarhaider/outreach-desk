@@ -24,6 +24,8 @@ export interface ActionResult {
   reset?: boolean;
 }
 export interface LeadsResponse {
+  campaignId: string | null;
+  summary: { total: number; ready: number; excluded: number };
   leads: Lead[];
   total: number;
   offset: number;

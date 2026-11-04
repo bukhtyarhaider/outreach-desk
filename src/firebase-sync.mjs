@@ -45,9 +45,14 @@ export class FirebaseSync {
     this.persist = options.persist || (async () => {});
     this.env = options.env || secondaryEnv;
     this.dataDirectory = path.resolve(options.dataDirectory || this.env.FC_DATA_DIR || path.join(ROOT, "data"));
-    this.pageSize = options.pageSize || 250;
-    this.maxPages = options.maxPages || 20;
-    this.timeoutMs = options.timeoutMs || 15000;
+    this.pageSize = Math.max(1, Math.min(250, Math.floor(Number(options.pageSize) || 250)));
+    this.maxPages = Math.max(1, Math.min(100, Math.floor(Number(options.maxPages) || 20)));
+    this.timeoutMs = Math.max(1, Number(options.timeoutMs) || 15000);
+    this.retryAttempts = Math.max(0, Math.min(3, Math.floor(options.retryAttempts ?? 2)));
+    this.retryBaseMs = Math.max(0, Number(options.retryBaseMs ?? 250));
+    this.maxRunMs = Math.max(1, Number(options.maxRunMs) || 60000);
+    this.sleep = options.sleep || ((ms) => new Promise(resolve => setTimeout(resolve, ms)));
+    this.runDeadline = Infinity;
     this.app = null;
     this.rtdb = null;
     this.firestore = null;
@@ -122,7 +127,7 @@ export class FirebaseSync {
       hostname: os.hostname(), platform: process.platform, workerId: this.state.workerId || null,
       openTrackingEnabled: this.env.FC_OPEN_TRACKING_ENABLED === "1", consent: this.env.FC_OPEN_TRACKING_CONSENT === "1",
       localRecords: Object.keys(this.state.tracking.records || {}).length, localTokens: Object.keys(this.state.tracking.openIndex || {}).length,
-      collection: "email_opens", pollSeconds: 15, pageSize: this.pageSize, maxPages: this.maxPages,
+      collection: "email_opens", pollSeconds: 15, pageSize: this.pageSize, maxPages: this.maxPages, retryAttempts: this.retryAttempts, maxRunMs: this.maxRunMs,
       status: worker.status, message: worker.message, running: this.running,
       lastAttemptAt: this.lastAttemptAt, lastSyncAt: this.lastSyncAt, lastError: this.lastError,
       totalSynced: this.totalSynced, backends: this.backends, warnings,
@@ -131,17 +136,41 @@ export class FirebaseSync {
 
   isConfigured() { return Boolean(this.rtdb || this.firestore); }
 
-  async bounded(promise) {
+  async bounded(promise, timeoutMs = this.timeoutMs) {
     let timer;
     try {
-      return await Promise.race([promise, new Promise((_, reject) => { timer = setTimeout(() => reject(new Error(`Firebase request timed out after ${this.timeoutMs / 1000}s. Check internet access, credentials and database permissions.`)), this.timeoutMs); })]);
+      return await Promise.race([promise, new Promise((_, reject) => { timer = setTimeout(() => reject(new Error(`Firebase request timed out after ${timeoutMs / 1000}s. Check internet access, credentials and database permissions.`)), timeoutMs); })]);
     } finally { clearTimeout(timer); }
   }
 
-  applyItem(backend, key, data, stats) {
+  async request(operation, stats, phase) {
+    for (let attempt = 0; ; attempt++) {
+      stats.phase = phase;
+      const remaining = this.runDeadline - Date.now();
+      if (remaining <= 0) throw new Error("Sync time budget reached. Progress is retained; run sync again to continue.");
+      try { return await this.bounded(Promise.resolve().then(operation), Math.min(this.timeoutMs, remaining)); }
+      catch (error) {
+        const code = String(error?.code || "").toLowerCase().replace(/^.*\//, "");
+        const transient = ["4", "8", "10", "13", "14", "deadline-exceeded", "resource-exhausted", "aborted", "internal", "unavailable", "etimedout", "econnreset", "eai_again", "enotfound"].includes(code) || /timed out|network error|socket hang up/i.test(error?.message || "");
+        if (!transient || attempt >= this.retryAttempts) throw error;
+        const delay = Math.ceil(this.retryBaseMs * 2 ** attempt * (0.75 + Math.random() * 0.5));
+        if (Date.now() + delay >= this.runDeadline) throw error;
+        stats.retries = (stats.retries || 0) + 1;
+        stats.nextRetryAt = new Date(Date.now() + delay).toISOString();
+        this.updateWorkerStatus("Syncing", `Retrying ${phase} after a temporary Firebase failure (retry ${attempt + 1}/${this.retryAttempts}).`);
+        await this.sleep(delay);
+        stats.nextRetryAt = null;
+      }
+    }
+  }
+
+  assertConfiguration(config) {
+    if (JSON.stringify(this.configuration()) !== JSON.stringify(config)) throw new Error("Tracking settings changed during sync. Progress is retained; sync again with the new settings.");
+  }
+
+  applyItem(backend, key, data, stats, config = this.configuration()) {
     stats.scanned++;
     if (!data || typeof data !== "object") { stats.invalid++; return null; }
-    const config = this.configuration();
     const ownPc = String(data.pcId ?? "") === config.pcId;
     const validToken = typeof data.token === "string" && /^[\w-]{43}$/.test(data.token);
     const digest = validToken ? hash(data.token) : data.tokenHash;
@@ -151,7 +180,9 @@ export class FirebaseSync {
       return null; // Never acknowledge another PC's event, or an event with no local email.
     }
     if (!/^[a-f0-9]{64}$/.test(digest) || (data.tokenHash && data.tokenHash !== digest)) { stats.invalid++; return null; }
-    const rawAt = typeof data.openedAt?.toDate === "function" ? data.openedAt.toDate() : data.openedAt;
+    let rawAt;
+    try { rawAt = typeof data.openedAt?.toDate === "function" ? data.openedAt.toDate() : data.openedAt; }
+    catch { stats.invalid++; return null; }
     const date = typeof rawAt === "string" || rawAt instanceof Date ? new Date(rawAt) : null;
     if (!date || !Number.isFinite(date.getTime())) { stats.invalid++; return null; }
     if (!record.attemptedAt || (record.sendStatus === "send_attempted" && !record.confirmedAt)) { stats.unmatched++; return null; }
@@ -170,47 +201,57 @@ export class FirebaseSync {
     return data.synced === true ? null : key;
   }
 
-  async scanBackend(backend) {
+  async scanBackend(backend, config = this.configuration()) {
     const tracking = this.state.tracking;
-    const context = hash(JSON.stringify([this.configuration(), this.projectId, this.databaseURL]));
+    const context = hash(JSON.stringify([config, this.projectId, this.databaseURL]));
     tracking.firebaseScan ||= {};
     if (tracking.firebaseScan.context !== context) tracking.firebaseScan = { context };
-    const scan = tracking.firebaseScan[backend] ||= { cursor: null, totals: counters() };
-    const stats = { ...counters(), complete: false, pages: 0, error: null };
+    const checkpoint = tracking.firebaseScan[backend];
+    if (!checkpoint || typeof checkpoint !== "object" || (checkpoint.cursor !== null && typeof checkpoint.cursor !== "string") || !checkpoint.totals || Object.keys(counters()).some(key => !Number.isFinite(checkpoint.totals[key]) || checkpoint.totals[key] < 0)) tracking.firebaseScan[backend] = { cursor: null, totals: counters() };
+    const scan = tracking.firebaseScan[backend];
+    const stats = { ...counters(), complete: false, pages: 0, retries: 0, phase: "read", nextRetryAt: null, error: null };
     this.backends[backend] = stats;
     for (let page = 0; page < this.maxPages; page++) {
+      if (Date.now() >= this.runDeadline) { stats.budgetLimited = true; break; }
+      this.assertConfiguration(config);
       let rows;
       if (backend === "rtdb") {
         let query = this.rtdb.ref("email_opens").orderByKey();
         if (scan.cursor) query = query.startAfter(scan.cursor);
-        const snapshot = await this.bounded(query.limitToFirst(this.pageSize).once("value"));
+        const snapshot = await this.request(() => query.limitToFirst(this.pageSize).once("value"), stats, `${backend} read`);
         rows = [];
         snapshot.forEach((child) => { rows.push({ key: child.key, data: child.val() }); });
       } else {
         let query = this.firestore.collection("email_opens").orderBy(admin.firestore.FieldPath.documentId());
         if (scan.cursor) query = query.startAfter(scan.cursor);
-        const snapshot = await this.bounded(query.limit(this.pageSize).get());
+        const snapshot = await this.request(() => query.limit(this.pageSize).get(), stats, `${backend} read`);
         rows = snapshot.docs.map((doc) => ({ key: doc.id, data: doc.data(), ref: doc.ref }));
       }
+      this.assertConfiguration(config);
       const before = { ...stats };
       const acknowledgements = [];
-      for (const row of rows) if (this.applyItem(backend, row.key, row.data, stats)) acknowledgements.push(row);
+      for (const row of rows) if (this.applyItem(backend, row.key, row.data, stats, config)) acknowledgements.push(row);
       // The local record and receipt must be durable BEFORE the cloud acknowledgement.
       // Persist even for deduplicated rows: a previous local write may have failed.
       if (stats.matched > before.matched) await this.persist();
+      this.assertConfiguration(config);
       if (acknowledgements.length) {
-        const values = { synced: true, syncedAt: new Date().toISOString(), syncedBy: this.configuration().pcId };
+        const values = { synced: true, syncedAt: new Date().toISOString(), syncedBy: config.pcId };
         if (backend === "rtdb") {
           const updates = {};
           for (const row of acknowledgements) for (const [name, value] of Object.entries(values)) updates[`email_opens/${row.key}/${name}`] = value;
-          await this.bounded(this.rtdb.ref().update(updates));
+          await this.request(() => { this.assertConfiguration(config); return this.rtdb.ref().update(updates); }, stats, "rtdb acknowledgement");
         } else {
-          const batch = this.firestore.batch();
-          for (const row of acknowledgements) batch.update(row.ref, values);
-          await this.bounded(batch.commit());
+          await this.request(() => {
+            this.assertConfiguration(config);
+            const batch = this.firestore.batch();
+            for (const row of acknowledgements) batch.update(row.ref, values);
+            return batch.commit();
+          }, stats, "firestore acknowledgement");
         }
         stats.acknowledged += acknowledgements.length;
       }
+      const previousCursor = scan.cursor, previousTotals = { ...scan.totals };
       stats.pages++;
       for (const key of Object.keys(counters())) scan.totals[key] += stats[key] - before[key];
       // Advance only after local persistence and cloud acknowledgement have succeeded.
@@ -221,7 +262,9 @@ export class FirebaseSync {
         scan.cursor = null;
         scan.totals = counters();
       }
-      await this.persist();
+      try { await this.persist(); }
+      catch (error) { scan.cursor = previousCursor; scan.totals = previousTotals; throw error; }
+      stats.phase = stats.complete ? "complete" : "read";
       this.updateWorkerStatus("Syncing", `Scanning ${backend}: ${stats.scanned} cloud records checked; ${stats.synced} new open signals.`);
       if (stats.complete) break;
     }
@@ -235,16 +278,22 @@ export class FirebaseSync {
       this.updateWorkerStatus("Manual mode", "Background sync paused. Use Sync opens now.");
       return { ok: true, complete: false, message: "Manual sync mode active; background sync paused", synced: 0 };
     }
+    const config = this.configuration();
+    if (!["rtdb", "firestore", "both"].includes(config.backend) || !/^[a-zA-Z0-9_-]{1,64}$/.test(config.pcId)) {
+      this.updateWorkerStatus("Needs configuration", "Invalid PC ID or Firebase backend. Correct Tracking settings before syncing.");
+      return { ok: false, complete: false, synced: 0, message: this.state.tracking.worker.firebaseSync.message };
+    }
     this.running = true;
+    this.runDeadline = Date.now() + this.maxRunMs;
     this.lastAttemptAt = new Date().toISOString();
     this.backends = {};
     this.updateWorkerStatus("Syncing", "Checking Firebase open signals…");
     const errors = [];
     try {
-      for (const backend of ["rtdb", "firestore"].filter((name) => this.configuration().backend === "both" || this.configuration().backend === name)) {
+      for (const backend of ["rtdb", "firestore"].filter((name) => config.backend === "both" || config.backend === name)) {
         try {
           if (!this[backend]) throw new Error(`${backend} is not initialized. Check Firebase setup and restart the app.`);
-          await this.scanBackend(backend);
+          await this.scanBackend(backend, config);
         } catch (error) {
           const message = `${backend}: ${safeError(error)}`;
           this.backends[backend] ||= { ...counters(), complete: false };
@@ -261,6 +310,7 @@ export class FirebaseSync {
       let complete = results.length > 0 && results.every((stats) => stats.complete) && !errors.length;
       this.totalSynced += synced;
       this.lastError = errors.join("; ") || null;
+      const previousSyncAt = this.lastSyncAt;
       if (complete) this.lastSyncAt = new Date().toISOString();
       let message = [
         `${scanned} cloud records checked; ${synced} new open signal(s).`,
@@ -271,6 +321,7 @@ export class FirebaseSync {
       this.updateWorkerStatus(errors.length || unresolved || mismatches ? "Needs attention" : complete ? "Active" : "Catching up", message);
       try { await this.persist(); }
       catch (error) {
+        this.lastSyncAt = previousSyncAt;
         const persistenceError = `Could not save sync status: ${safeError(error)}`;
         errors.push(persistenceError);
         this.lastError = errors.join("; ");

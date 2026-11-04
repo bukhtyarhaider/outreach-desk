@@ -13,9 +13,7 @@
   padding: 20px 22px;
   position: relative;
   overflow: hidden;
-  box-shadow:
-    var(--shadow-sm),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  box-shadow: none;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   transition: all var(--transition-base);
@@ -24,9 +22,7 @@
 .stat-card:hover {
   border-color: var(--border-medium);
   transform: translateY(-2px);
-  box-shadow:
-    var(--shadow-md),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  box-shadow: none;
 }
 
 .stat-card::before {
@@ -47,39 +43,31 @@
 }
 
 .stat-card.total::before {
-  background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%);
+  background: linear-gradient(90deg, #3b82f6 0%, #1649a8 100%);
 }
 .stat-card.total:hover {
-  box-shadow:
-    var(--shadow-md),
-    0 0 24px rgba(59, 130, 246, 0.15);
+  box-shadow: none;
 }
 
 .stat-card.ready::before {
-  background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
+  background: linear-gradient(90deg, #126c48 0%, #126c48 100%);
 }
 .stat-card.ready:hover {
-  box-shadow:
-    var(--shadow-md),
-    0 0 24px rgba(16, 185, 129, 0.15);
+  box-shadow: none;
 }
 
 .stat-card.excluded::before {
-  background: linear-gradient(90deg, #f59e0b 0%, #fbbf24 100%);
+  background: linear-gradient(90deg, #f59e0b 0%, #86520c 100%);
 }
 .stat-card.excluded:hover {
-  box-shadow:
-    var(--shadow-md),
-    0 0 24px rgba(245, 158, 11, 0.15);
+  box-shadow: none;
 }
 
 .stat-card.sent::before {
-  background: linear-gradient(90deg, #ef4444 0%, #f87171 100%);
+  background: linear-gradient(90deg, #ef4444 0%, #bd3022 100%);
 }
 .stat-card.sent:hover {
-  box-shadow:
-    var(--shadow-md),
-    0 0 24px rgba(239, 68, 68, 0.15);
+  box-shadow: none;
 }
 
 .stat-label {
@@ -97,7 +85,7 @@
   font-size: 34px;
   font-weight: 800;
   letter-spacing: -1.2px;
-  color: #fff;
+  color: #181816;
   margin: 10px 0 4px;
   line-height: 1.1;
   font-variant-numeric: tabular-nums;
@@ -105,17 +93,17 @@
 }
 
 .stat-card.total .stat-value {
-  color: #f8fafc;
+  color: #181816;
 }
 .stat-card.ready .stat-value {
-  color: #34d399;
+  color: #126c48;
   text-shadow: 0 0 16px rgba(16, 185, 129, 0.2);
 }
 .stat-card.excluded .stat-value {
-  color: #fbbf24;
+  color: #86520c;
 }
 .stat-card.sent .stat-value {
-  color: #f87171;
+  color: #bd3022;
   text-shadow: 0 0 16px rgba(239, 68, 68, 0.2);
 }
 

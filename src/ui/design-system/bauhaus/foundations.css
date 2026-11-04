@@ -1,0 +1,77 @@
+@font-face {
+  font-family: Manrope;
+  src: url('/fonts/Manrope.ttf') format('truetype');
+  font-weight: 200 800;
+  font-display: swap;
+}
+
+html,
+body {
+  font-size: 14px;
+  user-select: text;
+}
+::selection {
+  background: #ffe48b;
+  color: #181816;
+}
+::-webkit-scrollbar-thumb {
+  background: #bbb7ac;
+}
+h1,
+h2,
+h3,
+h4 {
+  color: var(--text-primary);
+}
+.hint {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+.status-pill {
+  gap: 5px;
+  font-size: 11px;
+  letter-spacing: 0;
+  font-weight: 700;
+}
+.status-pill.good,
+.status-pill.ready {
+  color: #126c48;
+  background: #e5f1e8;
+}
+.status-pill.warn {
+  color: #86520c;
+  background: #fff0c8;
+}
+.status-pill.blocked {
+  color: #a92b20;
+  background: #fbe7df;
+}
+.panel,
+.runner-card,
+.stat-card {
+  background: var(--bg-surface);
+  box-shadow: none;
+}
+.panel-head,
+.panel-title {
+  color: var(--text-primary);
+}
+.panel-title {
+  font-size: 16px;
+}
+summary {
+  cursor: pointer;
+}
+pre,
+code {
+  color: var(--text-primary);
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

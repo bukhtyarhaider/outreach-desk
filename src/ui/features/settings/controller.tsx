@@ -1,3 +1,13 @@
+import {
+  captureSettingsBaseline,
+  scanSettingsDraft,
+  mountSettingsDraft,
+  settingsFieldChanged,
+} from './draft';
+import { clearSettingsFeedback, settingsSaveFeedback, revealSettingsError } from './save-feedback';
+import { confirmAction } from '../../shared/confirmation';
+import { StatusBadge } from '../../design-system/layout';
+import { openDrawer, closeDrawer } from '../../design-system/overlays';
 import { Icon, Trash2 } from '../../design-system/icons';
 import type { BrowserDiscoveryResponse } from '../../shared/types/api';
 import { Button } from '../../design-system/primitives';
@@ -39,9 +49,9 @@ export function renderProfilesTable() {
                 </small>
               </td>
               <td style={{ textAlign: 'center' }}>
-                <span className={'status-pill ' + (isActive ? 'ready' : 'blocked')}>
+                <StatusBadge className={'status-pill ' + (isActive ? 'ready' : 'blocked')}>
                   {isActive ? 'Active' : 'Inactive'}
-                </span>
+                </StatusBadge>
               </td>
               <td style={{ textAlign: 'right' }}>
                 <div className={'row-actions'}>
@@ -119,7 +129,7 @@ export const pacingFields: Array<keyof Pacing> = [
 
 export const PACING_PRESETS: Record<string, Pacing & { name: string }> = {
   warmup: {
-    name: 'New Mailbox Warmup',
+    name: 'Gradual',
     minSeconds: 240,
     maxSeconds: 480,
     hourlyCap: 10,
@@ -131,7 +141,7 @@ export const PACING_PRESETS: Record<string, Pacing & { name: string }> = {
     pollSeconds: 60,
   },
   balanced: {
-    name: 'Balanced Human Pace',
+    name: 'Balanced',
     minSeconds: 150,
     maxSeconds: 300,
     hourlyCap: 18,
@@ -143,7 +153,7 @@ export const PACING_PRESETS: Record<string, Pacing & { name: string }> = {
     pollSeconds: 60,
   },
   established: {
-    name: 'Aged / Established Domain',
+    name: 'Higher volume',
     minSeconds: 90,
     maxSeconds: 180,
     hourlyCap: 25,
@@ -155,7 +165,7 @@ export const PACING_PRESETS: Record<string, Pacing & { name: string }> = {
     pollSeconds: 45,
   },
   stealth: {
-    name: 'Stealth Background',
+    name: 'Background',
     minSeconds: 300,
     maxSeconds: 600,
     hourlyCap: 8,
@@ -204,8 +214,9 @@ export function applyPacingPreset(presetKey: string, showNotice = true) {
     }
   }
   highlightPacingPreset(presetKey);
+  scanSettingsDraft();
   if (showNotice) {
-    notice(`Applied "${preset.name}" preset. Click "Save sending settings" to persist.`);
+    notice(`Applied "${preset.name}" preset. Click "Save changes" to apply these values.`);
   }
 }
 
@@ -283,6 +294,7 @@ export function fillSettings() {
   if ($('firebaseBackend')) $('firebaseBackend').value = s.tracking?.firebaseBackend || 'both';
   if ($('firebaseSyncMode')?.onchange) $('firebaseSyncMode').dispatchEvent(new Event('change'));
   detectActivePreset();
+  captureSettingsBaseline();
 }
 
 export function renderFirebaseDiagnostics() {
@@ -331,6 +343,10 @@ export function renderFirebaseDiagnostics() {
       'Scan limit per database / run',
       `${d!.pageSize * d!.maxPages} records; continues on next sync`,
     ],
+    [
+      'Temporary-failure retries / run budget',
+      `${d.retryAttempts ?? 2} retries per request / ${(d.maxRunMs ?? 60000) / 1000}s`,
+    ],
     ['Last error', d.lastError || 'None reported this session'],
   ];
   renderRegion(
@@ -366,7 +382,9 @@ export function renderFirebaseDiagnostics() {
               {b!.alreadyApplied}
               {' already applied · '}
               {b!.acknowledged}
-              {' acknowledged'}
+              {' acknowledged · '}
+              {b.retries ?? 0}
+              {' retries'}
             </p>
             <p>
               {totals.otherPc}
@@ -394,6 +412,14 @@ export function renderFirebaseDiagnostics() {
 }
 
 export function mountSettings() {
+  mountSettingsDraft();
+  if ($('view-settings')) {
+    for (const event of ['input', 'change'])
+      uiScope.listen($('view-settings'), event, clearSettingsFeedback);
+    uiScope.listen($('view-settings'), 'click', (event) => {
+      if (eventElement(event).closest('.preset-apply-btn')) clearSettingsFeedback();
+    });
+  }
   if ($('connect'))
     uiScope.handler($('connect'), 'onclick', () =>
       action($('connect'), async () => {
@@ -472,11 +498,13 @@ export function mountSettings() {
         });
         await refresh();
         fillProfile();
+        closeDrawer('profileEditor');
         notice('Profile saved.');
       }),
     );
   if ($('newProfile'))
-    uiScope.handler($('newProfile'), 'onclick', () => {
+    uiScope.handler($('newProfile'), 'onclick', async () => {
+      openDrawer('profileEditor');
       session.profileEditId = null;
       if ($('accountName')) {
         $('accountName').value = '';
@@ -489,7 +517,7 @@ export function mountSettings() {
       notice('Enter the new profile details, then save.');
     });
   if ($('newProfileBtn'))
-    uiScope.handler($('newProfileBtn'), 'onclick', () => {
+    uiScope.handler($('newProfileBtn'), 'onclick', async () => {
       if ($('newProfile')) $('newProfile').click();
       $('profileSetupTitle')?.scrollIntoView({
         behavior: 'smooth',
@@ -497,10 +525,14 @@ export function mountSettings() {
       });
     });
   if ($('deleteCurrentProfile'))
-    uiScope.handler($('deleteCurrentProfile'), 'onclick', () => {
+    uiScope.handler($('deleteCurrentProfile'), 'onclick', async () => {
       if (!session.profileEditId) return;
       const p = session.state.profiles.find((p) => p.id === session.profileEditId);
-      if (!confirm(`Are you sure you want to delete mailbox profile "${p?.name || p?.email}"?`))
+      if (
+        !(await confirmAction(
+          `Are you sure you want to delete mailbox profile "${p?.name || p?.email}"?`,
+        ))
+      )
         return;
       action($('deleteCurrentProfile'), async () => {
         await api('/api/delete-profile', { id: session.profileEditId });
@@ -511,7 +543,7 @@ export function mountSettings() {
       });
     });
   if ($('profilesTableBody')) {
-    uiScope.handler($('profilesTableBody'), 'onclick', (e) => {
+    uiScope.handler($('profilesTableBody'), 'onclick', async (e) => {
       const selBtn = eventElement(e).closest<HTMLElement>('[data-select-profile]');
       if (selBtn) {
         action(selBtn, async () => {
@@ -527,6 +559,7 @@ export function mountSettings() {
         const p = session.state.profiles.find((x) => x.id === editBtn.dataset.editProfile);
         if (p) {
           fillProfile(p);
+          openDrawer('profileEditor');
           $('profileSetupTitle')?.scrollIntoView({
             behavior: 'smooth',
             block: 'nearest',
@@ -538,7 +571,11 @@ export function mountSettings() {
       const delBtn = eventElement(e).closest<HTMLElement>('[data-delete-profile]');
       if (delBtn) {
         const p = session.state.profiles.find((x) => x.id === delBtn.dataset.deleteProfile);
-        if (!confirm(`Are you sure you want to delete mailbox profile "${p?.name || p?.email}"?`))
+        if (
+          !(await confirmAction(
+            `Are you sure you want to delete mailbox profile "${p?.name || p?.email}"?`,
+          ))
+        )
           return;
         action(delBtn, async () => {
           await api('/api/delete-profile', { id: delBtn.dataset.deleteProfile });
@@ -563,53 +600,61 @@ export function mountSettings() {
   if ($('saveSettings'))
     uiScope.handler($('saveSettings'), 'onclick', () =>
       action($('saveSettings'), async () => {
+        clearSettingsFeedback();
         const s = structuredClone(session.state.settings);
-        s.templateChecks = {
-          enabled: $('templateChecksEnabled').checked,
-          promotionalClaims: $('promotionalClaimsCheck').value,
-          messageLength: $('messageLengthCheck').value,
-        };
-        s.business = readBusiness();
-        for (const key of pacingFields) s.pacing[key] = Number(($(key) as HTMLInputElement).value);
-        for (const key of ['requireActive', 'requireNoOutOfService', 'allowHidden'])
-          s.eligibility[key as 'requireActive' | 'requireNoOutOfService' | 'allowHidden'] = (
-            $(key) as HTMLInputElement
-          ).checked;
-        s.eligibility.readyStatuses = $('readyStatuses')
-          .value.split(',')
-          .map((v) => (v.trim() === 'blank' ? '' : v.trim()));
-        s.eligibility.sentStatus = $('sentStatus').value;
-        s.team = {
-          enabled: $('teamEnabled').checked,
-          url: $('teamUrl').value,
-          workerName: $('workerName').value,
-        };
-        s.tracking = {
-          ...s.tracking,
-          syncMode: $('firebaseSyncMode')?.value || 'auto',
-          pcId: $('trackingPcId')?.value.trim() || '',
-          publicUrl: $('trackingPublicUrl')?.value.trim() || '',
-          firebaseBackend: $('firebaseBackend')?.value || 'both',
-        };
+        const changed = settingsFieldChanged;
+        if (changed('templateChecksEnabled'))
+          s.templateChecks.enabled = $('templateChecksEnabled').checked;
+        if (changed('promotionalClaimsCheck'))
+          s.templateChecks.promotionalClaims = $('promotionalClaimsCheck').value;
+        if (changed('messageLengthCheck'))
+          s.templateChecks.messageLength = $('messageLengthCheck').value;
+        // Apply only edited fields to the latest known settings. Other concern drafts stay independent.
+        for (const key of pacingFields)
+          if (changed(key)) s.pacing[key] = Number(($(key) as HTMLInputElement).value);
+        for (const key of ['requireActive', 'requireNoOutOfService', 'allowHidden'] as const)
+          if (changed(key)) s.eligibility[key] = ($(key) as HTMLInputElement).checked;
+        if (changed('readyStatuses'))
+          s.eligibility.readyStatuses = $('readyStatuses')
+            .value.split(',')
+            .map((v) => (v.trim() === 'blank' ? '' : v.trim()));
+        if (changed('sentStatus')) s.eligibility.sentStatus = $('sentStatus').value;
+        if (changed('teamEnabled')) s.team.enabled = $('teamEnabled').checked;
+        if (changed('teamUrl')) s.team.url = $('teamUrl').value;
+        if (changed('workerName')) s.team.workerName = $('workerName').value;
+        if (changed('firebaseSyncMode')) s.tracking.syncMode = $('firebaseSyncMode').value;
+        if (changed('trackingPcId')) s.tracking.pcId = $('trackingPcId').value.trim();
+        if (changed('trackingPublicUrl'))
+          s.tracking.publicUrl = $('trackingPublicUrl').value.trim();
+        if (changed('firebaseBackend')) s.tracking.firebaseBackend = $('firebaseBackend').value;
         const token = $('teamToken').value;
-        $('teamToken').value = '';
-        await api('/api/settings', { settings: s, teamToken: token });
-        await refresh();
-        notice('Sending settings saved.');
+        try {
+          await api('/api/settings', { settings: s, teamToken: token });
+          $('teamToken').value = '';
+          await refresh();
+          fillSettings();
+          settingsSaveFeedback(
+            'Settings saved. Your configuration edits are now active on this PC.',
+          );
+          notice('Settings saved.');
+        } catch (error) {
+          revealSettingsError(errorMessage(error), pacingFields);
+          throw error;
+        }
       }),
     );
   if ($('resetWait'))
-    uiScope.handler($('resetWait'), 'onclick', () => {
+    uiScope.handler($('resetWait'), 'onclick', async () => {
       const shared = session.state.settings.team.enabled
         ? '\nShared mailbox counters will also reset on the team server for all PCs using this mailbox.'
         : '';
       if (
-        !confirm(
+        !(await confirmAction(
           'Hard reset this mailbox’s wait and quota counters?\n\n' +
             'This overrides the current countdown, minimum send interval, hourly/24-hour app quotas, and rest counter. An active queue may send immediately. New sends will count toward the configured limits again.' +
             shared +
             '\n\nProvider-enforced limits still apply. Send history, uncertain outcomes, duplicate protection, and Do Not Contact records are kept.\n\nContinue with hard reset?',
-        )
+        ))
       )
         return;
       action($('resetWait'), async () => {
@@ -632,7 +677,9 @@ export function mountSettings() {
       action($('settingsFirebaseSyncBtn'), async () => {
         try {
           const res = await api('/api/tracking/sync-firebase', {});
-          notice(`Firebase: ${res.message || res.error || 'Sync finished.'}`);
+          if (res.ok === false)
+            throw new Error(String(res.message || res.error || 'Sync could not complete.'));
+          notice(`Firebase: ${res.message || 'Sync finished.'}`);
         } catch (err) {
           notice(`Firebase sync failed: ${errorMessage(err)}`, 'error');
         }
@@ -651,8 +698,10 @@ export function mountSettings() {
   // Pacing presets click and input listeners
   const presetsGrid = $('pacingPresetsGrid');
   if (presetsGrid) {
-    uiScope.handler(presetsGrid, 'onclick', (e) => {
-      const card = eventElement(e).closest<HTMLElement>('.pacing-preset-card');
+    uiScope.handler(presetsGrid, 'onclick', async (e) => {
+      const card = eventElement(e)
+        .closest<HTMLElement>('.preset-apply-btn')
+        ?.closest<HTMLElement>('.pacing-preset-card');
       if (card && card.dataset.preset) {
         applyPacingPreset(card.dataset.preset, true);
       }

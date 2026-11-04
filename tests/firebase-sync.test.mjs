@@ -279,3 +279,122 @@ test("settings validate PC ID, tracking URL and selected Firebase backend while 
   const validated = validateSettings(settings);
   assert.equal(validated.tracking.pcId, "4");
 });
+
+for (const backend of ['rtdb', 'firestore']) {
+  test(`${backend}: transient reads and acknowledgements recover without duplicating opens`, async () => {
+    const { sync, message } = fixture({ backend, retryBaseMs: 0 });
+    const { row, record } = message();
+    let reads = 0, writes = 0;
+    sync[backend] = (backend === 'rtdb' ? rtdb : firestore)({ event: row }, {
+      read: async () => { if (++reads === 1) throw Object.assign(new Error('temporarily unavailable'), { code: 14 }); },
+      write: async () => { if (++writes === 1) throw Object.assign(new Error('temporarily unavailable'), { code: 'unavailable' }); },
+    });
+    const result = await sync.sync();
+    assert.equal(result.complete, true);
+    assert.equal(result.backends[backend].retries, 2);
+    assert.equal(row.synced, true);
+    assert.equal(record.opens.length, 1);
+    await sync.sync();
+    assert.equal(record.opens.length, 1);
+  });
+}
+
+test('permission failures do not retry; exhausted transient failures remain resumable', async () => {
+  for (const code of ['permission-denied', 'unavailable']) {
+    const { sync, state } = fixture({ retryBaseMs: 0 });
+    let attempts = 0;
+    sync.rtdb = rtdb({}, { read: async () => { attempts++; throw Object.assign(new Error(code), { code }); } });
+    const result = await sync.sync();
+    assert.equal(result.ok, false);
+    assert.equal(attempts, code === 'permission-denied' ? 1 : 3);
+    assert.equal(state.tracking.firebaseScan.rtdb.cursor, null);
+    assert.equal(sync.lastSyncAt, null);
+    sync.rtdb = rtdb({});
+    assert.equal((await sync.sync()).complete, true);
+  }
+});
+
+test('malformed timestamps do not poison subsequent events or get acknowledged', async () => {
+  const { sync, message } = fixture();
+  const { row, record } = message();
+  const rows = { a: { ...row, openedAt: { toDate() { throw new Error('bad timestamp'); } } }, b: row };
+  sync.rtdb = rtdb(rows);
+  const result = await sync.sync();
+  assert.equal(result.complete, true);
+  assert.equal(result.unresolved, 1);
+  assert.equal(rows.a.synced, false);
+  assert.equal(row.synced, true);
+  assert.equal(record.opens.length, 1);
+});
+
+test('settings changed during a read or local save never acknowledge under a different identity', async () => {
+  for (const stage of ['read', 'persist']) {
+    const { sync, state, message } = fixture();
+    const { row } = message();
+    const change = async () => { state.settings.tracking.pcId = '2'; };
+    sync.rtdb = rtdb({ event: row }, stage === 'read' ? { read: change } : {});
+    if (stage === 'persist') sync.persist = change;
+    const result = await sync.sync();
+    assert.equal(result.ok, false);
+    assert.match(result.message, /settings changed/);
+    assert.equal(row.synced, false);
+    assert.equal(state.tracking.firebaseScan.rtdb.cursor, null);
+  }
+});
+
+test('failed checkpoint saves retain the previous cursor and safely replay acknowledged events', async () => {
+  let saves = 0;
+  const { sync, state, message } = fixture({ pageSize: 1, persist: async () => { if (++saves === 2) throw new Error('disk full'); } });
+  const { row, record } = message();
+  sync.rtdb = rtdb({ event: row });
+  assert.equal((await sync.sync()).ok, false);
+  assert.equal(row.synced, true);
+  assert.equal(state.tracking.firebaseScan.rtdb.cursor, null);
+  assert.equal((await sync.sync()).complete, true);
+  assert.equal(record.opens.length, 1);
+});
+
+test('failed final status persistence never updates last completed scan', async () => {
+  let saves = 0;
+  const { sync } = fixture({ persist: async () => { if (++saves === 2) throw new Error('disk full'); } });
+  sync.rtdb = rtdb({});
+  assert.equal((await sync.sync()).complete, false);
+  assert.equal(sync.lastSyncAt, null);
+  assert.equal(sync.state.tracking.worker.firebaseSync.lastSyncAt, null);
+});
+
+test('invalid identities cannot query cloud; hung requests release the sync guard within budget', async () => {
+  const { sync, state } = fixture({ timeoutMs: 1000, maxRunMs: 20, retryBaseMs: 0 });
+  let reads = 0;
+  sync.rtdb = rtdb({}, { read: async () => { reads++; await new Promise(() => {}); } });
+  state.settings.tracking.pcId = 'invalid/id';
+  assert.equal((await sync.sync()).ok, false);
+  assert.equal(reads, 0);
+  state.settings.tracking.pcId = '1';
+  const start = Date.now();
+  assert.equal((await sync.sync()).ok, false);
+  assert(Date.now() - start < 500);
+  assert.equal(sync.running, false);
+});
+
+test('read-only audit distinguishes recoverable signals from messages, identity mismatch and unavailable databases', async () => {
+  const { auditFirebaseSync } = await import('../src/firebase-audit.mjs');
+  const { sync, state, message } = fixture({ backend: 'both' });
+  state.settings.tracking.syncMode = 'manual';
+  const { row, record } = message();
+  sync.rtdb = rtdb({ a: { ...row, pcId: '3' }, b: { ...row, openedAt: '2026-10-21T22:35:00.000Z' }, c: { ...row, token: 'x'.repeat(43), tokenHash: hash('x'.repeat(43)) } });
+  sync.firestore = firestore({}, { read: async () => { throw new Error('NOT_FOUND'); } });
+  const before = structuredClone(state);
+  const report = await auditFirebaseSync(sync);
+  assert.equal(report.recovery.recoverableSignals, 2);
+  assert.equal(report.recovery.newlyOpenedMessages, 1);
+  assert.equal(report.recovery.automaticPollingPaused, true);
+  assert.equal(report.recovery.selectedDatabaseUnavailable, true);
+  assert.equal(report.recovery.matchingEventsWithDifferentPcId, 1);
+  assert.equal(report.localRecoveryPreview.unmatched, 1);
+  assert.equal(report.localRecoveryPreview.acknowledged, 0);
+  assert.deepEqual(state, before);
+  assert.equal(record.opens.length, 0);
+  assert.deepEqual(sync.rtdb.writes, []);
+  assert.deepEqual(sync.firestore.writes, []);
+});

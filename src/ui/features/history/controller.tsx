@@ -1,3 +1,5 @@
+import { StatValue } from '../../design-system/StatValue';
+import { StatusBadge } from '../../design-system/layout';
 import type { HistoryReviewResponse } from '../../shared/types/api';
 import { Button } from '../../design-system/primitives';
 import { uiScope } from '../../shared/lifecycle';
@@ -119,11 +121,36 @@ export function renderHistorySummary(s: HistorySummary) {
   ];
   renderRegion(
     $('historyMetrics'),
-    metrics.map(([label, value, hint]) => (
+    metrics.map(([label, value, hint], index) => (
       <>
         <div className={'history-metric'}>
           <span>{displayText(label)}</span>
-          <strong>{displayText(value)}</strong>
+          <StatValue
+            kind={
+              index === 0
+                ? 'sent'
+                : index >= 3 && index <= 5
+                  ? 'timing'
+                  : index === 2 || index === 6
+                    ? 'ready'
+                    : 'signal'
+            }
+            value={
+              [
+                s.sent,
+                s.sentSeen,
+                s.sentSeen,
+                s.timingSamples,
+                s.timingSamples,
+                s.timingSamples,
+                s.trackedSent,
+                s.replied,
+              ][index]
+            }
+            total={s.sent}
+          >
+            {displayText(value)}
+          </StatValue>
           <small>{displayText(hint)}</small>
         </div>
       </>
@@ -186,9 +213,9 @@ export async function loadHistory() {
                 <small>{displayText(r.templateName)}</small>
               </td>
               <td>
-                <span className={'status-pill ' + (r.confirmedSent ? 'good' : 'blocked')}>
+                <StatusBadge className={'status-pill ' + (r.confirmedSent ? 'good' : 'blocked')}>
                   {displayText(r.status)}
-                </span>
+                </StatusBadge>
                 <small>
                   {r.replyStatus === 'unreviewed'
                     ? 'Reply not reviewed'
@@ -207,7 +234,9 @@ export async function loadHistory() {
               <td>
                 {r.firstOpenAt ? (
                   <>
-                    <span className={'status-pill good'}>{'Seen · image signal'}</span>
+                    <StatusBadge className={'status-pill good'}>
+                      {'Seen · image signal'}
+                    </StatusBadge>
                     <small>
                       {'First: '}
                       {displayText(historyDate(r.firstOpenAt))}
@@ -223,9 +252,9 @@ export async function loadHistory() {
                   </>
                 ) : (
                   <>
-                    <span className={'status-pill'}>
+                    <StatusBadge className={'status-pill'}>
                       {r.trackingEnabled ? 'No signal recorded' : 'Tracking not enabled'}
-                    </span>
+                    </StatusBadge>
                   </>
                 )}
               </td>

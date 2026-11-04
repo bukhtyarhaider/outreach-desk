@@ -1,9 +1,14 @@
 /** IDs retained as the UI compatibility contract; types reflect the rendered native elements. */
 export interface UIElements {
   settingsDetails: HTMLDetailsElement;
+  profileEditor: HTMLDialogElement;
+  templateEditor: HTMLDialogElement;
+  'view-accounts': HTMLElementTagNameMap['section'];
   mailroomOlder: HTMLDetailsElement;
   workspaceExport: HTMLAnchorElement;
 
+  'view-campaign-new': HTMLElementTagNameMap['section'];
+  'view-campaign-edit': HTMLElementTagNameMap['section'];
   'view-dashboard': HTMLElementTagNameMap['section'];
   start: HTMLElementTagNameMap['button'];
   stop: HTMLElementTagNameMap['button'];
@@ -11,6 +16,8 @@ export interface UIElements {
   ready: HTMLElementTagNameMap['div'];
   excluded: HTMLElementTagNameMap['div'];
   sent: HTMLElementTagNameMap['div'];
+  mailroomQueueLabel: HTMLSpanElement;
+  carrierPriorityAlert: HTMLDivElement;
   carrierAttentionStatus: HTMLElementTagNameMap['p'];
   carrierAttentionMetrics: HTMLElementTagNameMap['div'];
   carrierAttentionRows: HTMLElementTagNameMap['div'];
@@ -40,6 +47,13 @@ export interface UIElements {
   clearSelection: HTMLElementTagNameMap['button'];
   deleteSelectedLeads: HTMLElementTagNameMap['button'];
   selectPage: HTMLElementTagNameMap['input'];
+  leadsSort: HTMLElementTagNameMap['select'];
+  leadsReset: HTMLElementTagNameMap['button'];
+  leadsOverview: HTMLElementTagNameMap['div'];
+  leadsFeedback: HTMLElementTagNameMap['div'];
+  leadsSelectionCount: HTMLElementTagNameMap['strong'];
+  leadsSelectionHint: HTMLElementTagNameMap['p'];
+  leadsReviewBatch: HTMLElementTagNameMap['a'];
   leadRows: HTMLElementTagNameMap['tbody'];
   pageInfo: HTMLElementTagNameMap['span'];
   previous: HTMLElementTagNameMap['button'];
@@ -171,14 +185,14 @@ export interface UIElements {
   replyRefresh: HTMLElementTagNameMap['button'];
   mailroomToolsDialog: HTMLElementTagNameMap['dialog'];
   replyStatus: HTMLElementTagNameMap['p'];
-  replyCaptureTools: HTMLElementTagNameMap['details'];
-  replyCaptureSummary: HTMLElementTagNameMap['summary'];
+  replyCaptureTools: HTMLElementTagNameMap['section'];
+  replyCaptureSummary: HTMLElementTagNameMap['h3'];
   replyHistory: HTMLElementTagNameMap['button'];
   replyDemo: HTMLElementTagNameMap['button'];
   replyCaptureNote: HTMLElementTagNameMap['p'];
   replyCoverage: HTMLElementTagNameMap['p'];
   replyMonitor: HTMLElementTagNameMap['div'];
-  replyConfigPanel: HTMLElementTagNameMap['details'];
+  replyConfigPanel: HTMLElementTagNameMap['section'];
   replyConfigEnabled: HTMLElementTagNameMap['input'];
   replyConfigAuto: HTMLElementTagNameMap['input'];
   replyConfigAll: HTMLElementTagNameMap['input'];
@@ -280,6 +294,7 @@ export interface UIElements {
   templateComplianceStatus: HTMLElementTagNameMap['span'];
   templateLivePreview: HTMLElementTagNameMap['div'];
   templateCountBadge: HTMLElementTagNameMap['span'];
+  templateStatusFilter: HTMLElementTagNameMap['select'];
   templateSearch: HTMLElementTagNameMap['input'];
   templatesTableBody: HTMLElementTagNameMap['tbody'];
   'view-settings': HTMLElementTagNameMap['section'];
@@ -350,6 +365,7 @@ export interface UIElements {
   'view-live-activity': HTMLElementTagNameMap['section'];
   liveStreamStatusBadge: HTMLElementTagNameMap['span'];
   liveStreamStatusText: HTMLElementTagNameMap['span'];
+  liveJumpLatestBtn: HTMLElementTagNameMap['button'];
   livePauseToggleBtn: HTMLElementTagNameMap['button'];
   livePauseBtnText: HTMLElementTagNameMap['span'];
   liveExportJsonBtn: HTMLElementTagNameMap['a'];
@@ -429,6 +445,7 @@ export interface UIElements {
   historySaveReview: HTMLElementTagNameMap['button'];
   historyReviewSaved: HTMLElementTagNameMap['span'];
   'view-catalog': HTMLElementTagNameMap['section'];
+  catalogReset: HTMLElementTagNameMap['button'];
   catalogRefresh: HTMLElementTagNameMap['button'];
   catalogMetrics: HTMLElementTagNameMap['div'];
   catalogUpgradeSteps: HTMLElementTagNameMap['ol'];
@@ -436,13 +453,6 @@ export interface UIElements {
   catalogType: HTMLElementTagNameMap['select'];
   catalogStatus: HTMLElementTagNameMap['p'];
   catalogEntries: HTMLElementTagNameMap['div'];
-  catalogNoteHeading: HTMLElementTagNameMap['h2'];
-  catalogNoteVersion: HTMLElementTagNameMap['input'];
-  catalogNoteDate: HTMLElementTagNameMap['input'];
-  catalogNoteTitle: HTMLElementTagNameMap['input'];
-  catalogNoteChanges: HTMLElementTagNameMap['textarea'];
-  catalogSaveNote: HTMLElementTagNameMap['button'];
-  catalogNewNote: HTMLElementTagNameMap['button'];
   'view-tracking': HTMLElementTagNameMap['section'];
   trackingFirebaseSync: HTMLElementTagNameMap['button'];
   trackingRefresh: HTMLElementTagNameMap['button'];
@@ -499,6 +509,10 @@ export interface UIElements {
   trackingWorker: HTMLElementTagNameMap['pre'];
   trackingReview: HTMLElementTagNameMap['pre'];
   'view-suppression': HTMLElementTagNameMap['section'];
+  suppressionAddOpen: HTMLElementTagNameMap['button'];
+  suppressionForm: HTMLElementTagNameMap['form'];
+  suppressionFields: HTMLElementTagNameMap['fieldset'];
+  suppressionKind: HTMLElementTagNameMap['select'];
   suppressEmail: HTMLElementTagNameMap['input'];
   suppressReason: HTMLElementTagNameMap['input'];
   suppress: HTMLElementTagNameMap['button'];
@@ -513,9 +527,9 @@ export interface UIElements {
   navLiveActivity: HTMLElementTagNameMap['a'];
   liveNavDot: HTMLElementTagNameMap['span'];
   profileName: HTMLElementTagNameMap['span'];
-  leadPreviewDrawer: HTMLElementTagNameMap['div'];
+  leadPreviewDrawer: HTMLElementTagNameMap['dialog'];
   leadDrawerEyebrow: HTMLElementTagNameMap['span'];
-  previewTitle: HTMLElementTagNameMap['h3'];
+  previewTitle: HTMLElementTagNameMap['h2'];
   closePreviewDrawer: HTMLElementTagNameMap['button'];
   tabLeadDetails: HTMLElementTagNameMap['button'];
   tabEmailDraft: HTMLElementTagNameMap['button'];
@@ -530,9 +544,9 @@ export interface UIElements {
   sendOne: HTMLElementTagNameMap['button'];
   release: HTMLElementTagNameMap['button'];
   closeDrawerBtn: HTMLElementTagNameMap['button'];
-  trackingDrawer: HTMLElementTagNameMap['div'];
+  trackingDrawer: HTMLElementTagNameMap['dialog'];
   trackingDrawerEyebrow: HTMLElementTagNameMap['span'];
-  trackingDrawerTitle: HTMLElementTagNameMap['h3'];
+  trackingDrawerTitle: HTMLElementTagNameMap['h2'];
   closeTrackingDrawer: HTMLElementTagNameMap['button'];
   tabTrackingOverview: HTMLElementTagNameMap['button'];
   tabTrackingSpecs: HTMLElementTagNameMap['button'];

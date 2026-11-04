@@ -1,3 +1,5 @@
+import { TrackingOverview } from './TrackingOverview';
+import { StatusBadge } from '../../design-system/layout';
 import {
   Ban,
   CalendarDays,
@@ -24,7 +26,6 @@ import {
   ShieldCheck,
   Siren,
   Sprout,
-  Star,
   Target,
   Timer,
   TriangleAlert,
@@ -77,9 +78,19 @@ export const trackingLabels = {
   awaiting: 'Seeds awaiting',
 };
 
+let trackingReloadRequested = false;
 export async function loadTracking() {
-  if (trackingBusy || !$('trackingRows') || !session.state) return;
+  if (trackingBusy) {
+    trackingReloadRequested = true;
+    return;
+  }
+  if (!$('trackingRows') || !session.state) return;
   trackingBusy = true;
+  const loadGeneration = uiScope.generation;
+  const loadStatus = document.getElementById('trackingLoadStatus');
+  const messagePanel = document.getElementById('trackingMessages');
+  messagePanel?.setAttribute('aria-busy', 'true');
+  if (loadStatus) loadStatus.textContent = 'Updating records…';
   try {
     const campaign = $('trackingCampaign');
     if (campaign) {
@@ -102,6 +113,23 @@ export async function loadTracking() {
     const statusVal = $('trackingStatus')?.value || '';
     const fromVal = $('trackingFrom')?.value || '';
     const untilVal = $('trackingUntil')?.value || '';
+    const activeFilters = [qVal, campVal, statusVal, fromVal, untilVal].filter(Boolean).length;
+    const filterSummary = document.getElementById('trackingFilterSummary');
+    if (filterSummary)
+      filterSummary.textContent = activeFilters
+        ? `${activeFilters} active ${activeFilters === 1 ? 'filter' : 'filters'} · Statistics and records reflect this selection`
+        : 'All recorded messages · use filters to narrow the evidence';
+    document
+      .querySelectorAll<HTMLElement>('#trackingQuickPills [data-pill-status]')
+      .forEach((pill) => {
+        const active =
+          pill.dataset.pillStatus === 'seeds'
+            ? !statusVal && qVal === 'seed'
+            : pill.dataset.pillStatus === statusVal && !(qVal === 'seed' && !statusVal);
+        pill.classList.toggle('active', active);
+        pill.setAttribute('aria-pressed', String(active));
+      });
+
     const params = new URLSearchParams({
       q: qVal,
       campaign: campVal,
@@ -114,221 +142,15 @@ export async function loadTracking() {
     trackingRecords = data.records || [];
     const summary = data.summary || {};
     const total = data.total || 0;
-    // Calculate core deliverability KPIs
     const attempts = summary.attempts || 0;
-    const sent = summary.webmail_sent || 0;
-    const deliveryRate = attempts ? Math.round((sent / attempts) * 100) : total ? 100 : 0;
-    const opens = summary.open_detected || 0;
-    const openRate = attempts ? Math.round((opens / attempts) * 100) : 0;
-    const hardBounced = summary.hard_bounced || 0;
-    const softBounced = summary.soft_bounced || 0;
-    const bounced = hardBounced + softBounced;
-    const bounceRate = attempts ? ((100 * bounced) / attempts).toFixed(1) + '%' : '0.0%';
-    const seedsTotal =
-      (summary.inbox || 0) + (summary.spam || 0) + (summary.other || 0) + (summary.not_found || 0);
-    const inboxRate = seedsTotal
-      ? Math.round(((summary.inbox || 0) / seedsTotal) * 100)
-      : summary.inbox
-        ? 100
-        : 0;
+    const bounced = (summary.hard_bounced || 0) + (summary.soft_bounced || 0);
     // Update active records badge
     if ($('trackingRecordCountBadge')) {
       $('trackingRecordCountBadge').textContent =
         `${total} recorded message${total === 1 ? '' : 's'}`;
     }
-    // Render High-Impact Deliverability Telemetry Deck into #trackingMetrics
-    if ($('trackingMetrics')) {
-      renderRegion(
-        $('trackingMetrics'),
-        <>
-          <div className={'tracking-kpi-grid'}>
-            <div className={'tracking-kpi-card kpi-sent'}>
-              <div className={'kpi-top'}>
-                <span className={'kpi-title'}>{'Dispatched (Sent)'}</span>
-                <div className={'kpi-icon-wrap icon-emerald'}>
-                  <Icon icon={Check} size={15} />
-                </div>
-              </div>
-              <div className={'kpi-val-row'}>
-                <span className={'kpi-value'}>{sent}</span>
-                <span className={'kpi-rate-badge badge-green'}>
-                  {deliveryRate}
-                  {'%'}
-                </span>
-              </div>
-              <div className={'kpi-progress-bar'}>
-                <div
-                  className={'kpi-progress-fill fill-green'}
-                  style={nativeStyle('width: ' + Math.min(100, deliveryRate) + '%;')}
-                ></div>
-              </div>
-              <div className={'kpi-subtext'}>
-                {'of '}
-                {attempts}
-                {' attempted sends confirmed by webmail'}
-              </div>
-            </div>
-            <div className={'tracking-kpi-card kpi-opens'}>
-              <div className={'kpi-top'}>
-                <span className={'kpi-title'}>{'Open Signals'}</span>
-                <div className={'kpi-icon-wrap icon-blue'}>
-                  <Icon icon={Eye} size={15} />
-                </div>
-              </div>
-              <div className={'kpi-val-row'}>
-                <span className={'kpi-value'}>{opens}</span>
-                <span className={'kpi-rate-badge badge-blue'}>
-                  {openRate}
-                  {'%'}
-                </span>
-              </div>
-              <div className={'kpi-progress-bar'}>
-                <div
-                  className={'kpi-progress-fill fill-blue'}
-                  style={nativeStyle('width: ' + Math.min(100, openRate) + '%;')}
-                ></div>
-              </div>
-              <div className={'kpi-subtext'}>{'1×1 pixel requests captured by proxy'}</div>
-            </div>
-            <div className={'tracking-kpi-card kpi-seeds'}>
-              <div className={'kpi-top'}>
-                <span className={'kpi-title'}>{'Seed Inbox Rate'}</span>
-                <div className={'kpi-icon-wrap icon-purple'}>
-                  <Icon icon={Star} size={15} />
-                </div>
-              </div>
-              <div className={'kpi-val-row'}>
-                <span className={'kpi-value'}>
-                  {seedsTotal ? `${inboxRate}%` : summary.inbox ? '100%' : '—'}
-                </span>
-                <span className={'kpi-rate-badge badge-purple'}>
-                  {summary.inbox || 0}
-                  {' Inbox'}
-                </span>
-              </div>
-              <div className={'kpi-progress-bar'}>
-                <div
-                  className={'kpi-progress-fill fill-purple'}
-                  style={nativeStyle('width: ' + Math.min(100, inboxRate) + '%;')}
-                ></div>
-              </div>
-              <div className={'kpi-subtext'}>
-                {summary.spam || 0}
-                {' landed in spam · '}
-                {summary.awaiting || 0}
-                {' awaiting'}
-              </div>
-            </div>
-            <div className={'tracking-kpi-card ' + (bounced > 0 ? 'kpi-warn' : 'kpi-clean')}>
-              <div className={'kpi-top'}>
-                <span className={'kpi-title'}>{'Deliverability Health'}</span>
-                <div className={'kpi-icon-wrap ' + (bounced > 0 ? 'icon-amber' : 'icon-emerald')}>
-                  <Icon icon={Shield} size={15} />
-                </div>
-              </div>
-              <div className={'kpi-val-row'}>
-                <span className={'kpi-value'}>{bounced === 0 ? 'Clean' : bounceRate}</span>
-                <span className={'kpi-rate-badge ' + (bounced > 0 ? 'badge-amber' : 'badge-green')}>
-                  {bounced === 0 ? '0 DSN' : `${bounced} Bounces`}
-                </span>
-              </div>
-              <div className={'kpi-progress-bar'}>
-                <div
-                  className={'kpi-progress-fill ' + (bounced > 0 ? 'fill-amber' : 'fill-green')}
-                  style={nativeStyle(
-                    'width: ' +
-                      (bounced === 0 ? '100' : Math.max(10, 100 - parseFloat(bounceRate))) +
-                      '%;',
-                  )}
-                ></div>
-              </div>
-              <div className={'kpi-subtext'}>
-                {hardBounced}
-                {' hard bounces · '}
-                {softBounced}
-                {' soft bounces'}
-              </div>
-            </div>
-          </div>
-          <div className={'tracking-chips-ribbon'}>
-            <div className={'telemetry-chip'}>
-              <span className={'chip-label'}>{'Total Outreaches'}</span>
-              <strong className={'chip-val'}>{total}</strong>
-            </div>
-            <div className={'telemetry-chip'}>
-              <span className={'chip-label'}>{'Unique Recipients'}</span>
-              <strong className={'chip-val'}>{summary.recipients || 0}</strong>
-            </div>
-            <div className={'telemetry-chip'}>
-              <span className={'chip-label'}>{'Send Attempts'}</span>
-              <strong className={'chip-val'}>{attempts}</strong>
-            </div>
-            <div className={'telemetry-chip'}>
-              <span className={'chip-label'}>{'Confirmed Dispatched'}</span>
-              <strong className={'chip-val'} style={{ color: '#34d399' }}>
-                {sent}
-              </strong>
-            </div>
-            <div className={'telemetry-chip'}>
-              <span className={'chip-label'}>{'Failed Submissions'}</span>
-              <strong
-                className={'chip-val'}
-                style={nativeStyle('color: ' + (summary.send_failed ? '#f87171' : 'inherit') + ';')}
-              >
-                {summary.send_failed || 0}
-              </strong>
-            </div>
-            <div className={'telemetry-chip'}>
-              <span className={'chip-label'}>{'Hard Bounces'}</span>
-              <strong
-                className={'chip-val'}
-                style={nativeStyle('color: ' + (hardBounced ? '#f87171' : 'inherit') + ';')}
-              >
-                {hardBounced}
-              </strong>
-            </div>
-            <div className={'telemetry-chip'}>
-              <span className={'chip-label'}>{'Soft Bounces'}</span>
-              <strong
-                className={'chip-val'}
-                style={nativeStyle('color: ' + (softBounced ? '#fbbf24' : 'inherit') + ';')}
-              >
-                {softBounced}
-              </strong>
-            </div>
-            <div className={'telemetry-chip'}>
-              <span className={'chip-label'}>{'Open Signals'}</span>
-              <strong className={'chip-val'} style={{ color: '#60a5fa' }}>
-                {opens}
-              </strong>
-            </div>
-            <div className={'telemetry-chip'}>
-              <span className={'chip-label'}>{'Seed Inbox'}</span>
-              <strong className={'chip-val'} style={{ color: '#34d399' }}>
-                {summary.inbox || 0}
-              </strong>
-            </div>
-            <div className={'telemetry-chip'}>
-              <span className={'chip-label'}>{'Seed Spam'}</span>
-              <strong
-                className={'chip-val'}
-                style={nativeStyle('color: ' + (summary.spam ? '#f87171' : 'inherit') + ';')}
-              >
-                {summary.spam || 0}
-              </strong>
-            </div>
-            <div className={'telemetry-chip'}>
-              <span className={'chip-label'}>{'Seed Awaiting'}</span>
-              <strong className={'chip-val'}>{summary.awaiting || 0}</strong>
-            </div>
-            <div className={'telemetry-chip'}>
-              <span className={'chip-label'}>{'Delivery Unknown'}</span>
-              <strong className={'chip-val'}>{summary.delivery_unknown || 0}</strong>
-            </div>
-          </div>
-        </>,
-      );
-    }
+    if ($('trackingMetrics'))
+      renderRegion($('trackingMetrics'), <TrackingOverview summary={summary} total={total} />);
     // Render Deliverability Guidance Note
     if ($('trackingRate')) {
       renderRegion(
@@ -348,7 +170,7 @@ export async function loadTracking() {
                 </span>
                 <span className={'rate-status-tag ' + (bounced === 0 ? 'good' : 'warn')}>
                   <Icon icon={bounced === 0 ? Check : TriangleAlert} size={12} />
-                  {bounced === 0 ? 'Healthy Sender Score' : 'Failure Monitored'}
+                  {bounced === 0 ? 'No bounces recorded' : 'Failure signals recorded'}
                 </span>
               </div>
               <div className={'rate-callout-desc'}>
@@ -374,67 +196,64 @@ export async function loadTracking() {
             const sendStatusBadge =
               r.sendStatus === 'webmail_sent' ? (
                 <>
-                  <span className={'status-pill good'}>
+                  <StatusBadge className={'status-pill good'}>
                     <span className={'badge-dot dot-green'}></span>
                     <Icon icon={Check} size={12} />
-                    {'Delivered'}
-                  </span>
+                    {'Webmail confirmed'}
+                  </StatusBadge>
                 </>
               ) : r.sendStatus === 'send_failed' ? (
                 <>
-                  <span className={'status-pill blocked'}>
+                  <StatusBadge className={'status-pill blocked'}>
                     <span className={'badge-dot dot-red'}></span>
                     <Icon icon={X} size={12} />
                     {'Failed'}
-                  </span>
+                  </StatusBadge>
                 </>
               ) : r.sendStatus === 'send_attempted' ? (
                 <>
-                  <span className={'status-pill sent'}>
+                  <StatusBadge className={'status-pill sent'}>
                     <span className={'badge-dot dot-blue'}></span>
                     <Icon icon={Timer} size={12} />
                     {'Sending...'}
-                  </span>
+                  </StatusBadge>
                 </>
               ) : (
                 <>
-                  <span className={'status-pill'}>
+                  <StatusBadge className={'status-pill'}>
                     <span className={'badge-dot dot-muted'}></span>
                     {displayText(r.sendStatus || 'pending')}
-                  </span>
+                  </StatusBadge>
                 </>
               );
-            // Required for unit tests: Must include '(hard_bounced)' or '(soft_bounced)'
             const bounceBadge =
               r.bounceStatus === 'hard_bounced' ? (
                 <>
                   <div className={'bounce-status-block'}>
-                    <span className={'status-pill blocked'}>
+                    <StatusBadge className={'status-pill blocked'}>
                       <span className={'badge-dot dot-red'}></span>
                       <Icon icon={Ban} size={12} />
                       {'Hard Bounce '}
-                      <small className={'test-token'}>{'(hard_bounced)'}</small>
-                    </span>
+                    </StatusBadge>
                   </div>
                 </>
               ) : r.bounceStatus === 'soft_bounced' ? (
                 <>
                   <div className={'bounce-status-block'}>
-                    <span className={'status-pill warn'}>
+                    <StatusBadge className={'status-pill warn'}>
                       <span className={'badge-dot dot-amber'}></span>
                       <Icon icon={TriangleAlert} size={12} />
                       {'Soft Bounce '}
-                      <small className={'test-token'}>{'(soft_bounced)'}</small>
-                    </span>
+                    </StatusBadge>
                   </div>
                 </>
               ) : (
                 <>
                   <div className={'clean-delivery-chip'}>
-                    <Icon icon={Shield} size={13} color={'#10b981'} />
+                    <Icon icon={Shield} size={13} color={'#126c48'} />
                     <span>
                       <Icon icon={Check} size={12} />
-                      {'Clean Delivery'}
+                      {'No bounce detected'}
                     </span>
                   </div>
                 </>
@@ -442,13 +261,13 @@ export async function loadTracking() {
             const seenBadge = r.firstOpenAt ? (
               <>
                 <div className={'seen-indicator-stack'}>
-                  <span className={'status-pill good seen-pill'}>
+                  <StatusBadge className={'status-pill good seen-pill'}>
                     <Icon icon={Eye} size={12} />
-                    {'\n                     Seen'}
+                    {'Open signal'}
                     {r.opens?.length > 1 ? ` (${r.opens.length}x)` : ''}
-                  </span>
+                  </StatusBadge>
                   <small className={'seen-time-hint'}>
-                    {'Opened '}
+                    {'Signal at '}
                     {new Date(r.firstOpenAt).toLocaleTimeString([], {
                       hour: '2-digit',
                       minute: '2-digit',
@@ -458,10 +277,10 @@ export async function loadTracking() {
               </>
             ) : (
               <>
-                <span className={'status-pill unopened-pill'}>
+                <StatusBadge className={'status-pill unopened-pill'}>
                   <Icon icon={Mail} size={12} />
-                  {'\n                   Unopened\n                 '}
-                </span>
+                  {'No open signal'}
+                </StatusBadge>
               </>
             );
             let placementStatusHtml: ReactNode = '';
@@ -470,13 +289,13 @@ export async function loadTracking() {
                 placementStatusHtml = (
                   <>
                     <div className={'placement-result-tag'}>
-                      <span
+                      <StatusBadge
                         className={'status-pill good'}
                         style={{ fontWeight: '700', padding: '2px 8px', fontSize: '11px' }}
                       >
                         <Icon icon={Inbox} size={12} />
                         {'Inbox'}
-                      </span>
+                      </StatusBadge>
                     </div>
                   </>
                 );
@@ -484,13 +303,13 @@ export async function loadTracking() {
                 placementStatusHtml = (
                   <>
                     <div className={'placement-result-tag'}>
-                      <span
+                      <StatusBadge
                         className={'status-pill blocked'}
                         style={{ fontWeight: '700', padding: '2px 8px', fontSize: '11px' }}
                       >
                         <Icon icon={Ban} size={12} />
                         {'Spam'}
-                      </span>
+                      </StatusBadge>
                     </div>
                   </>
                 );
@@ -498,11 +317,11 @@ export async function loadTracking() {
                 placementStatusHtml = (
                   <>
                     <div className={'placement-result-tag'}>
-                      <span className={'status-pill'} style={{ fontSize: '11px' }}>
+                      <StatusBadge className={'status-pill'} style={{ fontSize: '11px' }}>
                         <Icon icon={Folder} size={12} />
                         {''}
                         {displayText(r.placement.status)}
-                      </span>
+                      </StatusBadge>
                     </div>
                   </>
                 );
@@ -737,8 +556,20 @@ export async function loadTracking() {
     }
     if ($('healthSelectors') && !$('healthSelectors').value)
       $('healthSelectors').value = 'privateemail';
+    if (loadStatus)
+      loadStatus.textContent = `Updated ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+  } catch (error) {
+    if (loadStatus) loadStatus.textContent = 'Could not complete refresh. Try Refresh Data again.';
+    throw error;
   } finally {
     trackingBusy = false;
+    if (trackingReloadRequested) {
+      trackingReloadRequested = false;
+      if (uiScope.isCurrent(loadGeneration))
+        uiScope.timeout(() => {
+          void loadTracking().catch((error) => notice(errorMessage(error)));
+        }, 0);
+    } else messagePanel?.setAttribute('aria-busy', 'false');
   }
 }
 
@@ -888,73 +719,73 @@ export function renderTrackingDetail(r: TrackingRecord) {
   const sendBadge =
     r.sendStatus === 'webmail_sent' ? (
       <>
-        <span className={'status-pill good'}>
+        <StatusBadge className={'status-pill good'}>
           <span className={'badge-dot dot-green'}></span>
           <Icon icon={Check} size={12} />
-          {'Dispatched'}
-        </span>
+          {'Webmail confirmed'}
+        </StatusBadge>
       </>
     ) : r.sendStatus === 'send_failed' ? (
       <>
-        <span className={'status-pill blocked'}>
+        <StatusBadge className={'status-pill blocked'}>
           <span className={'badge-dot dot-red'}></span>
           <Icon icon={X} size={12} />
           {'Failed'}
-        </span>
+        </StatusBadge>
       </>
     ) : r.sendStatus === 'send_attempted' ? (
       <>
-        <span className={'status-pill sent'}>
+        <StatusBadge className={'status-pill sent'}>
           <span className={'badge-dot dot-blue'}></span>
           <Icon icon={Timer} size={12} />
           {'Sending...'}
-        </span>
+        </StatusBadge>
       </>
     ) : (
       <>
-        <span className={'status-pill'}>
+        <StatusBadge className={'status-pill'}>
           <span className={'badge-dot dot-muted'}></span>
           {displayText(r.sendStatus || 'Pending')}
-        </span>
+        </StatusBadge>
       </>
     );
   const seenBadge = r.firstOpenAt ? (
     <>
-      <span className={'status-pill good'}>
+      <StatusBadge className={'status-pill good'}>
         <Icon icon={Eye} size={12} />
-        {'Seen'}
+        {'Open signal'}
         {r.opens?.length > 1 ? ` (${r.opens.length}x)` : ''}
-      </span>
+      </StatusBadge>
     </>
   ) : (
     <>
-      <span className={'status-pill unopened-pill'}>
+      <StatusBadge className={'status-pill unopened-pill'}>
         <Icon icon={Mail} size={12} />
-        {'Unopened'}
-      </span>
+        {'No open signal'}
+      </StatusBadge>
     </>
   );
   const bounceBadge =
     r.bounceStatus === 'hard_bounced' ? (
       <>
-        <span className={'status-pill blocked'}>
+        <StatusBadge className={'status-pill blocked'}>
           <Icon icon={Ban} size={12} />
           {'Hard Bounce'}
-        </span>
+        </StatusBadge>
       </>
     ) : r.bounceStatus === 'soft_bounced' ? (
       <>
-        <span className={'status-pill warn'}>
+        <StatusBadge className={'status-pill warn'}>
           <Icon icon={TriangleAlert} size={12} />
           {'Soft Bounce'}
-        </span>
+        </StatusBadge>
       </>
     ) : (
       <>
-        <span className={'status-pill good'}>
+        <StatusBadge className={'status-pill good'}>
           <Icon icon={Check} size={12} />
-          {'Clean Delivery'}
-        </span>
+          {'No bounce detected'}
+        </StatusBadge>
       </>
     );
   // Relative timing calculation
@@ -1015,7 +846,7 @@ export function renderTrackingDetail(r: TrackingRecord) {
           desc: `${displayText(ev.signal || 'Remote 1x1 image request received from mail client.')} ${
             openRelative ? (
               <>
-                <strong style={{ color: '#10b981' }}>
+                <strong style={{ color: '#126c48' }}>
                   {'('}
                   {openRelative}
                   {')'}
@@ -1155,7 +986,12 @@ export function renderTrackingDetail(r: TrackingRecord) {
           {bounceBadge}
         </div>
       </div>
-      <div id={'trackingSecOverview'} className={'drawer-tab-pane active'}>
+      <div
+        id={'trackingSecOverview'}
+        role="tabpanel"
+        aria-labelledby="tabTrackingOverview"
+        className={'drawer-tab-pane active'}
+      >
         <div className={'lead-details-card'}>
           <h4 className={'lead-details-title'}>
             <Icon icon={Clock} size={14} />
@@ -1184,7 +1020,7 @@ export function renderTrackingDetail(r: TrackingRecord) {
               <span
                 className={'lead-detail-value'}
                 style={nativeStyle(
-                  'color: ' + (r.firstOpenAt ? '#10b981' : 'var(--text-muted)') + ';',
+                  'color: ' + (r.firstOpenAt ? '#126c48' : 'var(--text-muted)') + ';',
                 )}
               >
                 {r.firstOpenAt ? `Seen (${r.opens?.length || 1}x)` : 'Unopened'}
@@ -1199,7 +1035,7 @@ export function renderTrackingDetail(r: TrackingRecord) {
               <span className={'lead-detail-label'}>{'Deliverability Health'}</span>
               <span
                 className={'lead-detail-value'}
-                style={nativeStyle('color: ' + (r.bounceStatus ? '#ef4444' : '#10b981') + ';')}
+                style={nativeStyle('color: ' + (r.bounceStatus ? '#ef4444' : '#126c48') + ';')}
               >
                 {r.bounceStatus ? `${displayText(r.bounceStatus)}` : 'Clean (No DSN)'}
               </span>
@@ -1213,7 +1049,7 @@ export function renderTrackingDetail(r: TrackingRecord) {
         {r.bounceReason || r.bounceStatus ? (
           <>
             <div className={'lead-details-card'} style={{ borderLeft: '3px solid #ef4444' }}>
-              <h4 className={'lead-details-title'} style={{ color: '#f87171' }}>
+              <h4 className={'lead-details-title'} style={{ color: '#bd3022' }}>
                 <Icon icon={TriangleAlert} size={14} />
                 {'\n          Delivery Failure Diagnostic ('}
                 {displayText(r.bounceStatus || 'bounced')}
@@ -1223,7 +1059,7 @@ export function renderTrackingDetail(r: TrackingRecord) {
                 style={{
                   fontSize: '13px',
                   fontWeight: '600',
-                  color: '#fca5a5',
+                  color: '#a92b20',
                   fontFamily: 'ui-monospace, SFMono-Regular, monospace',
                   marginBottom: '6px',
                   wordBreak: 'break-all',
@@ -1258,7 +1094,13 @@ export function renderTrackingDetail(r: TrackingRecord) {
           </div>
         </div>
       </div>
-      <div id={'trackingSecSpecs'} className={'drawer-tab-pane'} style={{ display: 'none' }}>
+      <div
+        id={'trackingSecSpecs'}
+        role="tabpanel"
+        aria-labelledby="tabTrackingSpecs"
+        className={'drawer-tab-pane'}
+        style={{ display: 'none' }}
+      >
         <div className={'lead-details-card'}>
           <h4 className={'lead-details-title'}>
             <Icon icon={FileText} size={14} />
@@ -1344,7 +1186,7 @@ export function renderTrackingDetail(r: TrackingRecord) {
               <span className={'lead-detail-value'}>
                 {r.firstOpenAt ? (
                   <>
-                    <span style={{ color: '#10b981', fontWeight: '600' }}>
+                    <span style={{ color: '#126c48', fontWeight: '600' }}>
                       {fmt(r.firstOpenAt)}
                       {openRelative ? (
                         <>
@@ -1361,7 +1203,7 @@ export function renderTrackingDetail(r: TrackingRecord) {
                   </>
                 ) : (
                   <>
-                    <span style={{ color: 'var(--text-muted)' }}>{'Unopened'}</span>
+                    <span style={{ color: 'var(--text-muted)' }}>{'No open signal'}</span>
                   </>
                 )}
               </span>
@@ -1396,10 +1238,10 @@ export function renderTrackingDetail(r: TrackingRecord) {
                       style={nativeStyle(
                         'color: ' +
                           (r.placement?.status === 'inbox'
-                            ? '#10b981'
+                            ? '#126c48'
                             : r.placement?.status === 'spam'
                               ? '#ef4444'
-                              : '#fff') +
+                              : '#181816') +
                           ';',
                       )}
                     >
@@ -1477,7 +1319,13 @@ export function renderTrackingDetail(r: TrackingRecord) {
           ''
         )}
       </div>
-      <div id={'trackingSecRaw'} className={'drawer-tab-pane'} style={{ display: 'none' }}>
+      <div
+        id={'trackingSecRaw'}
+        role="tabpanel"
+        aria-labelledby="tabTrackingRaw"
+        className={'drawer-tab-pane'}
+        style={{ display: 'none' }}
+      >
         <div className={'lead-details-card'}>
           <div
             style={{
@@ -1508,7 +1356,7 @@ export function renderTrackingDetail(r: TrackingRecord) {
               fontFamily: 'ui-monospace, SFMono-Regular, monospace',
               fontSize: '11.5px',
               lineHeight: '1.5',
-              color: '#cbd5e1',
+              color: '#494946',
               background: 'var(--bg-surface-elevated, #1a1e26)',
               borderRadius: 'var(--radius-sm)',
               padding: '12px',
@@ -1534,7 +1382,7 @@ export function renderTrackingDetail(r: TrackingRecord) {
         renderRegion(
           copySummaryBtn,
           <>
-            <Icon icon={Check} size={14} color={'#10b981'} />
+            <Icon icon={Check} size={14} color={'#126c48'} />
             {' Copied!'}
           </>,
         );
@@ -1556,7 +1404,7 @@ export function renderTrackingDetail(r: TrackingRecord) {
         renderRegion(
           btn,
           <>
-            <Icon icon={Check} size={12} color={'#10b981'} />
+            <Icon icon={Check} size={12} color={'#126c48'} />
           </>,
         );
         uiScope.timeout(() => {
@@ -1669,11 +1517,11 @@ export function renderDomainReport(result: DomainReport) {
       renderRegion(
         $('domainScoreBadge'),
         <>
-          <span
+          <StatusBadge
             className={'status-pill'}
             style={{
               background: 'rgba(16, 185, 129, 0.15)',
-              color: '#34d399',
+              color: '#126c48',
               border: '1px solid rgba(16, 185, 129, 0.3)',
               fontWeight: '600',
               padding: '4px 10px',
@@ -1682,18 +1530,18 @@ export function renderDomainReport(result: DomainReport) {
           >
             <Icon icon={CircleCheck} size={12} />
             {'100% Authenticated (3/3)'}
-          </span>
+          </StatusBadge>
         </>,
       );
     } else if (passedChecks === 2) {
       renderRegion(
         $('domainScoreBadge'),
         <>
-          <span
+          <StatusBadge
             className={'status-pill'}
             style={{
               background: 'rgba(245, 158, 11, 0.15)',
-              color: '#fbbf24',
+              color: '#86520c',
               border: '1px solid rgba(245, 158, 11, 0.3)',
               fontWeight: '600',
               padding: '4px 10px',
@@ -1702,18 +1550,18 @@ export function renderDomainReport(result: DomainReport) {
           >
             <Icon icon={TriangleAlert} size={12} />
             {'67% Healthy (DMARC Missing)'}
-          </span>
+          </StatusBadge>
         </>,
       );
     } else {
       renderRegion(
         $('domainScoreBadge'),
         <>
-          <span
+          <StatusBadge
             className={'status-pill'}
             style={{
               background: 'rgba(239, 68, 68, 0.15)',
-              color: '#f87171',
+              color: '#bd3022',
               border: '1px solid rgba(239, 68, 68, 0.3)',
               fontWeight: '600',
               padding: '4px 10px',
@@ -1724,15 +1572,14 @@ export function renderDomainReport(result: DomainReport) {
             {''}
             {passedChecks}
             {'/3 Checks Passing'}
-          </span>
+          </StatusBadge>
         </>,
       );
     }
   }
   const activeProfileEmail =
-    session.state.profiles.find((p) => p.id === session.state.activeProfile)?.email ||
-    `markanthony@${result.domain || 'fclogistics.us'}`;
-  const recommendedDmarcVal = `v=DMARC1; p=none; sp=none; rua=mailto:${activeProfileEmail}`;
+    session.state.profiles.find((p) => p.id === session.state.activeProfile)?.email || '';
+  const recommendedDmarcVal = `v=DMARC1; p=none; sp=none${activeProfileEmail ? `; rua=mailto:${activeProfileEmail}` : ''}`;
   const spfCard = (
     <>
       <div className={'domain-health-card ' + (spfFound ? 'status-pass' : 'status-fail')}>
@@ -1742,18 +1589,18 @@ export function renderDomainReport(result: DomainReport) {
               <Icon icon={spfFound ? CircleCheck : CircleX} size={16} />
               {'\n            SPF Record\n          '}
             </div>
-            <span
+            <StatusBadge
               className={'status-pill'}
               style={nativeStyle(
                 'background: ' +
                   (spfFound
-                    ? 'rgba(16, 185, 129, 0.12); color: #34d399;'
-                    : 'rgba(239, 68, 68, 0.12); color: #f87171;') +
+                    ? 'rgba(16, 185, 129, 0.12); color: #126c48;'
+                    : 'rgba(239, 68, 68, 0.12); color: #bd3022;') +
                   ' font-weight: 700; font-size: 11px;',
               )}
             >
               {spfFound ? 'PASS' : 'FAIL'}
-            </span>
+            </StatusBadge>
           </div>
           <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '6px 0 10px 0' }}>
             {'Specifies mail servers authorized to send on behalf of '}
@@ -1773,7 +1620,7 @@ export function renderDomainReport(result: DomainReport) {
         <div
           style={nativeStyle(
             'font-size: 11.5px; color: ' +
-              (spfFound ? '#34d399' : '#f87171') +
+              (spfFound ? '#126c48' : '#bd3022') +
               '; display: flex; align-items: center; gap: 6px;',
           )}
         >
@@ -1795,18 +1642,18 @@ export function renderDomainReport(result: DomainReport) {
               <Icon icon={KeyRound} size={16} />
               {'\n            DKIM Signatures\n          '}
             </div>
-            <span
+            <StatusBadge
               className={'status-pill'}
               style={nativeStyle(
                 'background: ' +
                   (dkimFound
-                    ? 'rgba(16, 185, 129, 0.12); color: #34d399;'
-                    : 'rgba(239, 68, 68, 0.12); color: #f87171;') +
+                    ? 'rgba(16, 185, 129, 0.12); color: #126c48;'
+                    : 'rgba(239, 68, 68, 0.12); color: #bd3022;') +
                   ' font-weight: 700; font-size: 11px;',
               )}
             >
               {dkimFound ? 'PASS' : 'FAIL'}
-            </span>
+            </StatusBadge>
           </div>
           <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '6px 0 10px 0' }}>
             {'Cryptographic signature verifying mail has not been tampered in transit.'}
@@ -1820,20 +1667,20 @@ export function renderDomainReport(result: DomainReport) {
                   {' — '}
                   {d.state === 'found' ? (
                     <>
-                      <span style={{ color: '#34d399' }}>{'Valid RSA Key'}</span>
+                      <span style={{ color: '#126c48' }}>{'Valid RSA Key'}</span>
                       <br />
                       {displayText(d.records.join('\n'))}
                     </>
                   ) : (
                     <>
-                      <span style={{ color: '#f87171' }}>{'Key missing'}</span>
+                      <span style={{ color: '#bd3022' }}>{'Key missing'}</span>
                     </>
                   )}
                 </>
               ))
             ) : (
               <>
-                <span style={{ color: '#94a3b8' }}>{'No DKIM selectors queried.'}</span>
+                <span style={{ color: '#575750' }}>{'No DKIM selectors queried.'}</span>
               </>
             )}
           </div>
@@ -1841,7 +1688,7 @@ export function renderDomainReport(result: DomainReport) {
         <div
           style={nativeStyle(
             'font-size: 11.5px; color: ' +
-              (dkimFound ? '#34d399' : '#f87171') +
+              (dkimFound ? '#126c48' : '#bd3022') +
               '; display: flex; align-items: center; gap: 6px;',
           )}
         >
@@ -1868,18 +1715,18 @@ export function renderDomainReport(result: DomainReport) {
               <Icon icon={Shield} size={16} />
               {'\n            DMARC Policy\n          '}
             </div>
-            <span
+            <StatusBadge
               className={'status-pill'}
               style={nativeStyle(
                 'background: ' +
                   (dmarcFound
-                    ? 'rgba(16, 185, 129, 0.12); color: #34d399;'
-                    : 'rgba(245, 158, 11, 0.15); color: #fbbf24;') +
+                    ? 'rgba(16, 185, 129, 0.12); color: #126c48;'
+                    : 'rgba(245, 158, 11, 0.15); color: #86520c;') +
                   ' font-weight: 700; font-size: 11px;',
               )}
             >
               {dmarcFound ? 'PASS' : 'MISSING'}
-            </span>
+            </StatusBadge>
           </div>
           <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '6px 0 10px 0' }}>
             {'Instructs Gmail & Outlook how to handle messages failing SPF/DKIM.'}
@@ -1889,7 +1736,7 @@ export function renderDomainReport(result: DomainReport) {
               displayText(result.dmarc.records.join('\n'))
             ) : (
               <>
-                <span style={{ color: '#fbbf24' }}>
+                <span style={{ color: '#86520c' }}>
                   {'No record at '}
                   <code>
                     {'_dmarc.'}
@@ -1904,7 +1751,7 @@ export function renderDomainReport(result: DomainReport) {
         <div
           style={nativeStyle(
             'font-size: 11.5px; color: ' +
-              (dmarcFound ? '#34d399' : '#fbbf24') +
+              (dmarcFound ? '#126c48' : '#86520c') +
               '; display: flex; align-items: center; gap: 6px;',
           )}
         >
@@ -1924,7 +1771,7 @@ export function renderDomainReport(result: DomainReport) {
             {''}
           </div>
           <div style={{ flex: '1' }}>
-            <div style={{ fontSize: '13.5px', fontWeight: '700', color: '#fde68a' }}>
+            <div style={{ fontSize: '13.5px', fontWeight: '700', color: '#575750' }}>
               {
                 '\n            Action Required: Add Recommended DMARC TXT Record to Namecheap DNS\n          '
               }
@@ -1932,7 +1779,7 @@ export function renderDomainReport(result: DomainReport) {
             <p
               style={{
                 fontSize: '12.5px',
-                color: '#e2e8f0',
+                color: '#343432',
                 margin: '6px 0 10px 0',
                 lineHeight: '1.5',
               }}
@@ -1945,7 +1792,7 @@ export function renderDomainReport(result: DomainReport) {
             </p>
             <div
               style={{
-                background: '#0f1219',
+                background: '#fffdf8',
                 border: '1px solid #283044',
                 borderRadius: '8px',
                 padding: '12px',
@@ -1957,7 +1804,7 @@ export function renderDomainReport(result: DomainReport) {
                   <tr>
                     <td>{'Type:'}</td>
                     <td>
-                      <strong style={{ color: '#38bdf8' }}>{'TXT Record'}</strong>
+                      <strong style={{ color: '#1649a8' }}>{'TXT Record'}</strong>
                     </td>
                   </tr>
                   <tr>
@@ -1971,7 +1818,7 @@ export function renderDomainReport(result: DomainReport) {
                     <td>
                       <code
                         id={'dmarcRecordText'}
-                        style={{ color: '#a7f3d0', wordBreak: 'break-all' }}
+                        style={{ color: '#126c48', wordBreak: 'break-all' }}
                       >
                         {displayText(recommendedDmarcVal)}
                       </code>
@@ -2043,8 +1890,10 @@ export function renderDomainReport(result: DomainReport) {
             />
           </div>
           <div>
-            <div style={{ fontSize: '15px', fontWeight: '700', color: '#fff' }}>{bannerTitle}</div>
-            <div style={{ fontSize: '12.5px', color: '#cbd5e1', marginTop: '2px' }}>
+            <div style={{ fontSize: '15px', fontWeight: '700', color: '#181816' }}>
+              {bannerTitle}
+            </div>
+            <div style={{ fontSize: '12.5px', color: '#494946', marginTop: '2px' }}>
               {bannerDesc}
             </div>
           </div>
@@ -2100,7 +1949,9 @@ export function mountTracking() {
       action(e.currentTarget, async () => {
         try {
           const res = await api('/api/tracking/sync-firebase', {});
-          notice(`Firebase: ${res.message || res.error || 'Sync finished.'}`);
+          if (res.ok === false)
+            throw new Error(String(res.message || res.error || 'Sync could not complete.'));
+          notice(`Firebase: ${res.message || 'Sync finished.'}`);
         } catch (err) {
           notice(`Firebase sync failed: ${errorMessage(err)}`, 'error');
         }
@@ -2142,6 +1993,8 @@ export function mountTracking() {
             .forEach((p) => p.classList.remove('active'));
           pill.classList.add('active');
           const targetStatus = pill.dataset.pillStatus;
+          if (targetStatus !== 'seeds' && $('trackingSearch')?.value === 'seed')
+            $('trackingSearch').value = '';
           if (targetStatus === 'seeds') {
             if ($('trackingStatus')) $('trackingStatus').value = '';
             if ($('trackingSearch')) $('trackingSearch').value = 'seed';
@@ -2265,7 +2118,7 @@ export function mountTracking() {
           $('seedPlanResult'),
           <>
             <div className={'seed-plan-success-box'}>
-              <Icon icon={Check} size={16} color={'#10b981'} />
+              <Icon icon={Check} size={16} color={'#126c48'} />
               <div>
                 <strong>
                   {'Plan '}

@@ -209,7 +209,7 @@ For a real, explicitly authorized end-to-end test:
 Live Namecheap HTML/Message-ID retention, real bounce notifications, seed-provider OAuth access, remote pixel reachability and actual domain records were not exercised with credentials. Synthetic tests validate the implementation paths, not production deliverability or every recipient's spam placement. Windows launchers remain unexecuted on Windows in this environment.
 
 
-## Send-history insights (2.1.0)
+## Send-history insights (original internal label 2.1.0)
 
 `GET /api/history` returns a page of enriched durable history with full-filter summary metrics and option lists. Filters: `q`, `status`, `seen` (`seen`, `no_signal`, `untracked`), `mailbox`, `campaign`, `template`, `reply` (`unreviewed`, `replied`, `no_reply`), `from`/`until` (inclusive UTC send dates), `sort` and `offset`. Seen rate uses confirmed sends as denominator; tracked-send seen rate and coverage are reported separately. Timing summaries use confirmed-send-to-first-image-request samples only; unknown/negative intervals are excluded and counted. No reply detection or human-reading inference is added.
 

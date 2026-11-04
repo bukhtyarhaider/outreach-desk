@@ -30,16 +30,23 @@ test('PC and Firebase settings show effective configuration, warn, save and relo
   browser = await loadPlaywright().chromium.launch({ channel: process.env.FC_TEST_BROWSER_CHANNEL || 'chrome', headless: true });
   const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
   const errors = []; page.on('pageerror', (error) => errors.push(error.message));
-  await page.goto(`http://127.0.0.1:${port}/#settings`);
+  await page.goto(`http://127.0.0.1:${port}/#settingsConnections`);
   await page.locator('#firebaseDiagnostics dd').first().waitFor();
   assert.match(await page.locator('#firebaseWarnings').innerText(), /PC ID is not set/);
   assert.match(await page.locator('#firebaseDiagnostics').innerText(), /Legacy default/);
   assert.equal(await page.locator('#settingsFirebaseStatusBadge').innerText(), 'Disabled');
+  await page.locator('#trackingPcId').fill('bad/id');
+  await page.getByRole('tab', { name: 'Sending pace', exact: true }).click();
+  await page.locator('#saveSettings').click();
+  await page.waitForFunction(() => document.querySelector('#settingsSaveFeedback').textContent.includes('PC ID'));
+  await page.locator('#settingsConnections').waitFor({state:'visible'});
+  assert.equal(await page.locator('#trackingPcId').inputValue(),'bad/id');
+  assert.equal(await page.locator('#trackingPcId').getAttribute('aria-invalid'),'true');
   await page.locator('#trackingPcId').fill('2');
   await page.locator('#firebaseBackend').selectOption('rtdb');
   await page.locator('#firebaseSyncMode').selectOption('manual');
   await page.locator('#saveSettings').click();
-  await page.waitForFunction(() => document.querySelector('#notice').textContent === 'Sending settings saved.');
+  await page.waitForFunction(() => document.querySelector('#notice').textContent === 'Settings saved.');
   assert.match(await page.locator('#firebaseWarnings').innerText(), /routes to PC 1, but this PC ID is 2/);
   assert.match(await page.locator('#trackingPcIdHint').innerText(), /Effective PC ID: 2/);
   await page.locator('#trackingPublicUrl').fill('https://track.example.com/t/2');
@@ -52,6 +59,7 @@ test('PC and Firebase settings show effective configuration, warn, save and relo
   assert.equal(await page.locator('#firebaseSyncMode').inputValue(), 'manual');
   await page.locator('#settingsFirebaseSyncBtn').click();
   await page.waitForFunction(() => document.querySelector('#notice').textContent.includes('Disabled by FC_FIREBASE_DISABLE'));
+  assert.match(await page.locator('#notice').innerText(), /Firebase sync failed:/);
   assert(!/up to date/i.test(await page.locator('#notice').innerText()));
   // A diagnostic refresh must not replace unsaved PC settings.
   await page.locator('#trackingPcId').fill('4');
@@ -70,5 +78,12 @@ test('PC and Firebase settings show effective configuration, warn, save and relo
       await page.screenshot({ path: path.join(process.env.FC_UI_SCREENSHOT_DIR, `firebase-settings-${width}.png`) });
     }
   }
+  await page.goto(`http://127.0.0.1:${port}/#tracking`);
+  await page.getByRole('complementary', { name: 'Firebase sync status' }).waitFor();
+  assert.match(await page.getByRole('complementary', { name: 'Firebase sync status' }).innerText(), /Disabled/);
+  await page.locator('#trackingFirebaseSync').click();
+  await page.waitForFunction(() => document.querySelector('#notice').textContent.includes('Firebase sync failed:'));
+  await page.getByRole('link', { name: 'Sync settings', exact: true }).click();
+  await page.locator('#view-settings.active').waitFor();
   assert.deepEqual(errors, []);
 });

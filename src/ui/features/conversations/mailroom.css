@@ -209,7 +209,7 @@
 .mailroom-badge {
   display: inline-block;
   align-self: flex-start;
-  color: #b7c2d3;
+  color: #1649a8;
   background: var(--bg-surface-hover);
   border-radius: 14px;
   padding: 4px 11px;
@@ -220,7 +220,7 @@
 }
 .mailroom-badge.warm {
   background: rgba(239, 68, 68, 0.16);
-  color: #f3a2a2;
+  color: #a92b20;
 }
 .mailroom-pagination {
   display: flex;
@@ -329,7 +329,8 @@
   gap: 12px;
 }
 .mailroom-message-heading .mailroom-avatar {
-  background: #334155;
+  background: #e1e8ff;
+  color: #1649a8;
   box-shadow: none;
   width: 42px;
   height: 42px;
@@ -379,7 +380,7 @@
 .mailroom-hold {
   padding: 12px 14px;
   background: var(--accent-red-bg);
-  color: #fca5a5;
+  color: #a92b20;
   border-left: 3px solid var(--accent-red);
   font-size: 13px;
   margin: 12px 0;
@@ -458,7 +459,7 @@
 #assistantDraftState {
   font-size: 12px;
   margin: 12px 0;
-  color: #a3b5cc;
+  color: #1649a8;
 }
 #assistantStatus {
   font-size: 12px;
@@ -487,7 +488,7 @@
   border: 1px solid var(--border-medium);
   border-radius: 8px;
   z-index: 8;
-  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35);
+  box-shadow: none;
 }
 .mailroom-lines-popover .saved-reply-list {
   max-height: 240px;
@@ -974,5 +975,26 @@
 @media (max-width: 520px) {
   .mailroom-read-actions {
     margin-left: 0;
+  }
+}
+#mailroomQueueLabel {
+  margin: 0 0 12px;
+  flex-shrink: 0;
+}
+/* Short viewports scroll the shared context away before the independently scrollable inbox. */
+@media (max-width: 1020px) {
+  .mailroom-active .app-viewport {
+    display: block;
+    overflow-y: auto;
+  }
+  #view-conversations.mailroom-page.active {
+    display: block;
+    overflow: visible;
+  }
+  .mailroom-workspace {
+    height: calc(100dvh - 100px);
+    min-height: 440px;
+    flex: none;
+    scroll-margin-top: 12px;
   }
 }

@@ -1,3 +1,7 @@
+import { CreateCampaignPage } from '../features/campaigns/CreateCampaignPage';
+import { CampaignEditorPage } from '../features/campaigns/CampaignEditorPage';
+import { AccountsPage } from '../features/accounts/AccountsPage';
+import { WorkspaceContext } from './layout/WorkspaceContext';
 import { DashboardPage } from '../features/dashboard/DashboardPage';
 import { LeadsPage } from '../features/leads/LeadsPage';
 import { CampaignsPage } from '../features/campaigns/CampaignsPage';
@@ -14,15 +18,18 @@ import { Titlebar } from './layout/Titlebar';
 import { Sidebar } from './layout/Sidebar';
 import { LeadDrawer } from './layout/LeadDrawer';
 import { TrackingDrawer } from './layout/TrackingDrawer';
+import { useStickyHeaders } from './layout/use-sticky-headers';
 /** Feature adapters own mutable leaves. Keep page trees mounted to preserve unsaved edits across navigation. */
 export function App() {
+  const viewportRef = useStickyHeaders();
   return (
     <>
       <div className="app-shell">
-        <Titlebar />
         <div className="app-container">
           <Sidebar />
-          <main className="app-viewport">
+          <main className="app-viewport" ref={viewportRef}>
+            <Titlebar />
+            <WorkspaceContext />
             <p id="releasePreviewBanner" className="carrier-preview-banner" hidden>
               Sample preview · Sending and live mailbox capture are disabled. Use your normal app
               window for real inbox capture.
@@ -32,9 +39,12 @@ export function App() {
             <DashboardPage />
             <LeadsPage />
             <CampaignsPage />
+            <CreateCampaignPage />
+            <CampaignEditorPage />
             <ImportsPage />
             <ConversationsPage />
             <TemplatesPage />
+            <AccountsPage />
             <SettingsPage />
             <LiveActivityPage />
             <HistoryPage />

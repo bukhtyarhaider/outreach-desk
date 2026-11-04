@@ -1,53 +1,55 @@
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 
-  /* Background layers - deep, rich Obsidian & Carbon */
-  --bg-app: #090a0f;
-  --bg-sidebar: #0e1017;
-  --bg-titlebar: #12141c;
-  --bg-surface: #141722;
-  --bg-surface-elevated: #1a1e2d;
-  --bg-surface-hover: #222739;
-  --bg-input: #0f1219;
-  --bg-glass: rgba(20, 24, 34, 0.72);
-  --bg-glass-card: rgba(24, 28, 40, 0.6);
+  /* Warm paper surfaces and vivid Bauhaus accents. */
+  --bg-app: #faf8f3;
+  --bg-sidebar: #f8f6f0;
+  --bg-titlebar: #faf8f3;
+  --bg-surface: #fffdf8;
+  --bg-surface-elevated: #f2efe7;
+  --bg-surface-hover: #eee9df;
+  --bg-input: #fffdf8;
+  --bg-glass: rgba(242, 239, 231, 0.72);
+  --bg-glass-card: rgba(242, 239, 231, 0.6);
 
   /* Precise structural borders */
-  --border-subtle: rgba(255, 255, 255, 0.07);
-  --border-medium: rgba(255, 255, 255, 0.12);
-  --border-light: rgba(255, 255, 255, 0.18);
+  --border-subtle: #dedbd2;
+  --border-medium: #c9c5ba;
+  --border-light: #aaa69b;
   --border-accent: rgba(239, 68, 68, 0.45);
-  --border-glass: rgba(255, 255, 255, 0.08);
+  --border-glass: rgba(24, 24, 22, 0.08);
 
   /* Typography color hierarchy */
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
-  --text-dim: #475569;
+  --text-primary: #131311;
+  --text-secondary: #4f514d;
+  --text-muted: #66665e;
+  --text-dim: #66665e;
 
   /* Brand Signature Accent: Precision Laser Red */
-  --accent-red: #ef4444;
-  --accent-red-hover: #f87171;
+  --brand-red: #ff3428;
+  --brand-yellow: #ffcd32;
+  --accent-red: #df2d20;
+  --accent-red-hover: #b82417;
   --accent-red-dark: #b91c1c;
-  --accent-red-bg: rgba(239, 68, 68, 0.12);
-  --accent-red-border: rgba(239, 68, 68, 0.32);
+  --accent-red-bg: #fbe7df;
+  --accent-red-border: #dc8d7c;
   --accent-red-glow: rgba(239, 68, 68, 0.28);
 
   /* Operations Accents: Emerald, Amber, Blue, Cyan, Purple */
-  --accent-emerald: #10b981;
-  --accent-emerald-hover: #34d399;
+  --accent-emerald: #126c48;
+  --accent-emerald-hover: #126c48;
   --accent-emerald-bg: rgba(16, 185, 129, 0.12);
   --accent-emerald-border: rgba(16, 185, 129, 0.3);
   --accent-emerald-glow: rgba(16, 185, 129, 0.25);
 
-  --accent-amber: #f59e0b;
-  --accent-amber-hover: #fbbf24;
+  --accent-amber: #86520c;
+  --accent-amber-hover: #86520c;
   --accent-amber-bg: rgba(245, 158, 11, 0.12);
   --accent-amber-border: rgba(245, 158, 11, 0.3);
   --accent-amber-glow: rgba(245, 158, 11, 0.25);
 
-  --accent-blue: #3b82f6;
-  --accent-blue-hover: #60a5fa;
+  --accent-blue: #164bea;
+  --accent-blue-hover: #1649a8;
   --accent-blue-bg: rgba(59, 130, 246, 0.12);
   --accent-blue-border: rgba(59, 130, 246, 0.3);
   --accent-blue-glow: rgba(59, 130, 246, 0.25);
@@ -56,26 +58,24 @@
   --accent-purple: #a855f7;
 
   /* Radius scale */
-  --radius-xs: 4px;
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 18px;
+  --radius-xs: 3px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 10px;
   --radius-full: 9999px;
 
   /* Ambient shadows with depth & color glow */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.25);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.65), 0 4px 12px rgba(0, 0, 0, 0.4);
-  --shadow-drawer: -12px 0 48px rgba(0, 0, 0, 0.8), -2px 0 12px rgba(0, 0, 0, 0.5);
-  --shadow-glow-red: 0 0 20px rgba(239, 68, 68, 0.3);
-  --shadow-glow-blue: 0 0 20px rgba(59, 130, 246, 0.3);
-  --shadow-glow-emerald: 0 0 20px rgba(16, 185, 129, 0.3);
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: 0 12px 40px #13131122;
+  --shadow-drawer: -8px 0 32px #13131118;
+  --shadow-glow-red: none;
+  --shadow-glow-blue: none;
+  --shadow-glow-emerald: none;
 
   /* Typography stack */
-  --font-sans:
-    -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', Roboto, 'Inter',
-    Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+  --font-sans: Manrope, Arial, sans-serif;
   --font-mono:
     ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
 

@@ -1,0 +1,200 @@
+/* Persistent operational context: preserve campaign, mailbox, batch and source visibility. */
+.workspace-context-shell {
+  position: sticky;
+  top: 0;
+  z-index: 35;
+  background: var(--bg-app);
+  border-bottom: 1px solid var(--border-subtle);
+}
+.context-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 36px;
+  padding: 2px 32px;
+}
+.context-toggle.ui-button {
+  flex-shrink: 0;
+  min-height: 32px;
+  padding: 4px 0;
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+.context-toggle[aria-expanded='true'] svg {
+  transform: rotate(180deg);
+}
+.context-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+  flex: 1;
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+.context-summary > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.context-summary > span:first-child {
+  font-weight: 750;
+}
+.context-summary > span:last-child {
+  flex-shrink: 0;
+}
+.workspace-context {
+  display: grid;
+  grid-template-columns: minmax(130px, 1fr) minmax(170px, 1.2fr) minmax(95px, 0.6fr) minmax(
+      170px,
+      1.1fr
+    );
+  align-items: center;
+  gap: 14px 20px;
+  padding: 4px 32px 10px;
+  background: var(--bg-app);
+}
+.context-field {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+}
+.context-field > span {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.context-field .ui-select {
+  min-width: 0;
+  min-height: 32px;
+  padding: 5px 30px 5px 8px;
+  font-size: 12px;
+}
+.context-field small {
+  font-size: 10px;
+  overflow-wrap: anywhere;
+  color: var(--text-muted);
+}
+.context-field .context-connection {
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+.context-selection,
+.context-runner {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  min-width: 0;
+  color: var(--text-primary);
+}
+.context-selection > svg {
+  display: none;
+}
+.context-runner > span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 750;
+}
+.context-selection small,
+.context-runner small {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.context-source {
+  grid-column: 1/-1;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px 16px;
+  flex-wrap: wrap;
+  font-size: 10px;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 8px;
+  overflow-wrap: anywhere;
+}
+.context-source #workbookName {
+  font-weight: 750;
+}
+@media (max-width: 1120px) {
+  .workspace-context {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+}
+@media (max-width: 820px) {
+  .context-toolbar {
+    padding: 2px 14px;
+  }
+  .workspace-context {
+    padding: 4px 14px 12px;
+    gap: 12px;
+  }
+}
+@media (max-width: 480px) {
+  .workspace-context-shell {
+    position: relative;
+  }
+  .context-toolbar {
+    flex-wrap: wrap;
+    gap: 0;
+  }
+  .context-summary {
+    flex-basis: 100%;
+    padding: 0 0 8px;
+    gap: 8px;
+  }
+  .workspace-context {
+    grid-template-columns: minmax(0, 1fr);
+    position: relative;
+  }
+  .context-selection {
+    flex-direction: row;
+    gap: 8px;
+    border-top: 1px solid var(--border-subtle);
+    padding-top: 8px;
+  }
+  .context-field small:not(.context-connection) {
+    display: none;
+  }
+  .context-source {
+    font-size: 10px;
+  }
+}
+@media (max-width: 480px) {
+  .workspace-context {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .context-selection {
+    flex-direction: column;
+    border: 0;
+    padding: 0;
+  }
+  .context-source {
+    font-size: 9px;
+  }
+  .context-field > span {
+    font-size: 9px;
+    letter-spacing: 0.6px;
+  }
+  .context-runner {
+    font-size: 11px;
+  }
+}
+/* Tablet and narrow desktop panes still have room for one operational row after the rail. */
+@media (min-width: 681px) and (max-width: 1120px) {
+  .workspace-context {
+    grid-template-columns: minmax(90px, 1fr) minmax(110px, 1.2fr) minmax(60px, 0.65fr) minmax(
+        110px,
+        1.1fr
+      );
+    gap: 10px;
+  }
+}

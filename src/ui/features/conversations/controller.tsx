@@ -1,3 +1,4 @@
+import { StatValue } from '../../design-system/StatValue';
 import type { SourceHistoryResponse } from '../../shared/types/api';
 import { Button } from '../../design-system/primitives';
 import { uiScope } from '../../shared/lifecycle';
@@ -58,8 +59,7 @@ export function mountConversations() {
     const drafts = new Map<string, ReviewDraft>();
     let deskBusy = false,
       pendingOpen: ConversationSelection | null = null;
-    let captureToolsInitialized = false,
-      detailSequence = 0;
+    let detailSequence = 0;
     const time = (s: string | null | undefined) => (s ? new Date(s).toLocaleString() : 'unknown');
     async function request<T = ActionResult>(url: string, data?: unknown): Promise<T> {
       return requestJson<T>(route(url), data);
@@ -97,7 +97,8 @@ export function mountConversations() {
     function markSelection() {
       if (!mailroom) return;
       document.querySelectorAll<HTMLElement>('#mailroomList [data-reply]').forEach((b) => {
-        const active = b.dataset.reply === selection?.id;
+        const active =
+          b.dataset.reply === selection?.id && $('mailroomWorkspace').dataset.threadOpen === 'true';
         b.classList.toggle('selected', active);
         b.setAttribute('aria-pressed', String(active));
       });
@@ -120,15 +121,31 @@ export function mountConversations() {
           report!.rows.map((r) => (
             <>
               <Button
+                size="item"
                 type={'button'}
                 title={displayText(r.recipient)}
-                className={'mailroom-card ' + (r.id === selection?.id ? 'selected' : '')}
+                className={
+                  'mailroom-card ' +
+                  (r.id === selection?.id && $('mailroomWorkspace').dataset.threadOpen === 'true'
+                    ? 'selected'
+                    : '')
+                }
                 data-reply={displayText(r.id)}
                 data-type={r.type}
-                aria-pressed={r.id === selection?.id}
+                aria-pressed={
+                  r.id === selection?.id && $('mailroomWorkspace').dataset.threadOpen === 'true'
+                }
+                data-unread={r.unread ? 'true' : 'false'}
               >
                 <span className={'mailroom-card-top'}>
-                  <strong>{displayText(r.contactName || r.company || r.recipient)}</strong>
+                  <strong>
+                    <span className="mailroom-contact-initial" aria-hidden="true">
+                      {Array.from(
+                        r.contactName || r.company || r.recipient || '?',
+                      )[0].toLocaleUpperCase()}
+                    </span>
+                    {displayText(r.contactName || r.company || r.recipient)}
+                  </strong>
                   <time>{displayText(compactTime(r.lastReplyAt || r.at))}</time>
                 </span>
                 {r.contactName && r.company && r.company !== r.recipient ? (
@@ -193,7 +210,10 @@ export function mountConversations() {
           <>
             <div className={'mailroom-list-empty'}>
               <strong>{'No conversations in this queue'}</strong>
-              <p>{'Try All, change the filters, or scan your previous replies.'}</p>
+              <p>
+                Try another queue or clear your filters. If you expect new messages, check capture
+                settings and sync coverage.
+              </p>
             </div>
           </>,
         ),
@@ -216,6 +236,26 @@ export function mountConversations() {
         .forEach((b) =>
           b.setAttribute('aria-pressed', String(b.dataset.mailroomWork === $('replyWork').value)),
         );
+      if ($('mailroomQueueLabel')) {
+        const work = $('replyWork');
+        $('mailroomQueueLabel').hidden = [
+          'active',
+          'needs_reply',
+          'all',
+          'no_reply',
+          'in_review',
+        ].includes(work.value);
+        $('mailroomQueueLabel').textContent =
+          `Queue: ${work.selectedOptions[0]?.textContent || work.value}`;
+      }
+      const filterCount = [
+        $('replySearch').value.trim(),
+        $('replyMailbox').value,
+        $('replyCategory').value,
+      ].filter(Boolean).length;
+      $('mailroomFiltersOpen').dataset.activeFilters = filterCount ? String(filterCount) : '';
+      const clearFilters = document.getElementById('mailroomResetFilters');
+      if (clearFilters) clearFilters.hidden = filterCount === 0;
       $('replyPage').textContent = report!.total
         ? `${offset + 1}–${Math.min(offset + report!.rows.length, report!.total)} of ${report!.total}`
         : '0 conversations';
@@ -623,7 +663,16 @@ export function mountConversations() {
           <>
             <div className={'experiment-metric'}>
               <span>{label}</span>
-              <strong>{report!.summary[key]}</strong>
+              <StatValue
+                kind={
+                  key === 'needsReply' || key === 'needsMatch' || key === 'bounceNotices'
+                    ? 'warning'
+                    : 'signal'
+                }
+                value={report!.summary[key]}
+              >
+                {report!.summary[key]}
+              </StatValue>
             </div>
           </>
         )),
@@ -647,17 +696,8 @@ export function mountConversations() {
                 : 'Conversation capture is off. Open Mailbox tools to set up authorized Inbox access; browser sign-in alone does not enable capture.';
       }
       if (production) {
-        if (!captureToolsInitialized) {
-          $('replyCaptureTools').open =
-            report.summary.humanMessages +
-              report.summary.automatedMessages +
-              report.summary.bounceNotices +
-              report.summary.needsMatch ===
-            0;
-          captureToolsInitialized = true;
-        }
         $('replyCaptureSummary').textContent =
-          'Capture & mailbox setup · ' +
+          'Reply capture · ' +
           (capture.configurationError ||
           capture.captureError ||
           capture.mailboxes.some((m) => m.status === 'Needs attention')
@@ -673,7 +713,7 @@ export function mountConversations() {
       }
       $('replyCaptureNote').textContent = String(
         capture.configurationError ||
-          `${capture.enabled ? 'Live read-only capture enabled' : 'Live capture off'} · ${capture.auto ? 'Automatic checks enabled' : 'Manual checks only'}${capture.running ? ' · Checking mailboxes…' : ''}${capture.since ? ` · Initial backfill since ${capture.since} · ${capture.allFolders ? 'All available response folders' : 'Inbox and Sent folders'}` : ''}. ${production ? 'EML imports do not connect to a provider.' : 'Samples and EML imports do not connect to a provider.'}`,
+          `${capture.enabled ? 'Live read-only capture enabled' : 'Live capture off'} · ${capture.auto ? 'Automatic checks enabled' : 'Manual checks only'}${capture.running ? ' · Checking mailboxes…' : ''}${capture.configuration?.allHistory ? ' · All available history' : capture.since ? ` · History from ${capture.since}` : ''} · ${capture.allFolders ? 'All available response folders' : 'Inbox and Sent folders'}. ${production ? 'EML imports do not connect to a provider.' : 'Samples and EML imports do not connect to a provider.'}`,
       );
       renderRegion($('replyMonitor'), [
         capture.captureError ? (
@@ -974,7 +1014,11 @@ export function mountConversations() {
         'Message needs a conversation match';
       if (mailroom) {
         renderMailroomThread(detail!);
-        if (!sameThread) $('replyInspector').scrollTop = 0;
+        if (!sameThread) {
+          $('replyInspector').scrollTop = 0;
+          if (window.matchMedia('(max-width: 1020px)').matches)
+            $('mailroomWorkspace').scrollIntoView({ block: 'start' });
+        }
       } else {
         const initial = detail.root ? (
           <>
@@ -1126,6 +1170,10 @@ export function mountConversations() {
       if (mailroom) {
         $('mailroomWorkspace').dataset.threadOpen = 'false';
         $('mailroomEmpty').hidden = false;
+        markSelection();
+        Array.from($('mailroomList').querySelectorAll<HTMLElement>('[data-reply]'))
+          .find((row) => row.dataset.reply === selection?.id)
+          ?.focus({ preventScroll: true });
       }
     });
     uiScope.handler($('replyThreadRefresh'), 'onclick', () =>

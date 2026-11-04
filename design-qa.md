@@ -1,3 +1,98 @@
+# Dashboard and campaign navigation QA — 2026-10-30
+
+final result: passed for the exercised states
+
+This record supersedes the earlier dashboard order and cross-page campaign stepper below. The selected Bauhaus palette, brand, shared action components and native-control contract remain the foundation.
+
+## Current audit and changes
+
+1. **Dashboard — improved.** The captured 858×876 starting view placed the statistics and runner outside the working area. The revised view keeps compact scoped statistics and runner/mailbox controls visible together, with an unread-message shortcut above them. The matching-window comparison uses the same synthetic data and no image resizing. Stats end around y641; Start Outreach and Connect Mailbox end around y797/y825. The same primary information/actions also fit at 1440×1000. Carrier tasks, selected-batch tools and recent events follow below.
+2. **Campaign entry — improved.** Campaigns now opens a searchable/filterable inventory with a compact summary. A campaign name opens its workspace; Create Campaign opens a separate workbook-import entry. Entering creation does not mutate the current record. A browser test imports an actual fixture workbook and verifies a new paused, review-required campaign with the original record intact.
+3. **Campaign tabs and tool destinations — improved.** Audience, Queue Settings and Source & Mapping stay inside the selected campaign workspace. The sidebar keeps Campaigns active and breadcrumbs follow canonical route labels. Shared Templates, Accounts and Settings remain independent tools. Import Review is the mapping/revision tool, rather than a disguised campaign tab. Hash history, keyboard tab navigation, retained drafts and same-campaign opening are exercised.
+
+## Evidence and verification
+
+Evidence is in `outputs/dashboard-navigation/`: numbered before/after captures, `dashboard-comparison.png`, `report.md`, desktop library/create/editor/source screens, and 390×844 reflow. The final visual comparison preserves existing campaign/mailbox/file/batch/queue visibility while changing hierarchy. Native review covered the modified dashboard/campaign flow and links into Imports/Templates, including local tabs and mobile layouts. Console warnings/errors were empty. No customer record or live provider send was used.
+
+The complete regression passed **215 JavaScript tests and 12 Python tests**, with no failures/skips. Strict TypeScript, formatting and production build checks passed. The all-route acceptance covers fifteen views at 1440, 1024, 768 and 390px, long unbroken campaign names, source anchors, local tab history, form retention, new workbook creation and first-desktop-viewport controls/statistics. Existing mailbox, Unibox, tracking, source recovery, stale-evidence, suppression, queue and pacing checks remain green. Loading defaults preserve the native adapter's ownership of action guards.
+
+Source and sending scope are explicit: audience statistics follow the active campaign; confirmed sends follow this PC's campaign history. No fabricated trend chart, campaign-specific mailbox/template assignment, storage migration or sending behavior was introduced. Profile/template drawers and global tools retain their existing behavior.
+
+No blocking finding remains in the exercised states. Screenshot review and browser tests do not establish exhaustive corner-case coverage or accessibility certification. Live provider sending, native Windows/Edge installation and multi-PC rollout were not part of this UI refinement.
+
+---
+
+# Bauhaus refinement design QA — 2026-10-30
+
+final result: passed for the exercised states
+
+This refinement supersedes the first-pass shell, inline profile/template editors and combined Mailbox & Settings layout recorded below. The first selected concept remains the visual direction; the user explicitly requires the complete operational information and existing capabilities in the finished application.
+
+## Delivered surfaces
+
+The Outreach Desk wordmark and primary-color geometric mark now anchor a full-height sidebar. Product branding is independent of mailbox business identity. The brand, Create campaign and management links remain pinned while secondary navigation can scroll. Campaign/mailbox switching, source file, selected batch, connection, queue and allowances remain in the shared context.
+
+The dashboard places unread carrier alerts above its heading, then mailbox connection and outreach-runner cards, then carrier work, campaign metrics/inventory and supporting tools. The unread shortcut uses the existing queue and exposes its active filter. Accounts is a separate thirteenth route; Settings groups sending rules, sync/coordination and app information. Mailbox profiles and email templates use shared drawers with persistent footer actions, focus cycling, Escape and readable local feedback. Tracking now composes the same metrics, surfaces, buttons and filters as the application.
+
+## Findings fixed during verification
+
+- P1: narrow Unibox retained almost no message area after the shared context and toolbar. The outer pane now scrolls at narrow widths, the inbox keeps a usable minimum area, and opening a different thread reveals its reader. Browser acceptance checks actual reading height in addition to width.
+- P1: save failures appeared behind a native modal. Drawer-local status feedback now remains inside the modal, with the current draft preserved.
+- P2: Tracking worker JSON widened the content pane. Diagnostics now wrap safely; data-table scrolling stays local.
+- P2: campaign actions bypassed shared button appearance. Navigation actions and upload labels now share the same variants, sizing and focus contract as buttons. Async actions retain icons after loading/error states.
+- P2: template/profile editors consumed permanent page space. Library/inventory pages now open consistent drawers. Sending-settings saves do not consume unsaved profile business fields.
+- P2: primary actions, queue selections, form alignment and mobile drawer footer geometry differed across features. Central primitives now own their appearance and responsive behavior.
+
+## Evidence and acceptance
+
+Native Chrome review used an isolated, synthetic preview at `http://127.0.0.1:4327`. All thirteen desktop destinations were inspected. Core mobile pages, Accounts/Settings/Tracking, Unibox list/reader and both new drawers were reviewed at 390×844. Evidence lives under `outputs/bauhaus-refinement/`; `dashboard-final.jpg` is 1728×863 and the final mobile drawer captures are 390×844, DPR 1. The first concept is retained at `outputs/bauhaus-review/selected-reference.png`. Differences in information density, operational context and real fixture counts are intentional product adaptations, not omitted mock elements.
+
+The complete regression suite passed **215 JavaScript tests and 12 Python tests**, with no failures or skips. Strict TypeScript, formatting, production build, changed-script syntax and diff checks passed. Browser tests cover all thirteen routes at desktop/tablet/mobile widths; Accounts drawer bounds include widths down to 320px. They also cover failed template saves, focus containment, retained drafts, read/unread alerts, stale evidence, recovery, profile/CDP settings, Firebase configuration and existing sending protections. The final native preview had no warning/error console entries. Packaging validation includes the brand asset, new UI sources and DX guide while excluding runtime data and private files.
+
+No blocking visual finding remains in these inspected states. This is not a claim of exhaustive corner-case coverage or accessibility certification. Real provider sending, native Windows/Edge installation and multi-PC deployment remain outside this UI verification. Existing app processes need a restart to serve the new explicit PNG brand route. No customer data or real email send was used for this review.
+
+---
+
+# Previous first-pass Bauhaus design QA — 2026-10-30
+
+final result: passed
+
+## Target and approved adaptation
+
+The first displayed concept is the selected visual direction. The user clarified that the concept is an approach, not an exact final screen specification, and required the existing operational information and all working features to remain visible/accessible. This QA assesses that approved product adaptation rather than claiming pixel-for-pixel fidelity.
+
+Source: `outputs/bauhaus-review/selected-reference.png`. Comparison: `outputs/bauhaus-review/comparison.png` places the source and implemented campaign screen together at matched desktop proportions. Full implementation captures are 1440×1024; the generated source is normalized proportionally for the comparison board. Desktop/mobile review boards and individual screenshots are in the same directory. The five core screens, all twelve existing destinations, review controls and a mobile lead drawer were captured with synthetic data. Normal customer records were not modified or sent.
+
+## Visual iteration and fixes
+
+- P1: inherited dark tracking ribbons/callouts made dark text unreadable on the paper theme. Replaced their dark surface fills, removed inherited elevation and recaptured the tracking screen; counts and explanatory text are readable on the new surface.
+- P2: inherited primary-button selectors retained dark text and glow shadows. Corrected foreground/elevation precedence; recaptured campaign, settings and template controls with light text on the vermilion action.
+- P2: sidebar flex distribution left excessive blank space above navigation. Made navigation consume the remaining sidebar space and verified the primary destinations start below Create campaign.
+- P2: inherited minimum table height created excessive empty space in the compact audience preview. Limited that rule to working data tables and verified the campaign preview/footer together.
+- P1: mobile hid the desktop connection/file indicators. Added explicit connection and file presentation to the global workspace bar and verified the narrow layouts, not just the desktop header.
+
+The post-fix comparison and all-route review boards show no remaining blocking P0/P1/P2 visual findings in the exercised states.
+
+## Required surfaces
+
+- Typography: bundled variable Manrope with readable sans-serif hierarchy, bold geometric campaign heading, restrained uppercase labels and conventional body/table text. The font is served locally with its OFL license; no runtime CDN is needed.
+- Spacing/layout: flat paper surfaces, vermilion action/step accents, thin dividers, restrained radii and local table scrolling follow the selected direction. Added context bar, full navigation inventory and review controls deliberately consume more space than the exploratory mock. Mobile stacks these controls rather than dropping them.
+- Tokens/colors: canonical paper/ink/status tokens live in the shared token file; shared Bauhaus foundations, shell and feature surface rules apply them. Errors, warnings, protected recipients and disabled actions remain distinct from brand styling. Focus uses a cobalt outline and reduced-motion preferences are respected.
+- Imagery/assets: the current customer's text/monogram identity is retained rather than substituting the mock brand. No photo/illustration placeholders are required by this data-focused screen. Existing Lucide icons are retained per the user's request; step geometry is functional navigation.
+- Copy/content: counts and source rows are real data, not mock dashboard metrics. The audience preview explicitly follows the current Leads filter; import activation and queue launch remain separate. Unibox preserves capture consent, evidence and reply-review controls. The UI never treats an image request as proof of reading or a webmail send as guaranteed delivery.
+
+## Behavior and scope checks
+
+The existing 215 Node and 12 Python test baseline passed. Affected UI/Unibox integration checks were rerun after fixing an omitted worksheet list in a legacy campaign record. Final UI acceptance verifies all original IDs/routes, retained edits, current batch context, section navigation, repeated Create campaign entry, event text and responsive bounds. Keyboard navigation retains focus and exposes the current page. Full accessibility certification and Windows/Edge rollout were not performed.
+
+Remaining P3: consider a user-controlled compact workspace context on very small screens; the current default favors the user's explicit requirement to retain operational visibility. Separate Accounts/Reports navigation can be explored later; all current mailbox, history and tracking functions remain directly accessible with their familiar labels.
+
+Implementation checklist: shared tokens/primitives; typed navigation; read-only presentation bridge; modular campaign views and shared switching mutation; all legacy routes/features retained; local font/license; build/type/format/diff checks; browser/behavior verification; portable-package contents checked.
+
+---
+
+## Earlier release QA
+
 # Dashboard read-message dismissal QA — 2.2.0-rc.9
 
 final result: passed

@@ -1,4 +1,4 @@
-import { Button, Input, Textarea, Select } from '../design-system/primitives';
+import { ActionLink, Button, Input, Select, Textarea } from '../design-system/primitives';
 export function ImportExperiment() {
   return (
     <>
@@ -66,7 +66,9 @@ export function ImportExperiment() {
                 }
               </p>
               <div className={'experiment-buttons'}>
-                <Button id={'reviewPreview'}>{'Preview changes'}</Button>
+                <Button variant="primary" id={'reviewPreview'}>
+                  {'Preview changes'}
+                </Button>
                 <Button id={'reviewReset'} className={'secondary'}>
                   {'Restore saved mapping'}
                 </Button>
@@ -154,15 +156,15 @@ export function ImportExperiment() {
             }
           </p>
           <div id={'workspaceDownloads'} className={'experiment-buttons'} hidden={true}>
-            <a id={'workspaceWorking'} className={'button secondary'}>
+            <ActionLink id={'workspaceWorking'} className={'button secondary'}>
               {'Download workbook copy'}
-            </a>
-            <a id={'workspaceOriginal'} className={'button secondary'}>
+            </ActionLink>
+            <ActionLink id={'workspaceOriginal'} className={'button secondary'}>
               {'Download original snapshot'}
-            </a>
-            <a id={'workspaceMapping'} className={'button secondary'}>
+            </ActionLink>
+            <ActionLink id={'workspaceMapping'} className={'button secondary'}>
               {'Download mapping & provenance'}
-            </a>
+            </ActionLink>
           </div>
           <p className={'hint'}>
             {

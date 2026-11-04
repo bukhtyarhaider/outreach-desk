@@ -1,7 +1,6 @@
 @import '../design-system/tokens.css';
 @import '../design-system/global.css';
 @import './layout/shell.css';
-@import '../design-system/primitives.css';
 @import '../shared/styles/stats.css';
 @import '../shared/styles/table.css';
 @import '../shared/styles/drawers.css';
@@ -15,3 +14,23 @@
 @import '../features/conversations/styles.css';
 @import '../features/conversations/carrier-workspace.css';
 @import '../features/conversations/mailroom.css';
+
+@import '../design-system/bauhaus/foundations.css';
+@import '../design-system/bauhaus/shell.css';
+@import '../design-system/bauhaus/surfaces.css';
+
+@import '../design-system/primitives.css';
+
+@import '../features/dashboard/styles.css';
+@import '../features/campaigns/styles.css';
+@import './layout/sticky-headers.css';
+
+@import '../features/conversations/refinement.css';
+
+@import '../features/tracking/workspace.css';
+
+@import '../features/suppression/styles.css';
+
+@import '../features/catalog/styles.css';
+
+@import '../features/leads/styles.css';

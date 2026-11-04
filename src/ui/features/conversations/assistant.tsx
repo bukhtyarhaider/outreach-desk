@@ -1,4 +1,7 @@
+import { confirmAction } from '../../shared/confirmation';
 import type { StartThreadResponse } from '../../shared/types/api';
+import { Metric, MetricGroup } from '../../design-system/layout';
+import { StatMark, type StatTone } from '../../design-system/StatMark';
 import { Button, Select } from '../../design-system/primitives';
 import { uiScope } from '../../shared/lifecycle';
 import { contentOr } from '../../shared/regions';
@@ -428,8 +431,11 @@ export function mountConversationAssistant() {
         return 'Edited draft saved. Earlier approval no longer applies.';
       }),
     );
-    uiScope.handler($('assistantNewDraft'), 'onclick', () => {
-      if (local?.dirty && !confirm('Discard the current unsaved text and start a new draft?'))
+    uiScope.handler($('assistantNewDraft'), 'onclick', async () => {
+      if (
+        local?.dirty &&
+        !(await confirmAction('Discard the current unsaved text and start a new draft?'))
+      )
         return;
       local = { body: '', id: null, requestId: crypto.randomUUID(), dirty: true, templateId: '' };
       unsaved.set(detail!.root.id, local);
@@ -477,7 +483,7 @@ export function mountConversationAssistant() {
         return 'Approved text copied. Open the original carrier thread and paste above your signature; send manually.';
       }),
     );
-    uiScope.handler($('assistantMailbox'), 'onclick', (event) => {
+    uiScope.handler($('assistantMailbox'), 'onclick', async (event) => {
       if (busy || local?.dirty || !detail?.assistant?.draftCurrent) {
         event.preventDefault();
         error('Review and approve the current draft before opening its mailbox.');
@@ -641,8 +647,9 @@ export function mountConversationAssistant() {
         return 'Preview ready. Insert or replace text when you want; your draft is unchanged.';
       });
     }
-    function applyWording(replace: boolean) {
+    async function applyWording(replace: boolean) {
       if (busy || !wording) return;
+      const preview = wording;
       if (
         wording.rootId !== detail!.root.id ||
         wording.contextVersion !== detail!.assistant.version
@@ -654,9 +661,20 @@ export function mountConversationAssistant() {
       if (
         replace &&
         editor.value.trim() &&
-        !confirm('Replace the current reply text? The saved draft history is retained.')
+        !(await confirmAction(
+          'Replace the current reply text? The saved draft history is retained.',
+        ))
       )
         return;
+      if (
+        busy ||
+        wording !== preview ||
+        preview.rootId !== detail?.root.id ||
+        preview.contextVersion !== detail?.assistant.version
+      ) {
+        error('Conversation changed. Preview the wording again.');
+        return;
+      }
       if (replace) editor.value = wording.body;
       else {
         const start = Math.min(caret.start, editor.value.length),
@@ -676,7 +694,7 @@ export function mountConversationAssistant() {
         'Wording inserted. Edit freely, then save and review the exact reply.';
     }
     uiScope.handler($('assistantSavedSearch'), 'oninput', renderSavedReplies);
-    uiScope.handler($('assistantSavedCards'), 'onclick', (event) => {
+    uiScope.handler($('assistantSavedCards'), 'onclick', async (event) => {
       const b = eventElement(event).closest<HTMLElement>('[data-saved-reply]');
       if (b) {
         $('assistantSavedReplies').open = false;
@@ -685,7 +703,7 @@ export function mountConversationAssistant() {
     });
     uiScope.handler($('assistantInsertWording'), 'onclick', () => applyWording(false));
     uiScope.handler($('assistantReplaceWording'), 'onclick', () => applyWording(true));
-    uiScope.handler($('assistantDismissWording'), 'onclick', () => {
+    uiScope.handler($('assistantDismissWording'), 'onclick', async () => {
       wording = null;
       showWording();
     });
@@ -728,7 +746,7 @@ export function mountConversationAssistant() {
         return 'Check the exact text and recipient, then approve when ready.';
       }),
     );
-    uiScope.handler($('assistantSaveAsWording'), 'onclick', () => {
+    uiScope.handler($('assistantSaveAsWording'), 'onclick', async () => {
       const body = $('assistantBody').value;
       if (!body.trim()) {
         error('Write a reply first.');
@@ -739,7 +757,7 @@ export function mountConversationAssistant() {
       if (
         pending?.body &&
         pending.body !== body &&
-        !confirm('Replace the unsaved new wording in the library?')
+        !(await confirmAction('Replace the unsaved new wording in the library?'))
       )
         return;
       libraryDrafts.set('new', {
@@ -877,7 +895,7 @@ export function mountConversationAssistant() {
       rememberLibrary();
       chooseLibrary(next);
     });
-    uiScope.handler($('replyLibraryCards'), 'onclick', (event) => {
+    uiScope.handler($('replyLibraryCards'), 'onclick', async (event) => {
       const b = eventElement(event).closest<HTMLElement>('[data-library-reply]');
       if (b) {
         rememberLibrary();
@@ -885,12 +903,12 @@ export function mountConversationAssistant() {
       }
     });
     uiScope.handler($('replyLibrarySearch'), 'oninput', renderLibrary);
-    uiScope.handler($('replyLibraryNew'), 'onclick', () => {
+    uiScope.handler($('replyLibraryNew'), 'onclick', async () => {
       rememberLibrary();
       chooseLibrary('');
       $('replyLibraryName').focus();
     });
-    uiScope.handler($('replyLibraryFields'), 'onclick', (event) => {
+    uiScope.handler($('replyLibraryFields'), 'onclick', async (event) => {
       const b = eventElement(event).closest<HTMLElement>('[data-template-field]');
       if (!b) return;
       const editor = $('replyLibraryBody');
@@ -965,6 +983,30 @@ export function mountConversationAssistant() {
           'Captured local carrier activity · ' +
           new Date().toLocaleTimeString() +
           '. No automatic conversation sending.';
+        const priority = $('carrierPriorityAlert');
+        if (priority) {
+          const unread = r.summary.unread || 0;
+          priority.hidden = unread === 0;
+          renderRegion(
+            priority,
+            <>
+              <div>
+                <strong>
+                  {unread} new carrier {unread === 1 ? 'message' : 'messages'}
+                </strong>
+                <p>Review unread conversations before your next outreach.</p>
+              </div>
+              <Button data-carrier-work="unread">Review messages →</Button>
+            </>,
+          );
+        }
+        const metricTones: Record<string, StatTone> = {
+          unread: 'info',
+          needsReply: 'attention',
+          interested: 'success',
+          awaitingApproval: 'pending',
+          followUpReady: 'pending',
+        };
         const metrics = [
           ['New / unread', 'unread', 'unread'],
           ['Needs my reply', 'needsReply', 'needs_reply'],
@@ -974,77 +1016,115 @@ export function mountConversationAssistant() {
         ];
         renderRegion(
           $('carrierAttentionMetrics'),
-          metrics.map(([label, key, work]) => (
-            <>
-              <Button className={'secondary'} data-carrier-work={work}>
-                <strong>{r.summary[key]}</strong>
-                <span>{label}</span>
-              </Button>
-            </>
-          )),
+          <MetricGroup>
+            {metrics.map(([label, key, work]) => (
+              <Metric
+                key={key}
+                label={label}
+                value={r.summary[key] ?? 0}
+                visual={
+                  <StatMark
+                    kind="signal"
+                    tone={metricTones[key]}
+                    value={Number(r.summary[key] ?? 0)}
+                    total={0}
+                  />
+                }
+                detail={
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    data-carrier-work={work}
+                    aria-label={`View ${label.toLowerCase()} in Unibox`}
+                  >
+                    View in Unibox →
+                  </Button>
+                }
+              />
+            ))}
+          </MetricGroup>,
         );
         renderRegion(
           $('carrierAttentionRows'),
           contentOr(
-            r.highlights.map((item) => {
-              const readAction =
-                item.carrierInboxId && item.latestInboundId ? (
-                  <>
-                    <Button
-                      className={'secondary'}
-                      data-carrier-read={esc(item.carrierInboxId)}
-                      data-read-version={esc(item.statusVersion)}
-                      data-read-message={esc(item.latestInboundId)}
-                      data-unread={!item.unread}
-                      title={'Update this carrier’s read status in Outreach Desk'}
-                      aria-label={
-                        (item.unread ? 'Mark as read' : 'Mark as unread') +
-                        ' for ' +
-                        esc(item.recipient)
-                      }
-                    >
-                      {item.unread ? 'Mark as read' : 'Mark as unread'}
-                    </Button>
-                  </>
-                ) : (
-                  ''
-                );
-              return (
-                <>
-                  <article className={'carrier-highlight ' + (item.unread ? 'unread' : '')}>
-                    <div>
-                      <strong>{esc(item.recipient)}</strong>
-                      <p>
-                        {esc(item.intent?.intent || item.category)}
-                        {' · '}
-                        {esc(item.subject)}
-                        {item.unread ? ' · New/unread' : item.latestInboundId ? ' · Read' : ''}
-                      </p>
-                      <p>
-                        {esc(
-                          item.excerpt ||
-                            'No captured human response. Check capture coverage before a follow-up.',
-                        )}
-                      </p>
-                    </div>
-                    <div className={'carrier-highlight-actions'}>
+            r.highlights
+              .filter((item) => item.unread === true)
+              .map((item) => {
+                const readAction =
+                  item.carrierInboxId && item.latestInboundId ? (
+                    <>
                       <Button
+                        size="sm"
                         className={'secondary'}
-                        data-carrier-open={item.id}
-                        data-carrier-type={item.type}
+                        data-carrier-read={esc(item.carrierInboxId)}
+                        data-read-version={esc(item.statusVersion)}
+                        data-read-message={esc(item.latestInboundId)}
+                        data-unread={!item.unread}
+                        title={'Update this carrier’s read status in Outreach Desk'}
+                        aria-label={
+                          (item.unread ? 'Mark as read' : 'Mark as unread') +
+                          ' for ' +
+                          esc(item.recipient)
+                        }
                       >
-                        {'Review'}
+                        {item.unread ? 'Mark as read' : 'Mark as unread'}
                       </Button>
-                      {readAction}
-                    </div>
-                  </article>
-                </>
-              );
-            }),
+                    </>
+                  ) : (
+                    ''
+                  );
+                return (
+                  <>
+                    <article className={'carrier-highlight ' + (item.unread ? 'unread' : '')}>
+                      <div>
+                        <div className="carrier-highlight-heading">
+                          <strong>{esc(item.recipient)}</strong>
+                          <span
+                            className={
+                              item.unread ? 'dashboard-unread-label' : 'dashboard-read-label'
+                            }
+                          >
+                            {item.unread
+                              ? 'New/unread'
+                              : item.latestInboundId
+                                ? 'Read'
+                                : 'Follow-up'}
+                          </span>
+                        </div>
+                        <p className="carrier-highlight-subject">
+                          {esc(item.subject || 'Carrier conversation')}
+                          <span className="carrier-highlight-intent">
+                            {' '}
+                            ·{' '}
+                            {esc((item.intent?.intent || item.category || '').replaceAll('_', ' '))}
+                          </span>
+                        </p>
+                        <p className="carrier-highlight-excerpt">
+                          {esc(
+                            item.excerpt ||
+                              'No captured human response. Check capture coverage before a follow-up.',
+                          )}
+                        </p>
+                      </div>
+                      <div className={'carrier-highlight-actions'}>
+                        <Button
+                          size="sm"
+                          className={'secondary'}
+                          data-carrier-open={item.id}
+                          data-carrier-type={item.type}
+                        >
+                          {'Review'}
+                        </Button>
+                        {readAction}
+                      </div>
+                    </article>
+                  </>
+                );
+              }),
             <>
               <p className={'hint'}>
                 {
-                  'No captured carrier work needs attention. This does not establish complete mailbox coverage.'
+                  'No unread carrier messages. Follow-up tasks remain in Unibox. This does not establish complete mailbox coverage.'
                 }
               </p>
             </>,
@@ -1090,7 +1170,7 @@ export function mountConversationAssistant() {
         controls();
       }
     }
-    uiScope.handler($('carrierAttentionRows'), 'onclick', (event) => {
+    uiScope.handler($('carrierAttentionRows'), 'onclick', async (event) => {
       const read = eventElement(event).closest<HTMLElement>('[data-carrier-read]');
       if (read) {
         void dashboardRead(read);
@@ -1114,13 +1194,16 @@ export function mountConversationAssistant() {
     uiScope.listen(window, 'fc-carrier-read-changed', () => {
       void loadDashboard(true);
     });
-    uiScope.handler($('carrierAttentionMetrics'), 'onclick', (event) => {
+    const openCarrierWork = (event: MouseEvent) => {
       const b = eventElement(event).closest<HTMLElement>('[data-carrier-work]');
       if (!b) return;
       $('replyWork').value = String(b.dataset.carrierWork);
       location.hash = 'conversations';
       $('replyWork').dispatchEvent(new Event('change'));
-    });
+    };
+    uiScope.handler($('carrierAttentionMetrics'), 'onclick', openCarrierWork);
+    if ($('carrierPriorityAlert'))
+      uiScope.handler($('carrierPriorityAlert'), 'onclick', openCarrierWork);
     loadLibrary().catch((e) => {
       $('replyLibraryStatus').textContent = errorMessage(e);
     });

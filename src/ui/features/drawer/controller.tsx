@@ -1,3 +1,5 @@
+import { openDrawer, closeDrawer } from '../../design-system/overlays';
+import { StatusBadge } from '../../design-system/layout';
 import {
   Check,
   Copy,
@@ -15,21 +17,33 @@ import { displayText } from '../../shared/utils';
 import type { TrackingRecord } from '../../shared/types/domain';
 import type { PreviewResponse } from '../../shared/types/api';
 import type { Lead, Message } from '../../shared/types/domain';
-import { eventElement } from '../../shared/dom';
 import { session } from '../../shared/session';
 import { $, copyToClipboard, notice, action, api } from '../../shared/runtime';
 import { renderTrackingDetail } from '../tracking/controller';
 export function openPreviewDrawer() {
-  const drawer = $('leadPreviewDrawer');
-  if (drawer) drawer.classList.add('open');
+  openDrawer('leadPreviewDrawer');
 }
 
 export function closePreviewDrawer() {
-  const drawer = $('leadPreviewDrawer');
-  if (drawer) drawer.classList.remove('open');
+  closeDrawer('leadPreviewDrawer');
+}
+
+function updateInspectorTabs(drawerId: string, selectedId: string) {
+  document
+    .getElementById(drawerId)
+    ?.querySelectorAll<HTMLButtonElement>('[role="tab"]')
+    .forEach((tab) => {
+      const selected = tab.id === selectedId;
+      tab.setAttribute('aria-selected', String(selected));
+      tab.tabIndex = selected ? 0 : -1;
+    });
 }
 
 export function switchDrawerTab(tabName: string) {
+  updateInspectorTabs(
+    'leadPreviewDrawer',
+    tabName === 'email' ? 'tabEmailDraft' : 'tabLeadDetails',
+  );
   const tabDetails = $('tabLeadDetails');
   const tabEmail = $('tabEmailDraft');
   const sectionDetails = $('leadDetailsSection');
@@ -48,17 +62,23 @@ export function switchDrawerTab(tabName: string) {
 }
 
 export function openTrackingDrawer(r: TrackingRecord) {
-  const drawer = $('trackingDrawer');
-  if (drawer) drawer.classList.add('open');
   if (r) renderTrackingDetail(r);
+  openDrawer('trackingDrawer');
 }
 
 export function closeTrackingDrawer() {
-  const drawer = $('trackingDrawer');
-  if (drawer) drawer.classList.remove('open');
+  closeDrawer('trackingDrawer');
 }
 
 export function switchTrackingDrawerTab(tabName: string) {
+  updateInspectorTabs(
+    'trackingDrawer',
+    tabName === 'specs'
+      ? 'tabTrackingSpecs'
+      : tabName === 'raw'
+        ? 'tabTrackingRaw'
+        : 'tabTrackingOverview',
+  );
   const tabOverview = $('tabTrackingOverview');
   const tabSpecs = $('tabTrackingSpecs');
   const tabRaw = $('tabTrackingRaw');
@@ -115,14 +135,14 @@ export function renderLeadDetails(lead: Lead, message: Message | null, warnings:
   const sortedKeys = Object.keys(f).sort();
   const statusPill = lead.blocked ? (
     <>
-      <span className={'status-pill blocked'}>
+      <StatusBadge className={'status-pill blocked'}>
         {'Excluded: '}
         {displayText(lead.blocked)}
-      </span>
+      </StatusBadge>
     </>
   ) : (
     <>
-      <span className={'status-pill ready'}>{'Ready for outreach'}</span>
+      <StatusBadge className={'status-pill ready'}>{'Ready for outreach'}</StatusBadge>
     </>
   );
   const sheetStatusTag = lead.status ? (
@@ -149,7 +169,7 @@ export function renderLeadDetails(lead: Lead, message: Message | null, warnings:
         <div
           style={{
             fontSize: '12px',
-            color: '#93c5fd',
+            color: '#1649a8',
             background: 'rgba(59, 130, 246, 0.1)',
             border: '1px solid rgba(59, 130, 246, 0.25)',
             borderRadius: '6px',
@@ -192,14 +212,14 @@ export function renderLeadDetails(lead: Lead, message: Message | null, warnings:
     historicalNotesHtml = (
       <>
         <div className={'lead-details-card'} style={{ borderLeft: '3px solid #f59e0b' }}>
-          <h4 className={'lead-details-title'} style={{ color: '#fbbf24' }}>
+          <h4 className={'lead-details-title'} style={{ color: '#86520c' }}>
             <Icon icon={FileText} size={14} />
             {'\n          Historical Notes / Remarks\n        '}
           </h4>
           <div
             style={{
               fontSize: '12.5px',
-              color: '#e5e7eb',
+              color: '#575750',
               lineHeight: '1.5',
               whiteSpace: 'pre-wrap',
             }}
@@ -450,9 +470,9 @@ export function renderLeadDetails(lead: Lead, message: Message | null, warnings:
           style={{
             maxHeight: '280px',
             overflowY: 'auto',
-            border: '1px solid rgba(255, 255, 255, 0.05)',
+            border: '1px solid rgba(24, 24, 22, 0.05)',
             borderRadius: 'var(--radius-sm)',
-            background: '#111318',
+            background: '#f2efe7',
           }}
         >
           <table className={'lead-fields-table'}>
@@ -462,7 +482,7 @@ export function renderLeadDetails(lead: Lead, message: Message | null, warnings:
       </div>
       <div className={'lead-action-cta'}>
         <div>
-          <div style={{ fontSize: '12px', fontWeight: '600', color: '#fff' }}>
+          <div style={{ fontSize: '12px', fontWeight: '600', color: '#181816' }}>
             {'Personalized Email Preview'}
           </div>
           <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>
@@ -497,7 +517,7 @@ export function renderLeadDetails(lead: Lead, message: Message | null, warnings:
         renderRegion(
           btn,
           <>
-            <Icon icon={Check} size={12} color={'#10b981'} />
+            <Icon icon={Check} size={12} color={'#126c48'} />
           </>,
         );
         uiScope.timeout(() => {
@@ -564,11 +584,7 @@ export function mountDrawer() {
   if ($('closePreviewDrawer')) {
     uiScope.handler($('closePreviewDrawer'), 'onclick', closePreviewDrawer);
   }
-  if ($('leadPreviewDrawer')) {
-    uiScope.handler($('leadPreviewDrawer'), 'onclick', (e) => {
-      if (eventElement(e) === $('leadPreviewDrawer')) closePreviewDrawer();
-    });
-  }
+
   if ($('tabTrackingOverview')) {
     uiScope.handler($('tabTrackingOverview'), 'onclick', () => switchTrackingDrawerTab('overview'));
   }
@@ -584,15 +600,4 @@ export function mountDrawer() {
   if ($('closeTrackingDrawer')) {
     uiScope.handler($('closeTrackingDrawer'), 'onclick', closeTrackingDrawer);
   }
-  if ($('trackingDrawer')) {
-    uiScope.handler($('trackingDrawer'), 'onclick', (e) => {
-      if (eventElement(e) === $('trackingDrawer')) closeTrackingDrawer();
-    });
-  }
-  uiScope.listen(window, 'keydown', (e) => {
-    if (e.key === 'Escape') {
-      closePreviewDrawer();
-      closeTrackingDrawer();
-    }
-  });
 }

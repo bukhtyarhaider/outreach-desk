@@ -5,7 +5,7 @@ import os from "node:os";
 import path from "node:path";
 import { spawn, execFileSync } from "node:child_process";
 import { once } from "node:events";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -25,7 +25,7 @@ async function start(dir, port, extra = {}) {
     process.execPath,
     [
       "--import",
-      path.join(ROOT, "tests/fixtures/fake-mail.mjs"),
+      pathToFileURL(path.join(ROOT, "tests/fixtures/fake-mail.mjs")).href,
       path.join(ROOT, "src/server.mjs"),
     ],
     {
