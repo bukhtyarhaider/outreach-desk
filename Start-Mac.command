@@ -1,16 +1,11 @@
 #!/bin/sh
 cd "$(dirname "$0")" || exit 1
 
+NODE=""
 if [ -f scripts/env.sh ]; then
   # shellcheck disable=SC1091
   . scripts/env.sh
-  NODE=$(resolve_node 2>/dev/null)
-fi
-
-if [ -z "$NODE" ]; then
-  if command -v node >/dev/null 2>&1; then
-    NODE=$(command -v node)
-  fi
+  resolve_node 2>/dev/null
 fi
 
 if [ -z "$NODE" ]; then
