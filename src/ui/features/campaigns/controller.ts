@@ -56,6 +56,30 @@ export async function selectCampaign(id: string) {
   await loadLeads();
 }
 
+export async function refreshCampaignWorkspace() {
+  session.selected.clear();
+  session.previewId = null;
+  session.offset = 0;
+  await refresh();
+  fillCampaign();
+  await loadLeads();
+}
+
+/** Change only queue inclusion, retaining the campaign's saved scope and mapping. */
+export async function setCampaignIncluded(id: string, enabled: boolean) {
+  await refresh();
+  const campaign = session.state.campaigns.find((c) => c.id === id);
+  if (!campaign) throw new Error('Campaign not found. Refresh and try again.');
+  await api('/api/campaign', {
+    id,
+    name: campaign.name,
+    enabled,
+    sheets: campaign.sheets || [],
+    mapping: campaign.mapping || {},
+  });
+  await refreshCampaignWorkspace();
+}
+
 export function mountCampaigns() {
   uiScope.handler($('openImportReview'), 'onclick', async () => {
     location.hash = 'imports';
@@ -63,14 +87,7 @@ export function mountCampaigns() {
       new CustomEvent('fc-import-view', { detail: session.state.activeCampaign }),
     );
   });
-  uiScope.listen(window, 'fc-import-activated', async () => {
-    session.selected.clear();
-    session.previewId = null;
-    session.offset = 0;
-    await refresh();
-    fillCampaign();
-    await loadLeads();
-  });
+  uiScope.listen(window, 'fc-import-activated', refreshCampaignWorkspace);
 
   if ($('upload'))
     uiScope.handler($('upload'), 'onchange', () =>

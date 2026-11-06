@@ -38,6 +38,49 @@ with zipfile.ZipFile(sys.argv[1],'w') as z:
 const provenance = { label: 'Authorized test export', acquiredAt: '2026-10-20', permission: 'unknown' };
 const save = (service, preview, source = provenance) => service.apply({ previewId: preview.previewId, confirmExperiment: true, provenance: source });
 
+test('Windows-style flush permissions allow saving and retrying immutable reviewed snapshots', async (t) => {
+  const { service, options, workspaceDir, before, dataDir } = await fixture(t);
+  const preview = await service.review({ campaignId: 'c1', mapping: {}, addStatusColumns: { Leads: 'F' } });
+  const open = fs.open.bind(fs), flushed = [];
+  t.mock.method(fs, 'open', async (filename, flags, ...args) => {
+    const handle = await open(filename, flags, ...args);
+    const sync = handle.sync.bind(handle);
+    handle.sync = async () => {
+      if ((await handle.stat()).isFile() && flags === 'r') {
+        throw Object.assign(new Error('EPERM: operation not permitted, fsync'), { code: 'EPERM' });
+      }
+      if ((await handle.stat()).isFile() && String(filename).includes(path.join(workspaceDir, 'revisions'))) flushed.push(path.basename(filename));
+      return sync();
+    };
+    return handle;
+  });
+  const result = await save(service, preview);
+  assert.deepEqual(flushed.sort(), ['original.xlsx', 'records.json', 'working.xlsx']);
+  assert.equal((await save(new ExperimentImports(options), preview)).revisionId, result.revisionId);
+  assert.equal((await service.status('c1')).revisions.length, 1);
+  assert.deepEqual(await fs.readFile(path.join(dataDir, 'leads.xlsx')), before.workbook);
+});
+
+test('real snapshot flush errors still fail the save without publishing; a retry can recover', async (t) => {
+  const { service } = await fixture(t);
+  const first = await save(service, await service.review({ campaignId: 'c1', mapping: {} }));
+  const preview = await service.review({ campaignId: 'c1', mapping: {} });
+  const open = fs.open.bind(fs);
+  const mock = t.mock.method(fs, 'open', async (filename, flags, ...args) => {
+    const handle = await open(filename, flags, ...args);
+    if (path.basename(filename) === 'working.xlsx') handle.sync = async () => {
+      throw Object.assign(new Error('Synthetic disk flush failure'), { code: 'EIO' });
+    };
+    return handle;
+  });
+  await assert.rejects(save(service, preview), /disk flush failure/);
+  assert.equal((await service.status('c1')).activeRevision, first.revisionId);
+  assert.equal((await service.status('c1')).revisions.length, 1);
+  mock.mock.restore();
+  await save(service, preview);
+  assert.equal((await service.status('c1')).revisions.length, 2);
+});
+
 test('repairs save isolated immutable revisions, provenance, protections and durable cross-import carrier IDs', async (t) => {
   const { service, dataDir, workspaceDir, options, before } = await fixture(t);
   const preview = await service.review({ campaignId: 'c1', mapping: {}, addStatusColumns: { Leads: 'F' } });

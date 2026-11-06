@@ -4,6 +4,13 @@ Current internal baseline: **0.1.0-alpha.1**. **No public releases have been mad
 
 Earlier stable/release-candidate descriptions were inaccurate: all entries below are internal testing checkpoints or dated development milestones. Original package labels are kept for traceability, not renumbered retroactively. See [versioning guide](docs/VERSIONING.md) for the alpha → beta → release-candidate → first-public-release workflow. Historical validation records retain their original labels.
 
+## 2026-11-06 — Development fix — Import saving and campaign activation
+
+- Fixed Windows `EPERM, fsync` when saving a reviewed revision by flushing newly created snapshot files through writable handles. Real storage failures still prevent publication.
+- Added queue inclusion directly after workbook activation and beside paused campaigns in Campaigns, with a clear route to outreach controls. Saving, activation and queue inclusion do not start outreach.
+- Explained disabled Start outreach controls, removed transient sign-in text from the runner, and recovered stale sign-in messages from older saved states.
+- Added Windows-style file-permission and storage-failure regressions, plus a browser journey from new upload through final reviewed launch using a mocked mailbox.
+
 ## 2026-11-03 — 0.1.0-alpha.1 — internal alpha baseline — Internal alpha baseline — workspace and workflow refinement
 
 - Established explicit internal-alpha numbering. Earlier package labels are retained as historical references; none of the recorded history represents a public release.

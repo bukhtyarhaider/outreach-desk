@@ -3,6 +3,7 @@ import { Notice, StatusBadge } from '../../design-system/layout';
 import { ActionLink, Button, Input, Panel, Progress } from '../../design-system/primitives';
 import { Icon, Play, Square, Send, Activity, Mail, Users } from '../../design-system/icons';
 import { useWorkspace } from '../../shared/workspace-store';
+import { outreachStartBlocker } from './readiness';
 export function OutreachRunnerPanel() {
   const { state } = useWorkspace();
   const included = state?.campaigns.filter((c) => c.enabled && !c.reviewRequired).length ?? 0;
@@ -26,7 +27,13 @@ export function OutreachRunnerPanel() {
           <span id="nextSend" className="dispatch-next" />
         </div>
         <div className="dispatch-buttons">
-          <Button variant="primary" id="start" disabled aria-label="Start continuous outreach">
+          <Button
+            variant="primary"
+            id="start"
+            disabled={!!outreachStartBlocker(state)}
+            aria-describedby="jobMessage"
+            aria-label="Start continuous outreach"
+          >
             <Icon icon={Play} size={14} />
             Start outreach
           </Button>
@@ -54,7 +61,13 @@ export function OutreachRunnerPanel() {
       </p>
       {!included && (
         <p className="hint">
-          <a href="#campaigns">Open a campaign</a> to review its source and queue inclusion.
+          <a href="#campaigns">Review campaigns and include one in the queue →</a>
+        </p>
+      )}
+      {!!included && !state?.connected && (
+        <p className="hint">
+          Connect your mailbox below. A started queue waits for the mailbox connection before
+          sending.
         </p>
       )}
       {state?.prepared && (

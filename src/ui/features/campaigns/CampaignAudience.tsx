@@ -13,6 +13,16 @@ export function CampaignAudience() {
           <a href="#imports">Open Import Review →</a>
         </Notice>
       )}
+      {campaign && !campaign.reviewRequired && (
+        <Notice tone={campaign.enabled ? 'info' : 'warning'}>
+          {campaign.enabled
+            ? 'This campaign is included in the outreach queue. '
+            : 'This campaign is paused. Include it in the queue when you are ready. '}
+          <a href={campaign.enabled ? '#outreachRunner' : '#campaignReview'}>
+            {campaign.enabled ? 'Open outreach controls →' : 'Open queue settings →'}
+          </a>
+        </Notice>
+      )}
       <MetricGroup>
         <Metric
           label="Total leads"

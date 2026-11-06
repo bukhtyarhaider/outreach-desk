@@ -42,6 +42,7 @@ test('connection preferences persist; optional password and startup restore resp
   assert.equal((await api('connect', {})).connected, true);
   const s = await api('state');
   assert.equal(s.browserSession.status, 'connected');
+  assert.doesNotMatch(s.job.message, /Signing in/);
   assert.match(s.browserGuide.command, /--user-data-dir=/);
   const id = s.activeProfile;
   await assert.rejects(api('profile', { ...profile, id, connectionMode: 'cdp', cdpEndpoint: 'http://example.com:9222' }), /local HTTP/);
@@ -59,4 +60,8 @@ test('connection preferences persist; optional password and startup restore resp
   assert.equal(saved.profiles.find((p) => p.id === id).connectionMode, 'cdp');
   assert.equal(saved.profiles.find((p) => p.id === id).cdpEndpoint, 'http://127.0.0.1:9223');
   assert(!JSON.stringify(saved).includes('webSocketDebuggerUrl'));
+  await stop();
+  saved.automation.message = 'Signing in. Complete any verification in your browser.';
+  await fs.writeFile(path.join(dir, 'state.json'), JSON.stringify(saved));
+  assert.doesNotMatch((await start()).job.message, /Signing in/, 'Legacy stopped queues do not retain transient sign-in instructions');
 });

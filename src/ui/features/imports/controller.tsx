@@ -1,4 +1,8 @@
-import { selectCampaign } from '../campaigns/controller';
+import {
+  selectCampaign,
+  setCampaignIncluded,
+  refreshCampaignWorkspace,
+} from '../campaigns/controller';
 import { ImportJourney, type ImportStep } from './ImportJourney';
 import { ImportPreviewSummary } from './ImportPreviewSummary';
 import { confirmAction } from '../../shared/confirmation';
@@ -141,10 +145,21 @@ export function mountExperiment() {
         busy ||
         !workspace?.activeRevision ||
         (production
-          ? !workspace?.activationToken
+          ? !workspace?.activationToken ||
+            $('workspaceRevision').value === workspace.publishedRevision
           : $('workspaceRevision').value === workspace.activeRevision);
       if (production)
         $('workspaceUndo').disabled = busy || workspace?.activations?.at(-1)?.kind !== 'activated';
+      if (production) {
+        $<HTMLButtonElement>('importIncludeCampaign').disabled =
+          busy || !workspace?.publishedRevision || !!workspace?.campaignEnabled;
+        $('importNextSteps').hidden =
+          !workspace?.publishedRevision ||
+          $('workspaceRevision').value !== workspace.publishedRevision;
+        $('importNextStepsNote').textContent = workspace?.campaignEnabled
+          ? 'Campaign included. Open outreach controls to connect your mailbox and start when ready.'
+          : 'Your reviewed workbook is ready. The campaign is paused. Include it in the queue, then open outreach controls to connect your mailbox and start.';
+      }
       $('workspacePrev').disabled = busy || workspaceOffset === 0;
       $('workspaceNext').disabled = busy || workspaceOffset + 25 >= (workspace?.total || 0);
     }
@@ -414,6 +429,15 @@ export function mountExperiment() {
           location.hash = 'leads';
         }),
       );
+    if (production)
+      uiScope.handler($('importIncludeCampaign'), 'onclick', () =>
+        run($('importIncludeCampaign'), async () => {
+          await selectCampaign($('reviewCampaign').value);
+          await setCampaignIncluded($('reviewCampaign').value, true);
+          await loadWorkspace();
+          return 'Campaign included in the queue. Open outreach controls to connect your mailbox and start when ready.';
+        }),
+      );
     uiScope.handler($('reviewLoad'), 'onclick', () => run($('reviewLoad'), loadSaved));
     uiScope.handler($('reviewReset'), 'onclick', () => run($('reviewReset'), loadSaved));
     uiScope.handler($('reviewPreview'), 'onclick', () =>
@@ -667,7 +691,7 @@ export function mountExperiment() {
           });
           await loadWorkspace();
 
-          window.dispatchEvent(new Event('fc-import-activated'));
+          await refreshCampaignWorkspace();
           return value.message;
         });
       }
@@ -805,7 +829,7 @@ export function mountExperiment() {
           });
           await loadWorkspace();
 
-          window.dispatchEvent(new Event('fc-import-activated'));
+          await refreshCampaignWorkspace();
           return value.message;
         });
       });
@@ -844,9 +868,10 @@ export function mountExperiment() {
       uiScope.listen(window, 'fc-import-view', (event) => {
         if (busy) return;
         void loadCampaigns(event.detail)
-          .then(() => {
+          .then(async () => {
             if ($('reviewCampaign').value !== reviewedCampaign)
               $('reviewCampaign').dispatchEvent(new Event('change'));
+            else await loadWorkspace();
           })
           .catch((e) => {
             $('reviewError').hidden = false;

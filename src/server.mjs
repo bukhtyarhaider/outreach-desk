@@ -551,6 +551,10 @@ function job() {
   const a = state.automation;
   return {
     ...a,
+    // Older saves used the runner message for transient mailbox sign-in.
+    // Connection state belongs to the mailbox, not a stopped outreach queue.
+    message: !a.enabled && /^Signing in\./.test(a.message || '')
+      ? 'Outreach is stopped. Start when ready.' : a.message,
     current: a.sent,
     total: a.selected?.length || a.sent + 1,
     stop: !a.enabled,
@@ -1061,8 +1065,6 @@ const server = http.createServer(async (req, res) => {
           const account = profile();
           if (!EMAIL.test(account.email))
             throw new Error("Save a valid mailbox email first.");
-          state.automation.message =
-            "Signing in. Complete any verification in your browser.";
           try {
             const result = await mail.connect(input.password, account);
             if (

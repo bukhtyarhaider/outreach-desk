@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import http from 'node:http';
+import os from 'node:os';
+import { pathToFileURL } from 'node:url';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
@@ -10,6 +12,92 @@ import { eml, account, recipient } from './fixtures/replies.mjs';
 import { loadPlaywright, MailBrowser } from '../src/browser.mjs';
 async function serve(t,port,extraEnv={}){const f=await workspace(t);let child;const stop=async()=>{if(child?.exitCode===null){const done=once(child,'exit');child.kill('SIGTERM');await done;}};const start=async()=>{child=spawn(process.execPath,[path.resolve('src/server.mjs')],{cwd:path.resolve('.'),env:{...process.env,FC_DATA_DIR:f.dataDir,PORT:String(port),FC_FIREBASE_DISABLE:'1',FC_MONITOR_ENABLED:'0',FC_OPEN_TRACKING_ENABLED:'0',FC_REPLY_CAPTURE_ENABLED:'0',FC_REPLY_AUTO:'0',FC_REPLY_MAILBOXES:'[]',...extraEnv},stdio:['ignore','ignore','pipe']});let error='';child.stderr.on('data',(b)=>error+=b);for(let n=0;n<150;n++){if(child.exitCode!==null)throw new Error(error);try{if((await fetch(`http://127.0.0.1:${port}/api/state`)).ok)return;}catch{}await new Promise((r)=>setTimeout(r,50));}throw new Error('Release server startup timed out: '+error);};t.after(stop);await start();const url=`http://127.0.0.1:${port}`,raw=(route,data)=>fetch(url+'/api/'+route,data===undefined?{}:{method:'POST',headers:{'X-FC-Request':'1','Content-Type':'application/json'},body:JSON.stringify(data)});const api=async(route,data)=>{const r=await raw(route,data),value=await r.json();if(!r.ok)throw new Error(value.error);return value;};return {...f,url,api,raw,start,stop};}
 async function save(f){const p=await f.api('import-review',{campaignId:'c1',mapping:{},addStatusColumns:{Leads:'D'}});return f.api('import-apply',{previewId:p.previewId,confirmExperiment:true,provenance:{label:'Authorized export',permission:'unknown'}});}
+
+test('new upload reaches reviewed outreach through visible actions, with no send before final launch confirmation', { skip: process.env.FC_BROWSER_TESTS !== '1' }, async (t) => {
+  const logs = await fs.mkdtemp(path.join(os.tmpdir(), 'fc-import-launch-'));
+  t.after(() => fs.rm(logs, { recursive: true, force: true }));
+  const sendLog = path.join(logs, 'sends.jsonl');
+  const f = await serve(t, 14697, {
+    NODE_OPTIONS: `--import=${pathToFileURL(path.resolve('tests/fixtures/fake-mail.mjs')).href}`,
+    TEST_SEND_LOG: sendLog,
+  });
+  let state = await f.api('state');
+  await f.api('profile', {
+    ...state.profiles[0],
+    id: state.activeProfile,
+    email: account,
+    provider: 'privateemail',
+    url: 'https://privateemail.com/spm/mail/INBOX/',
+    autoReconnect: false,
+    business: { company: 'Example', senderName: 'Rep', legalName: 'Example LLC', address: '123 Example St', services: 'load coordination' },
+  });
+  const browser = await loadPlaywright().chromium.launch({ channel: process.env.FC_TEST_BROWSER_CHANNEL || 'chrome', headless: true });
+  t.after(() => browser.close());
+  const page = await browser.newPage({ viewport: { width: 1440, height: 1100 } });
+  const errors = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto(f.url + '/#campaign-new');
+  await page.locator('#upload').setInputFiles({ name: 'New reviewed campaign.xlsx', mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', buffer: f.original });
+  await page.locator('#view-imports.active').waitFor();
+  state = await f.api('state');
+  const campaignId = state.activeCampaign;
+  assert.notEqual(campaignId, 'c1');
+  await page.waitForFunction((id) => document.querySelector('#reviewCampaign').value === id, campaignId);
+  await page.locator('#reviewLoad').click();
+  await page.locator('#reviewResults').waitFor();
+  await page.locator('[data-import-go="1"]').first().click();
+  await page.locator('#reviewMappingWizard [data-status-sheet]').click();
+  await page.locator('#reviewPreview').click();
+  await page.waitForFunction(() => document.querySelector('#view-imports').dataset.importStep === '2');
+  await page.locator('[data-import-go="3"]').click();
+  await page.locator('#repairSource').fill('Authorized synthetic export');
+  await page.locator('#repairConfirm').check();
+  await page.locator('#repairApply').click();
+  await page.waitForFunction(() => document.querySelector('#view-imports').dataset.importStep === '4');
+  await page.locator('#workspaceRestore').click();
+  await page.locator('.ui-confirmation').getByRole('button', { name: /Confirm/ }).click();
+  await page.locator('#importNextSteps').waitFor();
+  if (process.env.FC_UI_SCREENSHOT_DIR) {
+    await fs.mkdir(process.env.FC_UI_SCREENSHOT_DIR, { recursive: true });
+    for (const width of [1440, 390]) {
+      await page.setViewportSize({ width, height: 1100 });
+      await page.locator('#importNextSteps').scrollIntoViewIfNeeded();
+      await page.screenshot({ path: path.join(process.env.FC_UI_SCREENSHOT_DIR, `campaign-activated-${width}.png`) });
+      assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+    }
+    await page.setViewportSize({ width: 1440, height: 1100 });
+  }
+  await page.locator('#importIncludeCampaign').click();
+  await page.waitForFunction(() => document.querySelector('#reviewStatus').textContent.includes('Campaign included in the queue'));
+  await page.locator('#importNextSteps a').click();
+  await page.locator('#view-dashboard.active').waitFor();
+  await page.locator('#connect').click();
+  await page.waitForFunction(() => document.querySelector('#browserSessionStatus').textContent.includes('Connected'));
+  assert.doesNotMatch(await page.locator('#jobMessage').innerText(), /Signing in/);
+  await page.locator('#start').click();
+  const review = page.locator('.ui-confirmation');
+  await review.getByRole('button', { name: 'Start reviewed outreach', exact: true }).waitFor();
+  assert.equal((await f.api('state')).job.enabled, false);
+  await assert.rejects(fs.readFile(sendLog), { code: 'ENOENT' });
+  await review.getByRole('button', { name: 'Start reviewed outreach', exact: true }).click();
+  for (let n = 0; ; n++) {
+    const log = await fs.readFile(sendLog, 'utf8').catch(() => '');
+    if (log) { assert.equal(JSON.parse(log.trim()).to, 'second@example.com'); break; }
+    if (n > 100) throw new Error('Mock send was not reached: ' + JSON.stringify((await f.api('state')).job));
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+  await page.locator('#stop').click();
+  await page.waitForFunction(() => !document.querySelector('#start').disabled);
+  state = await f.api('state');
+  const campaign = state.campaigns.find((c) => c.id === campaignId);
+  assert.equal(campaign.enabled, true);
+  assert.equal(campaign.reviewRequired, false);
+  assert.equal(state.job.enabled, false);
+  assert.deepEqual(errors, []);
+  await f.stop();
+  await f.start();
+  assert.equal((await f.api('state')).campaigns.find((c) => c.id === campaignId).enabled, true);
+});
 
 test('normal HTTP flow publishes reviewed copies, enriches leads, blocks stale edits/opt-outs and restores prior workbook without changing history',async(t)=>{
  const f=await serve(t,14686);let s=await f.api('state');assert.equal(s.campaigns[0].reviewRequired,true);assert.equal(s.counts.ready,0);
@@ -73,6 +161,20 @@ test('integrated release UI supports guided mapping, activation, lead provenance
  await page.setViewportSize({width:1440,height:1100});await page.locator('#workspaceRestore').click();await page.locator('.ui-confirmation').getByRole('button',{name:/Confirm/}).click();
  await page.waitForFunction(()=>document.querySelector('#reviewStatus').textContent.includes('Reviewed revision is active'));assert.equal((await f.api('state')).campaigns[0].enabled,false);
  assert.match(await page.locator('#workspaceNote').innerText(),/Active copy:/);
+ assert(await page.locator('#workspaceRestore').isDisabled(), 'An already active revision cannot accidentally pause the campaign again');
+ assert(await page.locator('#importNextSteps').isVisible());
+ assert.match(await page.locator('#importNextStepsNote').innerText(),/campaign is paused/i);
+ await page.locator('#importIncludeCampaign').click();
+ await page.waitForFunction(()=>document.querySelector('#reviewStatus').textContent.includes('Campaign included in the queue'));
+ let includedState=await f.api('state');assert.equal(includedState.campaigns[0].enabled,true);assert.equal(includedState.job.enabled,false,'Queue inclusion does not start sending');
+ await page.locator('#importNextSteps a').click();await page.locator('#view-dashboard.active').waitFor();
+ assert(await page.locator('#start').isEnabled());assert.doesNotMatch(await page.locator('#jobMessage').innerText(),/Signing in/);
+ await page.locator('[data-view="campaigns"]').click();await page.locator('[data-campaign-queue="c1"]').click();
+ await page.waitForFunction(()=>document.querySelector('[data-campaign-queue="c1"]').textContent.includes('Include in outreach queue'));
+ await page.locator('[data-view="dashboard"]').click();assert(await page.locator('#start').isDisabled());assert.match(await page.locator('#jobMessage').innerText(),/campaigns are paused/);
+ await page.locator('[data-view="campaigns"]').click();await page.locator('[data-campaign-queue="c1"]').click();
+ await page.waitForFunction(()=>document.querySelector('[data-campaign-queue="c1"]').textContent.includes('Pause campaign'));
+ await page.locator('[data-view="imports"]').click();await stepper.getByRole('button',{name:/Activate/}).click();
  await page.locator('#importInspectLeads').click();await page.waitForFunction(()=>document.querySelector('#leadRows').textContent.includes('second@example.com'));await page.locator('#leadRows tr').filter({hasText:'second@example.com'}).locator('[data-preview]').click();await page.locator('section.carrier-evidence').waitFor();assert.match(await page.locator('section.carrier-evidence').innerText(),/Browser-reviewed export/);
  await page.locator('[data-conversation-email]').click();await page.locator('#view-conversations.active').waitFor();await page.locator('#replySearch').fill('');await page.locator('#mailroomFiltersOpen').click();await page.locator('#replyRefresh').click();await page.waitForFunction(()=>!document.querySelector('#replyRefresh').disabled);await page.locator('[data-close-mailroom=mailroomFiltersDialog]').click();
  await page.locator('#mailroomToolsOpen').click();await page.getByRole('tab',{name:'Import a reply',exact:true}).click();await page.locator('#replyImportAccount').selectOption(account);await page.locator('#replyEml').setInputFiles({name:'reply.eml',mimeType:'message/rfc822',buffer:eml({text:'Please remove me from your list. <script>window.pwned=true</script>'})});await page.locator('#replyImport').click();await page.waitForFunction(()=>!document.querySelector('#replyImport').disabled);assert.match(await page.locator('#replyProtection').innerText(),/block outreach/);await page.locator('[data-close-mailroom=mailroomToolsDialog]').click();await page.locator('[data-mailroom-work=all]').click();await page.locator('#mailroomList button').waitFor();await page.locator('#mailroomList button').click();await page.locator('#mailroomDetailsOpen').click();await page.locator('#replyReviewPanel').waitFor();assert.match(await page.locator('#replyProtection').innerText(),/block outreach/);assert.match(await page.locator('#replyProtectionDelivery').innerText(),/Independent PC/);assert.equal(await page.evaluate(()=>window.pwned),undefined);

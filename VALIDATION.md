@@ -1,3 +1,13 @@
+# Import saving and campaign activation — November 6, 2026
+
+- Node 22.23.1/Chrome full suite: **254/254 JavaScript tests and 12/12 Python tests passed**, zero failures/skips. Strict TypeScript, frontend formatting and production UI build passed through `npm test` preflight; module syntax and diff checks passed separately.
+- New storage checks simulate Windows rejecting fsync on read-only file handles, verify all three immutable revision files flush with write access, retain idempotent retry, and confirm genuine flush failures cannot publish a new revision.
+- Browser checks cover a new upload, mapping repair, save, activation, explicit queue inclusion, mailbox connection, final reviewed launch and persistence across restart. A mocked mailbox records a send only after final confirmation. Campaign-list pause/inclusion and disabled-Start guidance also pass; activated screens fit desktop/mobile widths.
+- Final focused connection/journey rerun: **2/2 passed**, including recovery of legacy stopped-runner sign-in text and a file-URL preload suitable for paths on Windows.
+- All application data, mailboxes and sends used synthetic fixtures. No production data, real mail, live provider access, remote push or deployment was used. Native Windows/Edge acceptance remains unverified; the fsync correction has permission-model regression coverage on Mac.
+
+---
+
 # Follow-up capture coverage reliability — November 4, 2026
 
 Phase 4's first increment is committed as `a191abe` on `feat/product-quality-roadmap`. The subsequent A11 coverage changes are committed as a separate reliability increment.

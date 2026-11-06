@@ -260,6 +260,16 @@ export function ImportsPage() {
             </Button>
           </div>
           <p id={'workspaceNote'} className={'hint'} role={'status'}></p>
+          <section id="importNextSteps" className="panel" hidden>
+            <h3>Workbook activated</h3>
+            <p id="importNextStepsNote" className="hint" role="status" />
+            <div className="experiment-buttons">
+              <Button id="importIncludeCampaign" variant="primary">
+                Include campaign in outreach queue
+              </Button>
+              <ActionLink href="#outreachRunner">Open outreach controls →</ActionLink>
+            </div>
+          </section>
           <div className={'experiment-form import-activation-decision'}>
             <label htmlFor={'workspaceRevision'}>
               {'Revision'}

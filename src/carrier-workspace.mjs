@@ -217,7 +217,7 @@ export class CarrierWorkspace {
       next.importRevision = { revisionId: revision.revisionId, sourceLabel: revision.sourceLabel, acquiredAt: revision.acquiredAt, permission: revision.permission, workingHash: revision.workingHash, activatedAt: new Date().toISOString() };
       next.importActivations = [...(c.importActivations || []), { id: activationId, revisionId: revision.revisionId, at: next.importRevision.activatedAt, previousWorkbook, previousHash: current.sourceHash, file, kind:'activated', previous: { workbook: prior.workbook, mapping: prior.mapping, importRevision: prior.importRevision || null, reviewRequired: prior.reviewRequired || false } }];
       await this.commitCampaign(c, next);
-      return { ok: true, campaignId: c.id, activationId, parsed, message: 'Reviewed revision is active. Campaign remains paused; inspect leads, then enable it in Campaigns.' };
+      return { ok: true, campaignId: c.id, activationId, parsed, message: 'Reviewed revision is active. Campaign remains paused until you include it in the outreach queue.' };
     });
   }
   async undo(input) {

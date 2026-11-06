@@ -139,7 +139,9 @@ export class ExperimentImports {
       const revision = { ...context, mapping: result.report.mapping, addStatusColumns: preview.addStatusColumns, summary: result.report.summary,
         identitySummary: identity.summary, recordsHash: hash(recordBytes), workingHash: hash(await fs.readFile(working)) };
       for (const filename of ['original.xlsx', 'working.xlsx', 'records.json']) {
-        const handle = await fs.open(path.join(directory, filename), 'r');
+        // Windows FlushFileBuffers requires a writable handle. These are our
+        // newly created snapshots; r+ flushes them without truncating bytes.
+        const handle = await fs.open(path.join(directory, filename), 'r+');
         try { await handle.sync(); } finally { await handle.close(); }
       }
       if (process.platform !== 'win32') {

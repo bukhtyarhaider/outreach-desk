@@ -5,6 +5,7 @@ import { Icon, Trash2 } from '../../design-system/icons';
 import { renderRegion } from '../../shared/regions';
 import { session } from '../../shared/session';
 import { $ } from '../../shared/runtime';
+import { outreachStartBlocker } from '../../features/dashboard/readiness';
 export function updateControls() {
   if (!session.state) return;
   publishWorkspace(session.state, session.selected.size, session.rows);
@@ -56,13 +57,7 @@ export function updateControls() {
         session.state.dayRemaining < session.state.settings.pacing.dailyCap
       );
   const startBtn = $('start');
-  if (startBtn)
-    startBtn.disabled =
-      session.pending ||
-      session.state.busy ||
-      session.state.job.enabled ||
-      !!session.state.prepared ||
-      !session.state.campaigns.some((c) => c.enabled);
+  if (startBtn) startBtn.disabled = session.pending || !!outreachStartBlocker(session.state);
   const saveSettings = $('saveSettings');
   if (saveSettings)
     saveSettings.disabled =

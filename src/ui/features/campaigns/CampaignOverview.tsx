@@ -3,8 +3,8 @@ import { useState } from 'react';
 import { Button, Input, Panel, Select } from '../../design-system/primitives';
 import { StatusBadge } from '../../design-system/layout';
 import { useWorkspace } from '../../shared/workspace-store';
-import { action } from '../../shared/runtime';
-import { selectCampaign } from './controller';
+import { action, notice } from '../../shared/runtime';
+import { selectCampaign, setCampaignIncluded } from './controller';
 /** Campaign inventory owns finding/opening existing campaigns; creation has its own route. */
 export function CampaignOverview() {
   const { state } = useWorkspace();
@@ -56,6 +56,7 @@ export function CampaignOverview() {
               <th>Campaign / source</th>
               <th>Worksheet scope</th>
               <th>Status</th>
+              <th>Next action</th>
             </tr>
           </thead>
           <tbody>
@@ -98,11 +99,39 @@ export function CampaignOverview() {
                         : 'Paused'}
                   </StatusBadge>
                 </td>
+                <td>
+                  <Button
+                    data-campaign-queue={c.id}
+                    disabled={!!state?.busy || !!state?.job.enabled || !!state?.prepared}
+                    onClick={(event) =>
+                      void action(event.currentTarget, async () => {
+                        if (c.reviewRequired) {
+                          await selectCampaign(c.id);
+                          location.hash = 'imports';
+                          window.dispatchEvent(new CustomEvent('fc-import-view', { detail: c.id }));
+                        } else {
+                          await setCampaignIncluded(c.id, !c.enabled);
+                          notice(
+                            c.enabled
+                              ? 'Campaign paused.'
+                              : 'Campaign included. Start outreach from the dashboard when ready.',
+                          );
+                        }
+                      })
+                    }
+                  >
+                    {c.reviewRequired
+                      ? 'Review import'
+                      : c.enabled
+                        ? 'Pause campaign'
+                        : 'Include in outreach queue'}
+                  </Button>
+                </td>
               </tr>
             ))}
             {!filtered.length && (
               <tr>
-                <td colSpan={3}>
+                <td colSpan={4}>
                   {query || status !== 'all'
                     ? 'No campaigns match these filters.'
                     : 'Create your first campaign by importing a lead workbook.'}

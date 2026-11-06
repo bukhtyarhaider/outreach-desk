@@ -16,6 +16,7 @@ import { fillCampaign } from '../../features/campaigns/controller';
 import { renderLiveActivityView } from '../../features/live-activity/controller';
 import { renderSuppressionList } from '../../features/suppression/controller';
 import { updateControls } from './controls';
+import { outreachStartBlocker } from '../../features/dashboard/readiness';
 export async function refresh() {
   const previousCampaign = session.state?.activeCampaign;
   const hadState = !!session.state;
@@ -137,7 +138,10 @@ export async function refresh() {
     jobSt.className = `status-badge ${session.state.job.enabled ? 'active' : ''}`;
   }
   const jobMsg = $('jobMessage');
-  if (jobMsg) jobMsg.textContent = session.state.job.message;
+  if (jobMsg)
+    jobMsg.textContent = session.state.job.enabled
+      ? session.state.job.message
+      : outreachStartBlocker(session.state) || session.state.job.message;
   const prog = $('progress');
   if (prog) {
     prog.max = session.state.job.total || 1;
